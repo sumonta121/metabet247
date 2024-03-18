@@ -1,0 +1,20 @@
+/* Add this CSS to your existing styles */
+.country-input {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .country-code-input {
+    padding-right: 40px; /* Adjust this value to make space for the flag icon */
+  }
+  
+  .flag-icon {
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    right: 10px;
+  }
+  

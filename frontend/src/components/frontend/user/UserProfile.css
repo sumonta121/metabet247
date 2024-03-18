@@ -1,0 +1,52 @@
+
+.profile-card {
+  background-color: #154a2a;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.left-side,
+.right-side {
+  text-align: center;
+  padding: 20px;
+}
+
+.left-side {
+  border-bottom: 1px solid #eee;
+}
+
+.profile-header {
+  background-color: #004e83;
+  color: #fff;
+}
+
+.username {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.basic-info,
+.personal-info {
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+/* Media Query for mobile devices */
+@media (max-width: 600px) {
+  .profile-card {
+    flex-direction: column-reverse; /* Change the direction to collapse the right side down */
+  }
+
+  .left-side,
+  .right-side {
+    padding: 15px;
+  }
+}

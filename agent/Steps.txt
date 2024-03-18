@@ -1,0 +1,49 @@
+
+Balance Transfer 
+    Balance Report 
+
+Wallet Setup 
+    Crypto Currency 
+    Bank 
+    Mobile banking
+
+Withdraw
+	Pending
+	Paid 
+	Rejected
+	Block
+
+Report 
+    Balance Receive from Admin
+
+Profile Manage
+	Profile Setting
+	Password Manage
+	2-factor Authentication 
+
+
+Logout
+
+// Json WebToken data decode
+
+import jwt_decode from 'jwt-decode';
+
+const nav = () => {
+
+const token = localStorage.getItem('jwtToken');
+const decodedToken = token ? jwt_decode(token) : null;
+console.log(decodedToken);
+const userRole = decodedToken ? decodedToken.role_as : null;
+
+});
+
+
+Task: 
+1. Money Available check
+2.  Minus (-) amount check
+3.  admin to agent
+	agent to user All Validate
+
+
+
+

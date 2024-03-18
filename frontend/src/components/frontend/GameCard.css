@@ -1,0 +1,71 @@
+  /* Styles for desktop view */
+  .card-container {
+    /* display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; */
+  }
+
+  .custom_card {
+    position: relative;
+    margin-bottom: 10px;
+    padding: 7px;
+    
+  }
+
+  .card-image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+   
+    background: linear-gradient( to top, rgb(151 95 95 / 0%), rgb(27 110 73) );
+    transition: height 0.3s, opacity 0.3s;
+    opacity: 0;
+  }
+
+  .custom_card:hover .card-overlay {
+    height: 100%;
+    opacity: 1;
+  }
+
+  .play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+ 
+    color: #000000;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 5px;
+  }
+
+  /* Styles for mobile view */
+  @media (max-width: 767px) {
+    .custom_card {
+      padding-left: 10px;
+    }
+    
+    .custom_card:nth-child(2n) {
+      margin-right: 0;
+    }
+    
+    .card-container {
+      justify-content: flex-start;
+    }
+  }
+
+  /* General styles */
+  .title {
+    font-size: 15px;
+    text-align: left;
+  }

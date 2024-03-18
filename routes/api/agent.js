@@ -1,0 +1,2853 @@
+// import {useEffect, useState} from 'react';
+const express = require("express");
+const mongoose = require("mongoose");
+const router = express.Router();
+const bcrypt = require("bcryptjs");
+const User = require("../../models/User");
+const Binancepayment = require("../../models/Binancepayment");
+const keys = require("../../config/keys_development");
+const validateRegisterInput = require("../../validation/register");
+const validateLoginInput = require("../../validation/login");
+const validateAgentInput = require("../../validation/agent");
+const validateAgentWithdraw = require("../../validation/agentWithdraw");
+const quickSort = require("../../util/sort");
+const BalanceDeposit = require("../../models/BalanceDeposit");
+const AgentBLTR = require("../../models/AgentBLTR");
+const UserBLTR = require("../../models/UserBLTR");
+const AgentCommission = require("../../models/AgentCommission");
+// const Agent = require("../../models/Agent");
+const AgentWithdraw = require("../../models/AgentWithdraw");
+var elasticemail = require('elasticemail');
+const axios = require('axios');
+const crypto = require('crypto');
+
+
+//// ================================ From Admin dashboard =========================== //////
+
+// transfer,update Agent , User table
+
+router.post("/agent_transfer_update", (req, res) => {
+  //  let gameId = req.body.gameId
+
+  User.findOne({ user_id: req.body.user_id }, (err, user) => {
+    if (err) {
+      return res.status(422).json("user not exist!");
+    }
+    if (!user) {
+      return res.status(404).json({ user_id: "This user does not exist" });
+    }
+
+    const AgentEmail = req.body.agentEmail;
+
+    User.findOne({ email: req.body.agentEmail }, (err, agent) => {
+      const Agentcurrency = Number(agent.currency);
+      const transferMoney = Number(req.body.amount);
+      console.log("Money: " + Agentcurrency + " Email: " + AgentEmail);
+
+      const checkBalance = Agentcurrency < transferMoney;
+
+      if (checkBalance) {
+        return res.status(422).json({ checkBalance: "Not Available Money" });
+      } else {
+        // T-pin security
+
+        if (!agent) {
+          return res.status(404).json({ s_key: "This user does not exist" });
+        }
+
+        const tpin = agent.tpin;
+        const s_key = req.body.s_key;
+        const AgentEmail = req.body.agentEmail;
+
+        // console.log("T-pin: " + tpin + " Agent Email: " + AgentEmail + " S-key " + s_key );
+
+        bcrypt.compare(req.body.s_key, agent.tpin).then((isMatch) => {
+          if (!!isMatch) {
+            // update User Table  Currency Field
+            var date = new Date(Date.now());
+            // User.findOne({ email: req.body.email }, (err, user) => {
+            const oldCurrncy = Number(user.currency);
+            const newCurrency = Number(req.body.amount);
+            const currency = oldCurrncy + newCurrency;
+
+            // console.log(
+            //   "oldCurrncy: " +
+            //     oldCurrncy +
+            //     " newCurrency: " +
+            //     newCurrency +
+            //     " Total currency " +
+            //     currency
+            // );
+
+            //  });
+
+            User.updateOne(
+              { user_id: req.body.user_id },
+              { currency: currency }
+            )
+              .then((user) => res.json(user))
+              .catch((err) => console.log(err));
+
+            // Agent user table Balance Minus
+
+            const AgentCurrencyHas = Number(agent.currency);
+            const NewTransferMoney = Number(req.body.amount);
+            const AgentNewAmount = AgentCurrencyHas - NewTransferMoney;
+
+            User.updateOne(
+              { email: req.body.agentEmail },
+              { currency: AgentNewAmount }
+            )
+              .then((user) => res.json(user))
+              .catch((err) => console.log(err));
+
+            //  UserBLTR Table Insert
+
+            const AgentBLTRData = new AgentBLTR({
+              user_id: req.body.user_id,
+              status_type: 1,
+              amount: req.body.amount,
+              s_key: req.body.s_key,
+              history: [{ x: date }],
+            });
+
+            AgentBLTRData.save()
+              .then((agent) => res.json(agent))
+              .catch((err) => console.log(err));
+          } else {
+            return res.status(400).json({ TPIN: "Incorrect T-PIN" });
+          }
+        });
+      }
+    });
+  });
+});
+
+// Show all User
+
+router.get("/getdataAllUser", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  User.find().then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+//  User index read role_as: 3
+router.get("/getdataUser", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  User.find({ role_as: 3 }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+// paginate user
+
+router.get("/paginatedgetdataUser", async (req, res) => {
+  const allUser = await User.find({ role_as: 3, sender_id : req.query.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  return  res.json(results);
+});
+
+// get agent index read
+router.get("/getdataAgent", (req, res) => {
+
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  User.find({ role_as: 2 }).then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+  
+});
+
+// ##### Paginate ##### // get agent paginatedUsers
+router.get("/paginatedAgent", async (req, res) => {
+
+  const allUser = await User.find({ role_as: 2 });
+  const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+
+  const startIndex = (page - 1) * limit
+  const lastIndex = (page) * limit
+
+  const results = {}
+  results.totalUser=allUser.length;
+  results.pageCount=Math.ceil(allUser.length/limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    }
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    }
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results)
+  
+});
+
+
+
+// ##### Paginate ##### // get agent paginatedUsers
+router.get("/master-and-agent", async (req, res) => {
+
+  const allUser = await User.find({ role_as: { $in: [2.1, 4] } });
+  const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+
+  const startIndex = (page - 1) * limit
+  const lastIndex = (page) * limit
+
+  const results = {}
+  results.totalUser=allUser.length;
+  results.pageCount=Math.ceil(allUser.length/limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    }
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    }
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results)
+  
+});
+
+
+
+// paginate user jwt data
+// router.post("/userData", async (req, res) => {
+//   const { token } = req.body;
+//   try {
+//     const user = jwt.verify(token, JWT_SECRET, (err, res) => {
+//       if (err) {
+//         return "token expired";
+//       }
+//       return res;
+//     });
+//     console.log(user);
+//     if (user == "token expired") {
+//       return res.send({ status: "error", data: "token expired" });
+//     }
+
+//     const useremail = user.email;
+//     User.findOne({ email: useremail })
+//       .then((data) => {
+//         res.send({ status: "ok", data: data });
+//       })
+//       .catch((error) => {
+//         res.send({ status: "error", data: error });
+//       });
+//   } catch (error) { }
+// });
+
+// agent create
+
+router.post("/agent_create", (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  // Check to make sure nobody has already registered with a duplicate email
+
+  User.findOne({ email: req.body.email }).then((user) => {
+    if (user) {
+      // Throw a 400 error if the email address already exists
+      return res
+        .status(400)
+        .json({ email: "Already registered with this address" });
+    } else {
+      // or latest query
+
+      async function getAgent() {
+        try {
+          // Otherwise create a new user
+
+          const agentID = User.find({ role_as: "2" }).then((user) => {
+            // console.log("Agent: " + user);
+          });
+          // if (agentID) {
+          var date = new Date(Date.now());
+          const newRandomNumber = () => {
+            const min = 100; // Minimum 3-digit number
+            const max = 999; // Maximum 3-digit number
+            const randomNumber = Math.floor(
+              Math.random() * (max - min + 1) + min
+            );
+            return randomNumber;
+          };
+          // const randomNumber = newRandomNumber();
+
+          const Agents = await User.findOne({ role_as: "2" })
+                              .sort({ _id: -1 })
+                              .limit(1);
+          let new_user_id;
+          if (Agents) {
+            const lastId = Agents.user_id;
+            const newStr = lastId.replace(/^./, "");
+
+            const newRandomNumber = () => {
+              const min = 100; // Minimum 3-digit number
+              const max = 999; // Maximum 3-digit number
+              const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+              return randomNumber;
+            };
+            const latestId = Number(newStr);
+            const Randomuser_id = Number(newRandomNumber());
+            const IdAdd = latestId + Randomuser_id;
+            new_user_id = "CA" + IdAdd;
+          } else {
+            const newStr = 1;
+            const newRandomNumber = () => {
+              const min = 100; // Minimum 3-digit number
+              const max = 999; // Maximum 3-digit number
+              const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+              return randomNumber;
+            };
+
+            const latestId = Number(newStr);
+            const Randomuser_id = Number(newRandomNumber());
+            const IdAdd = latestId + Randomuser_id;
+            new_user_id = "CA" + IdAdd;
+          }
+
+          // }
+
+          const newAgent = new User({
+            user_id: new_user_id,
+            handle: req.body.handle,
+            email: req.body.email,
+            password: req.body.password,
+            tpin: req.body.password,
+            mobile: req.body.mobile,
+            ref_percentage: req.body.ref_percentage,
+            deposit_percentage: req.body.deposit_percentage,
+            status: "Country Agent",
+            role_as: 2,
+            // currency: 0,
+            history: [{ x: date, y: 1000 }],
+          });
+
+          bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(newAgent.password, salt, (err, hash) => {
+              if (err) throw err;
+              newAgent.password = hash;
+
+              bcrypt.hash(newAgent.tpin, salt, (err, hash) => {
+                if (err) throw err;
+                newAgent.tpin = hash;
+                newAgent
+                  .save()
+                  .then((user) => res.json(user))
+                  .catch((err) => console.log(err));
+              });
+            });
+          });
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+
+      getAgent();
+    }
+  });
+});
+
+//  edit agent
+router.get("/editagent/:user_id").get(function (req, res) {
+  const user_id = req.params.user_id;
+
+  console.log('details ' + req.params);
+
+  
+  User.findOne({ user_id: user_id }).then((user) => res.json(user));
+});
+
+// update  agent
+router.post("/updateAgent/:_id", (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+  const rowId = req.params._id;
+  // console.log("Id: " + rowId);
+  // handle, email, password, mobile,  ref_percentage, deposit_percentage
+  const handle = req.body.handle;
+  const email = req.body.email;
+  const password = req.body.password;
+  const mobile = req.body.mobile;
+  const ref_percentage = req.body.ref_percentage;
+  const deposit_percentage = req.body.deposit_percentage;
+
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(password, salt, (err, hash) => {
+      if (err) throw err;
+      const password = hash;
+
+      User.updateOne(
+        { _id: rowId },
+        {
+          handle: handle,
+          email: email,
+          password: password,
+          mobile: mobile,
+          ref_percentage: ref_percentage,
+          deposit_percentage: deposit_percentage,
+        }
+      )
+        .then((user) => res.json(user))
+        .catch((err) => console.log(err));
+    });
+  });
+});
+
+
+router.get("/getUserById/:id", async (req, res) => {
+  try {
+    const rowId = req.params.id;
+
+    // Check if the provided ID is a valid ObjectId
+    if (!rowId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    const userDetails = await User.findById(rowId);
+
+    // Check if user with the provided ID exists
+    if (!userDetails) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(userDetails);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
+// Update user by ID
+router.put("/updateUser/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Check if the provided ID is a valid ObjectId
+    if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    // Check if the user was found
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update all fields except password
+    Object.keys(req.body).forEach((field) => {
+      if (field !== "password") {
+        user[field] = req.body[field];
+      }
+    });
+
+    // Check if the password is provided in the request body
+    if (req.body.password) {
+      // Hash the new password before updating
+      const hashedNewPassword = await bcrypt.hash(req.body.password, 10);
+      user.password = hashedNewPassword;
+    }
+
+    // Save the updated user
+    const updatedUser = await user.save();
+
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+// Delete agent
+router.delete("/deleteAgent/:id", async (req, res) => {
+  try {
+    const rowId = req.params.id;
+
+    // Delete the row with the specified ID
+    const deletedRow = await User.findByIdAndDelete(rowId);
+
+    if (deletedRow) {
+      res.status(200).json({ message: "Row deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Row not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// ### SubReseller create
+
+router.post("/SubResellerCreate", (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+
+  //return res.status(400).json(req.body);
+
+
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  // Check to make sure nobody has already registered with a duplicate email
+
+  User.findOne({ email: req.body.email }).then((user) => {
+    if (user) {
+      // Throw a 400 error if the email address already exists
+      return res
+        .status(400)
+        .json({ email: "Already registered with this address" });
+    } else {
+      // or latest query
+
+      async function getAgent() {
+        try {
+          // Otherwise create a new user
+
+        const last_user = await User.findOne({ role_as: 2.1 }).sort({ _id: -1 });
+        
+        let New_user_id;
+        if (last_user) {
+          const lastId = last_user.user_id;
+          const newStr = lastId.replace(/^./, "");
+
+          const newRandomNumber = () => {
+            const min = 100; // Minimum 3-digit number
+            const max = 999; // Maximum 3-digit number
+            const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+            return randomNumber;
+          };
+          const latestId = Number(newStr);
+          const Randomuser_id = Number(newRandomNumber());
+          const IdAdd = latestId + Randomuser_id;
+          New_user_id = "MA" + IdAdd;
+        } else {
+          const newStr = 1;
+          const newRandomNumber = () => {
+            const min = 100; // Minimum 3-digit number
+            const max = 999; // Maximum 3-digit number
+            const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+            return randomNumber;
+          };
+
+          const latestId = Number(newStr);
+          const Randomuser_id = Number(newRandomNumber());
+          const IdAdd = latestId + Randomuser_id;
+          New_user_id = "MA" + IdAdd;
+        }
+
+        
+
+          const newAgent = new User({
+            user_id: New_user_id,
+            handle: req.body.handle,
+            email: req.body.email,
+            password: req.body.password,
+            tpin: req.body.password,
+            mobile: req.body.mobile,
+            ref_percentage: req.body.ref_percentage,
+            deposit_percentage: req.body.deposit_percentage,
+            status: "Master Agent",
+            refferer: req.body.referrer,
+            role_as: 2.1,
+          //  "1 = Admin, 2 = Country Agent, 2.1 = Master Agent, , 2.2 = Agent, 3 = User, 4 = Affiliate",
+            // currency: 0,
+            history: [{ x: 0, y: 1000 }],
+          });
+
+          bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(newAgent.password, salt, (err, hash) => {
+              if (err) throw err;
+              newAgent.password = hash;
+
+              bcrypt.hash(newAgent.tpin, salt, (err, hash) => {
+                if (err) throw err;
+                newAgent.tpin = hash;
+                newAgent
+                  .save()
+                  .then((user) => res.json(user))
+                  .catch((err) => console.log(err));
+              });
+            });
+          });
+
+          await sendWelcomeEmail(New_user_id, req.body.password, req.body.email);
+
+
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+
+      getAgent();
+    }
+  });
+});
+
+//  edit SubReseller
+
+router.get("/editsubreseller/:usAutoId").get(function (req, res) {
+  const rowId = req.params.id;
+  User.findOne({ usAutoId: rowId }).then((user) => res.json(user));
+});
+
+// Update SubReseller
+// ...
+
+// getdataSubReseller
+router.get("/getdataSubReseller", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  User.find({ role_as: 2, status: "SubReseller" }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+// sub reseller paginate
+
+// get agent index read
+router.get("/getSubReseller", (req, res) => {
+
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  User.find({ role_as: 2, status: "SubReseller" }).then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+  
+});
+
+// ##### Paginate ##### // get agent paginatedUsers
+router.get("/paginatedSubReseller", async (req, res) => {
+  
+  const referrerid  = req.query.referrerid;
+
+  //const allUser = await User.find({  refferer: referrerid  });
+  const allUser = await User.find({  status: 'Master Agent'  });
+
+  const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+
+  const startIndex = (page - 1) * limit
+  const lastIndex = (page) * limit
+
+  const results = {}
+  results.totalUser=allUser.length;
+  results.pageCount=Math.ceil(allUser.length/limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    }
+  }
+
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    }
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  return res.status(200).json(results);
+  
+});
+
+// Agent Balance Report
+router.get("/AgentBalanceReport", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+  var mysort = { name: -1 };
+  AgentBLTR.find()
+    .sort(mysort)
+    .then((user) => {
+      // UserBLTR.find().then((user) => {
+      if (!!user) {
+        return res.json(user);
+      } else {
+        return res.status(404).json({ msg: "User not found" });
+      }
+    });
+});
+
+//  paginatedAgentBalReport
+router.get("/paginatedAgentBalReport", async (req, res) => {
+  const allUser = await AgentBLTR.find();
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+// withdraw index list ref: "0= Pending, 1= Paid, 2= Rejected,  3 = Block",
+
+// 0= Pending
+router.get("/withdrawPending", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  AgentWithdraw.find({ status_type: 0 }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+// paginate withdrawPending
+router.get("/paginatedwithdrawPending", async (req, res) => {
+  const allUser = await AgentWithdraw.find({ status_type: 0 });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+// 1= Paid
+router.get("/withdrawPaid", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  AgentWithdraw.find({ status_type: 1 }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+// paginate  withdrawPaid
+router.get("/paginatedwithdrawPaid", async (req, res) => {
+  const allUser = await AgentWithdraw.find({ status_type: 1 });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+// 2= Rejected
+
+router.get("/withdrawRejected", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  AgentWithdraw.find({ status_type: 2 }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+// paginate withdrawRejected
+
+router.get("/paginatedwithdrawRejected", async (req, res) => {
+  const allUser = await AgentWithdraw.find({ status_type: 2 });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+// 3 = Block
+
+router.get("/withdrawBlock", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  AgentWithdraw.find({ status_type: 3 }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+// paginate withdrawBlock
+router.get("/paginatedwithdrawBlock", async (req, res) => {
+  const allUser = await AgentWithdraw.find({ status_type: 3 });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+//Action approve withdraw  Pending  paid
+
+router.delete("/withdrawPaid/:id", async (req, res) => {
+  try {
+    const rowId = req.params.id;
+
+    AgentWithdraw.findByIdAndUpdate(
+      rowId,
+      { status_type: 1 },
+      function (err, docs) {
+        if (err) {
+          console.log(err);
+        } else {
+          // console.log("Updated User : ", docs);
+          res.status(200).json({ message: "paid successfully" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// withdraw  Pending Rejected
+
+router.delete("/withdrawRejected/:id", async (req, res) => {
+  try {
+    const rowId = req.params.id;
+
+    AgentWithdraw.findByIdAndUpdate(
+      rowId,
+      { status_type: 2 },
+      function (err, docs) {
+        if (err) {
+          console.log(err);
+        } else {
+          // console.log("Updated User : ", docs);
+          res.status(201).json({ message: "Rejected successfully" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// withdraw  Pending Block
+
+router.delete("/withdrawBlock/:id", async (req, res) => {
+  try {
+    const rowId = req.params.id;
+
+    AgentWithdraw.findByIdAndUpdate(
+      rowId,
+      { status_type: 3 },
+      function (err, docs) {
+        if (err) {
+          console.log(err);
+        } else {
+          // console.log("Updated User : ", docs);
+          res.status(202).json({ message: "Updated successfully" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// withdraw  Pending Pending
+
+router.delete("/withdrawPending/:id", async (req, res) => {
+  try {
+    const rowId = req.params.id;
+
+    AgentWithdraw.findByIdAndUpdate(
+      rowId,
+      { status_type: 0 },
+      function (err, docs) {
+        if (err) {
+          console.log(err);
+        } else {
+          // console.log("Updated User : ", docs);
+          res.status(203).json({ message: "Updated successfully" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+ 
+// Affiliate create
+router.post("/affiliate_create", (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  // Check to make sure nobody has already registered with a duplicate email
+
+  User.findOne({ email: req.body.email }).then((user) => {
+    if (user) {
+      // Throw a 400 error if the email address already exists
+      return res
+        .status(400)
+        .json({ email: "Already registered with this address" });
+    } else {
+      // or latest query
+
+      async function getAgent() {
+        try {
+          // Otherwise create a new user
+
+          // show agent user  role_as: "2"
+        //  const agentID = User.find({ role_as: "4" }).then((user) => {});
+
+          // if (agentID) {
+
+          var date = new Date(Date.now());
+
+          const newRandomNumber = () => {
+            const min = 100; // Minimum 3-digit number
+            const max = 999; // Maximum 3-digit number
+            const randomNumber = Math.floor(
+              Math.random() * (max - min + 1) + min
+            );
+            return randomNumber;
+          };
+
+          // const randomNumber = newRandomNumber();
+
+          
+          const Agents = await User.findOne({ role_as: "4" })
+                              .sort({ _id: -1 })
+                              .limit(1);
+          let new_user_id;
+          if (Agents) {
+            const lastId = Agents.user_id;
+            const newStr = lastId.replace(/^./, "");
+
+            const newRandomNumber = () => {
+              const min = 100; // Minimum 3-digit number
+              const max = 999; // Maximum 3-digit number
+              const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+              return randomNumber;
+            };
+            const latestId = Number(newStr);
+            const Randomuser_id = Number(newRandomNumber());
+            const IdAdd = latestId + Randomuser_id;
+            new_user_id = "A" + IdAdd;
+          } else {
+            const newStr = 1;
+            const newRandomNumber = () => {
+              const min = 100; // Minimum 3-digit number
+              const max = 999; // Maximum 3-digit number
+              const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+              return randomNumber;
+            };
+
+            const latestId = Number(newStr);
+            const Randomuser_id = Number(newRandomNumber());
+            const IdAdd = latestId + Randomuser_id;
+            new_user_id = "A" + IdAdd;
+          }
+
+
+          const newAgent = new User({
+            user_id: new_user_id,
+            handle: req.body.handle,
+            email: req.body.email,
+            password: req.body.password,
+            tpin: req.body.password,
+            mobile: req.body.mobile,
+            address: req.body.address,
+            personal_mobile: req.body.personal_mobile,
+            mobile: req.body.mobile,
+            refferer: req.body.referrer,
+            ref_percentage: req.body.ref_percentage,
+            deposit_percentage: req.body.deposit_percentage,
+            status: "Agent",
+            role_as: 4,
+            // currency: 0,
+            history: [{ x: date, y: 1000 }],
+          });
+
+          bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(newAgent.password, salt, (err, hash) => {
+              if (err) throw err;
+              newAgent.password = hash;
+
+              bcrypt.hash(newAgent.tpin, salt, (err, hash) => {
+                if (err) throw err;
+                newAgent.tpin = hash;
+                newAgent
+                  .save()
+                  .then((user) => res.json(user))
+                  .catch((err) => console.log(err));
+              });
+            });
+          });
+
+          await sendWelcomeEmail(new_user_id, req.body.password, req.body.email);
+          
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+
+      getAgent();
+    }
+  });
+});
+
+// edit affiliate
+router.get("/editAffiliate/:_id").get(function (req, res) {
+  const rowId = req.params._id;
+  User.findOne({ _id: rowId }).then((user) => res.json(user));
+});
+
+// update affiliate
+router.post("/updateaffiliate/:_id", (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+  if (!isValid) {
+    //return res.status(401).json(errors);
+  }
+  const rowId = req.params._id;
+  // console.log("Id: " + rowId);
+  // handle, email, password, mobile,  ref_percentage, deposit_percentage
+  const handle = req.body.handle;
+  const email = req.body.email;
+  const password = req.body.password;
+  const mobile = req.body.mobile;
+  const ref_percentage = req.body.ref_percentage;
+  const deposit_percentage = req.body.deposit_percentage;
+
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(password, salt, (err, hash) => {
+      if (err) throw err;
+      const password = hash;
+
+      User.updateOne(
+        { _id: rowId },
+        {
+          handle: handle,
+          email: email,
+          password: password,
+          mobile: mobile,
+          address: req.body.address,
+          personal_mobile: req.body.personal_mobile,
+          ref_percentage: ref_percentage,
+          deposit_percentage: deposit_percentage,
+        }
+      )
+        .then((user) => res.json(user))
+        .catch((err) => console.log(err));
+    });
+  });
+});
+
+// Delete affiliate
+router.delete("/deleteAffiliate/:id", async (req, res) => {
+  try {
+    const rowId = req.params.id;
+
+    // Delete the row with the specified ID
+    const deletedRow = await User.findByIdAndDelete(rowId);
+
+    if (deletedRow) {
+      res.status(200).json({ message: "Row deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Row not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Affiliate old  data show edit
+router.get("/oldDataAffiliate/:_id", (req, res) => {
+
+  if (req.params._id === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+    User.find({ _id: req.params._id }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+
+});
+
+// getdataAffiliate
+router.get("/getdataAffiliate", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  User.find({ role_as: 4 }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+ 
+
+
+//  paginatedAffiliate
+router.get("/paginatedAffiliate", async (req, res) => {
+
+  const referrerid  = req.query.referrerid;
+  const allUser = await User.find({  refferer: referrerid , role_as: 4 });
+  //const allUser = await User.find({ role_as: 4 });
+  const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+
+  const startIndex = (page - 1) * limit
+  const lastIndex = (page) * limit
+
+  const results = {}
+  results.totalUser=allUser.length;
+  results.pageCount=Math.ceil(allUser.length/limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    }
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    }
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results)
+  
+});
+
+//   ###  SubAffiliate ###
+
+//  SubAffiliate create
+
+router.post("/SubAffiliateCreate", (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+  // Check to make sure nobody has already registered with a duplicate email
+
+  User.findOne({ email: req.body.email }).then((user) => {
+    if (user) {
+      // Throw a 400 error if the email address already exists
+      return res
+        .status(400)
+        .json({ email: "Already registered with this address" });
+    } else {
+      // or latest query
+
+      async function getAgent() {
+        try {
+          // Otherwise create a new user
+
+          const agentID = User.find({ role_as: "4" }).then((user) => {
+            // console.log("Agent: " + user);
+          });
+          // if (agentID) {
+          var date = new Date(Date.now());
+          const newRandomNumber = () => {
+            const min = 100; // Minimum 3-digit number
+            const max = 999; // Maximum 3-digit number
+            const randomNumber = Math.floor(
+              Math.random() * (max - min + 1) + min
+            );
+            return randomNumber;
+          };
+          // const randomNumber = newRandomNumber();
+
+          const Agents = await User.find({ role_as: "4" })
+            .sort({ _id: -1 })
+            .limit(1);
+
+          const lastId = Agents[0].user_id;
+          let str = lastId;
+          let newStr = str.replace(/^./, "");
+
+          const latestId = Number(newStr);
+          const Randomuser_id = Number(newRandomNumber());
+          const IdAdd = latestId + Randomuser_id;
+          const New_user_id = "A" + IdAdd;
+
+          // }
+
+          const newAgent = new User({
+            user_id: New_user_id,
+            handle: req.body.handle,
+            email: req.body.email,
+            password: req.body.password,
+            tpin: req.body.password,
+            mobile: req.body.mobile,
+            ref_percentage: req.body.ref_percentage,
+            deposit_percentage: req.body.deposit_percentage,
+            status: "SubAffiliate",
+            role_as: 4,
+            // currency: 0,
+            history: [{ x: date, y: 1000 }],
+          });
+
+          bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(newAgent.password, salt, (err, hash) => {
+              if (err) throw err;
+              newAgent.password = hash;
+
+              bcrypt.hash(newAgent.tpin, salt, (err, hash) => {
+                if (err) throw err;
+                newAgent.tpin = hash;
+                newAgent
+                  .save()
+                  .then((user) => res.json(user))
+                  .catch((err) => console.log(err));
+              });
+            });
+          });
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+
+      getAgent();
+    }
+  });
+});
+
+//  edit SubAffiliate
+
+router.get("/editsubreseller/:usAutoId").get(function (req, res) {
+  const rowId = req.params.id;
+  User.findOne({ usAutoId: rowId }).then((user) => res.json(user));
+});
+
+// Update SubAffiliate
+
+// getdataSubAffiliate
+
+router.get("/getdataSubAffiliate", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  User.find({ role_as: 4, status: "SubAffiliate" }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+});
+
+router.get("/paginatedSubAffiliate", async (req, res) => {
+  const allUser = await User.find({role_as: 4, status: "SubAffiliate"});
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+////// ========================== From Agent dashboard ===================== /////////////
+
+
+router.post("/balance_deposit", async (req, res) => {
+  try {
+    const newBalanceDeposit = new BalanceDeposit({
+      user_id: req.body.user_id,
+      amount: req.body.amount,
+      deposit_type: 1, //"1= reseller", // You may want to clarify this format
+      transaction_id: req.body.transaction_id,
+      status_type: 0, //"0 = pending , 1= Paid",
+      payment_type: req.body.payment_type //"1= Paid",
+    });
+    // Save the new BalanceDeposit instance to the database
+    const savedBalanceDeposit = await newBalanceDeposit.save();
+    return res.status(200).json({ message: 'Successfully created a new deposit.', data: savedBalanceDeposit });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+
+router.post("/agent_balance_deposit", async (req, res) => {
+
+      try {
+        const { user_id, amount } = req.body;
+        // Validate request data
+        if (!user_id || !amount) {
+            return res.status(400).json({ message: "User ID and amount are required" });
+        }
+
+        // Check if amount is not a number
+        if (isNaN(amount)) {
+          return res.status(500).json({ message: 'Invalid amount' });
+        }
+
+        if (amount < 9) {
+          return res.status(500).json({ message: 'Minimum $10 Deposit' });
+        }
+
+        const paymentType = 'USDT';
+    
+        const binancePay = "2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
+        const binancePaySecret = "nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
+
+        // Generate nonce string
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let nonce = '';
+        for (let i = 1; i <= 32; i++) {
+            const pos = Math.floor(Math.random() * chars.length);
+            const char = chars[pos];
+            nonce += char;
+        }
+
+        const timestamp = Math.round(new Date().getTime());
+        const orderId = crypto.randomBytes(16).toString('hex');
+
+        const requestData = {
+            env: {
+                terminalType: "MINI_PROGRAM"
+            },
+            merchantTradeNo: orderId,
+            orderAmount: amount,
+            currency: paymentType,
+            goods: {
+                goodsType: "01",
+                goodsCategory: "0000",
+                referenceGoodsId: "abc001",
+                goodsName: "Balance Deposit",
+                goodsUnitAmount: {
+                    currency: paymentType,
+                    amount: amount
+                }
+            },
+            shipping: {
+                shippingName: {
+                    firstName: "Maxx Bat",
+                    lastName: "Maxx Bat"
+                },
+                shippingAddress: {
+                    region: "BD"
+                }
+            },
+            buyer: {
+                buyerName: {
+                    firstName: "Maxx Bat",
+                    lastName: "Maxx Bat"
+                }
+            }
+        };
+
+        const payload = `${timestamp}\n${nonce}\n${JSON.stringify(requestData)}\n`;
+        const signature = crypto.createHmac('sha512', binancePaySecret).update(payload).digest('hex').toUpperCase();
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'BinancePay-Timestamp': timestamp,
+            'BinancePay-Nonce': nonce,
+            'BinancePay-Certificate-SN': binancePay,
+            'BinancePay-Signature': signature
+        };
+
+        const binancePayment = new Binancepayment({
+          user_id: user_id,
+          uuid: orderId,
+          amount: amount,
+          status: 0
+        });
+           
+        await binancePayment.save();
+
+        const response = await axios.post("https://bpay.binanceapi.com/binancepay/openapi/v2/order", requestData, { headers });
+        return res.json( response.data);       
+     
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+
+});
+
+
+router.get("/agent_balance_check", async (req, res) => {
+  try {
+      const user_id = req.body.user_id; // Assuming user_id is sent in the request body
+
+      // Perform your logic using user_id here
+      const currentDateTime = new Date();
+      const previousDateTime = new Date(currentDateTime.getTime() - (24 * 60 * 60 * 1000)); // Subtract 24 hours
+
+      const order_details = await Binancepayment.find({ user_id, status: 0, created_at: { $gte: previousDateTime, $lte: currentDateTime } });
+
+      for (const order of order_details) {
+          await pendingBalanceCheck(order.uuid, order.user_id);
+      }
+
+      // Send response indicating success
+      res.status(200).json({ message: 'Balance check successful' });
+  } catch (error) {
+      console.error(error);
+      // Handle errors and send appropriate response
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+// Function to check pending balance
+const pendingBalanceCheck = async (order_id, user_id) => {
+  try {
+      const binance_pay = "2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
+      const binance_pay_secret = "nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
+
+      const nonce = crypto.randomBytes(16).toString('hex');
+      const timestamp = new Date().getTime();
+
+      const requestData = {
+          merchantTradeNo: order_id
+      };
+
+      const payload = `${timestamp}\n${nonce}\n${JSON.stringify(requestData)}\n`;
+      const signature = crypto.createHmac('sha512', binance_pay_secret).update(payload).digest('hex').toUpperCase();
+
+      const headers = {
+          'Content-Type': 'application/json',
+          'BinancePay-Timestamp': timestamp,
+          'BinancePay-Nonce': nonce,
+          'BinancePay-Certificate-SN': binance_pay,
+          'BinancePay-Signature': signature
+      };
+
+      const response = await axios.post("https://bpay.binanceapi.com/binancepay/openapi/v2/order/query", requestData, { headers });
+
+      const decode = response.data;
+      if (decode.status === "SUCCESS" && decode.data.status === "PAID") {
+          const order_details = await Binancepayment.findOne({ uuid: order_id, status: 0 });
+
+          const requestBody = {
+              schema_id: 1,
+              invest_amount: order_details.amount,
+              wallet: 'main',
+              payment_id: order_id,
+              order_id: order_id,
+              pay_id: order_details.id,
+              payment_status: decode.data.status,
+              payin_hash: 'Binance',
+              actually_paid: order_details.amount,
+              user_id: order_details.user_id
+          };
+        
+          await Payment.updateOne({ id: order_details.id }, { status: 1, updated_at: new Date() });
+
+          res.status(200).send('success');
+      } else {
+        res.status(200).send('Internal Server Error');
+      }
+  } catch (error) {
+      console.error(error);
+      res.status(500).send(error);
+  }
+};
+
+
+
+
+//  paginatedUserBalanceReport
+router.get("/agentCommission/:user_id", async (req, res) => {
+    const result = await AgentCommission.aggregate([
+      {
+          $match: {
+              agent_id: req.params.user_id 
+          }
+      },
+      {
+          $group: {
+              _id: null,
+              totalAmount: { $sum: "$commission" }
+          }
+      }
+  ]);
+
+  const totalAmount = result.length > 0 ? result[0].totalAmount : 0;
+
+  return res.json(totalAmount);
+});
+
+
+
+//  paginatedUserBalanceReport
+router.get("/deposited_report", async (req, res) => {
+
+  const allUser = await BalanceDeposit.find({ deposit_type: 1, user_id : req.query.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+
+
+router.post("/user_transfer_update", (req, res) => {
+  //  let gameId = req.body.gameId
+
+  User.findOne({ user_id: req.body.user_id }, (err, user) => {
+    if (err) {
+      return res.status(422).json("user not exist!");
+    }
+    if (!user) {
+      return res.status(404).json({ email: "This user does not exist" });
+    }
+
+    const AgentEmail = req.body.agentEmail;
+
+    User.findOne({ email: req.body.agentEmail }, (err, agent) => {
+      const Agentcurrency = Number(agent.currency);
+      const transferMoney = Number(req.body.amount);
+      // console.log("Money: " + Agentcurrency + " Email: " + AgentEmail);
+
+      const checkBalance = Agentcurrency < transferMoney;
+
+      if (checkBalance) {
+        return res.status(422).json({ checkBalance: "Not Available Money" });
+      } else {
+        // T-pin security
+        if (!agent) {
+          return res.status(404).json({ s_key: "This user does not exist" });
+        }
+        const tpin       = agent.tpin;
+        const s_key      = req.body.s_key;
+        const AgentEmail = req.body.agentEmail;
+
+        // console.log("T-pin: " + tpin + " Agent Email: " + AgentEmail + " S-key " + s_key );
+
+        bcrypt.compare(req.body.s_key, agent.tpin).then((isMatch) => {
+          if (!!isMatch) {
+            // update User Table  Currency Field
+
+            var date = new Date(Date.now());
+
+            const oldCurrncy = Number(user.currency);
+            const newCurrency = Number(req.body.amount);
+
+            const currency = newCurrency + oldCurrncy;
+
+            // console.log(
+            //   "oldCurrncy: " +
+            //     oldCurrncy +
+            //     " newCurrency: " +
+            //     newCurrency +
+            //     " Total currency " +
+            //     currency
+            // );
+
+            // console.log(currency);
+
+            User.updateOne(
+              { user_id: req.body.user_id },
+              { currency: currency }
+            )
+              .then((user) => res.json(user))
+              .catch((err) => console.log(err));
+
+            // Agent user table Balance Minus
+
+            const AgentCurrencyHas = Number(agent.currency);
+            const NewTransferMoney = Number(req.body.amount);
+            const AgentNewAmount = AgentCurrencyHas - NewTransferMoney;
+
+            User.updateOne(
+              { email: req.body.agentEmail },
+              { currency: AgentNewAmount }
+            )
+              .then((user) => res.json(user))
+              .catch((err) => console.log(err));
+
+            //  UserBLTR Table Insert
+
+            const userBLTRData = new UserBLTR({
+              sender_id: req.body.agent_id,
+              user_id: req.body.user_id,
+              status_type: 1,
+              amount: req.body.amount,
+              s_key: req.body.s_key,
+              history: [{ x: date }],
+            });
+
+
+            userBLTRData
+              .save()
+              .then((agent) => res.json(agent))
+              .catch((err) => console.log(err));
+          
+          const commAmount = req.body.amount * agent.deposit_percentage/100;
+              
+          const Commission = new AgentCommission({
+              agent_id: agent.user_id,
+              user_id: req.body.user_id,
+              amount: req.body.amount,
+              commission: commAmount,
+              transfer_id: userBLTRData._id,
+              status_type: 0,           
+            });
+
+          Commission
+            .save()
+            .then((AgentCom) => res.json(AgentCom))
+            .catch((err) => console.log(err));
+          } else {
+            return res.status(400).json({ TPIN: "Incorrect T-PIN" });
+          }
+        });
+      }
+    });
+  });
+});
+
+// Agent Balance Report
+
+router.get("/UserBalanceReport", (req, res) => {
+  if (req.params.userId === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+  var mysort = { name: -1 };
+  UserBLTR.find()
+    .sort(mysort)
+    .then((user) => {
+      if (!!user) {
+        return res.json(user);
+      } else {
+        return res.status(404).json({ msg: "User not found" });
+      }
+    });
+});
+ 
+//  paginatedUserBalanceReport
+router.get("/paginatedUserBalanceReport", async (req, res) => {
+  const allUser = await UserBLTR.find({  sender_id : req.body.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  return res.json(results);
+});
+
+//  paginatedUserBalanceReport
+router.get("/paginatedAgentBalanceTransferReport", async (req, res) => {
+  const allUser = await UserBLTR.find({  sender_id : req.query.userid });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  return res.json(results);
+});
+
+
+// AgentWithdraw
+
+router.post("/withdraw", (req, res) => {
+  const { errors, isValid } = validateAgentWithdraw(req.body);
+
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  User.findOne({ user_id: req.body.receiver_user_id }, (err, user) => {
+    if (err) {
+      return res.status(422).json("user not exist!");
+    }
+    if (!user) {
+      return res.status(404).json({ email: "This user does not exist" });
+    }
+
+    const AgentEmail = req.body.agentEmail;
+
+    User.findOne({ email: req.body.agentEmail }, (err, agent) => {
+      const Agentcurrency = Number(agent.currency);
+      const transferMoney = Number(req.body.amount);
+      console.log("Money: " + Agentcurrency + " Email: " + AgentEmail);
+
+      const checkBalance = Agentcurrency < transferMoney;
+
+      if (checkBalance) {
+        return res.status(422).json({ checkBalance: "Not Available Money" });
+      } else {
+        // T-pin security
+
+        const tpin = agent.tpin;
+        const s_key = req.body.s_key;
+        const AgentEmail = req.body.agentEmail;
+
+        // console.log("T-pin: " + tpin + " Agent Email: " + AgentEmail + " S-key " + s_key );
+
+        bcrypt.compare(req.body.s_key, agent.tpin).then((isMatch) => {
+          if (!!isMatch) {
+            // update Adminuser Table  Currency Field Add
+
+            var date = new Date(Date.now());
+
+            const oldCurrncy = Number(user.currency);
+            const newCurrency = Number(req.body.amount);
+
+            const currency = newCurrency + oldCurrncy;
+
+            // console.log(
+            //   "oldCurrncy: " +
+            //     oldCurrncy +
+            //     " newCurrency: " +
+            //     newCurrency +
+            //     " Total currency " +
+            //     currency
+            // );
+
+            // console.log(currency);
+
+            User.updateOne(
+              { user_id: req.body.receiver_user_id },
+              { currency: currency }
+            )
+              .then((user) => res.json(user))
+              .catch((err) => console.log(err));
+
+            // Agent user table Balance Minus
+
+            const AgentCurrencyHas = Number(agent.currency);
+            const NewTransferMoney = Number(req.body.amount);
+            const AgentNewAmount = AgentCurrencyHas - NewTransferMoney;
+
+            // console.log(
+            //   "Money has: " +
+            //     AgentCurrencyHas +
+            //     " AgentNewAmount: " +
+            //     AgentNewAmount
+            // );
+
+            User.updateOne(
+              { email: req.body.agentEmail },
+              { currency: AgentNewAmount }
+            )
+              .then((user) => res.json(user))
+              .catch((err) => console.log(err));
+
+            //  UserBLTR Table Insert
+
+            const agentWithdraw = new AgentWithdraw({
+              receiver_user_id: req.body.receiver_user_id,
+              user_id: req.body.user_id,
+              agentEmail: req.body.agentEmail,
+              amount: req.body.amount,
+              payment: req.body.payment,
+              acc_number: req.body.acc_number,
+              status_type: 0,
+              s_key: req.body.s_key,
+              history: [{ x: date }],
+            });
+
+            agentWithdraw
+              .save()
+              .then((agent) => res.json(agent))
+              .catch((err) => console.log(err));
+          } else {
+            return res.status(400).json({ TPIN: "Incorrect T-PIN" });
+          }
+        });
+      }
+    });
+  });
+});
+
+// from admin Balance Received
+
+router.get("/BlFromAdmin/:user_id", (req, res) => {
+
+  if (req.params.user_id === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  // AgentBLTR.find({ user_id:  req.body.user_id }).then((user) => {
+  AgentBLTR.find({ user_id: req.params.user_id }).then((user) => {
+    // UserBLTR.find().then((user) => {
+    if (!!user) {
+      return res.json(user);
+    } else {
+      return res.status(404).json({ msg: "User not found" });
+    }
+  });
+
+});
+
+// paginate 
+
+router.get("/paginatedBlFromAdmin/:user_id", async (req, res) => {
+
+  if (req.params.user_id === "undefined") {
+    return res.status(422).json({ msg: "userId is undefined" });
+  }
+
+  const allUser = await AgentBLTR.find({ user_id: req.params.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+
+
+
+const sendWelcomeEmail = (username, password, email) => {
+  const client = elasticemail.createClient({
+    username: 'info@metabet247.com',
+    apiKey: '3844F86FEEA1889DC63C6A52ECC86443214BC6D33F19AD443DA27189A464854CDCF0700DB6C08EDD41F589CFC75760CA'
+  });
+
+  const htmlContent = `
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="https://www.w3.org/1999/xhtml">
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <meta name="viewport" content="initial-scale=1.0" />
+      <meta name="format-detection" content="telephone=no" />
+      <title>METABET247</title>
+       <style type="text/css">
+      .ReadMsgBody {
+        width: 100%;
+        background-color: #ffffff;
+      }
+      .ExternalClass {
+        width: 100%;
+        background-color: #ffffff;
+      }
+      .ExternalClass,
+      .ExternalClass p,
+      .ExternalClass span,
+      .ExternalClass font,
+      .ExternalClass td,
+      .ExternalClass div {
+        line-height: 100%;
+      }
+      html {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        -webkit-text-size-adjust: none;
+        -ms-text-size-adjust: none;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+      table {
+        border-spacing: 0;
+        border-collapse: collapse;
+      }
+      img {
+        display: block !important;
+        outline: none;
+        text-decoration: none;
+        -ms-interpolation-mode: bicubic;
+        border: none;
+        height: auto;
+        line-height: 100%;
+        vertical-align: bottom;
+      }
+      p {
+        padding: 0;
+        margin: 0;
+      }
+      br {
+        line-height: 0 !important;
+      }
+      div,
+      p,
+      span,
+      strong,
+      b,
+      em,
+      i,
+      a,
+      li,
+      td {
+        -webkit-text-size-adjust: none;
+      }
+      .b-letter__body {
+        background: #cccccc !important;
+      }
+      table td,
+      table tr {
+        border-collapse: collapse;
+      }
+      table {
+        border-collapse: collapse;
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .js-phone-number,
+      .highlight-phone {
+        color: #ffffff !important;
+        text-decoration: none !important;
+      }
+      a,
+      p {
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      @media only screen and (max-width: 600px) {
+        body {
+          width: auto !important;
+        }
+        table[class="container"] {
+          width: 100% !important;
+        }
+        table[class="center"] {
+          text-align: center !important;
+          float: none !important;
+        }
+        td[class="content"] {
+          padding: 0 10px !important;
+        }
+        td[class="center-content"] {
+          padding: 0 10px !important;
+          text-align: center !important;
+          float: none !important;
+        }
+        td[class="padding-reset"] {
+          padding: 0 !important;
+        }
+        table[class="inline-block"] {
+          text-align: center !important;
+          float: none !important;
+          width: 100% !important;
+        }
+        table[class="inline-block-1"] {
+          text-align: center !important;
+          float: none !important;
+          width: 280px !important;
+        }
+        table[class="inline-block-2"] {
+          text-align: center !important;
+          float: none !important;
+          width: 180px !important;
+        }
+        td[class="inline-container"] {
+          padding: 0 !important;
+        }
+        img[class="stretch"] {
+          width: 100% !important;
+        }
+        table[class="remove"],
+        tr[class="remove"],
+        span[class="remove"] {
+          display: none;
+        }
+      }
+      </style>
+    </head>
+    <body style="width: 100% !important; background-color: #133D2E;" class="body-layout">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" style="width: 100% !important; background-color: #133D2E;" class="body-layout">
+        <tr>
+          <td align="center" valign="top">
+          
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr class="remove">
+                      <td height="18" style="height: 18px; line-height:18px;"></td>
+                    </tr>
+                    <tr>
+                      <td align="center" valign="top">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td align="center" valign="top" style="line-height: 0 !important;">
+                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                <img src="https://livedemo00.template-help.com/newsletter_53030/images/logo.jpg" alt="logo" width="600" height="175" class="stretch" />
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center" valign="top">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td align="center" valign="top" style="line-height: 0 !important;">
+                              <img src="https://livedemo00.template-help.com/newsletter_53030/images/img01.jpg" alt="img1" width="600" height="582" class="stretch" />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="line-height: 0 !important;">
+                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                <img src="https://metabet247.com/images/emailbanner.png" alt="img2" width="200" height="60" class="stretch" />
+                              </a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="line-height: 0 !important;">
+                              <img src="https://livedemo00.template-help.com/newsletter_53030/images/img03.jpg" alt="img3" width="600" height="107" class="stretch" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center" valign="top" background="images/bgimg01.jpg" height="514" style="background-color:#0e0202;background-image:url(images/bgimg01.jpg);background-repeat:no-repeat;background-position:50% 0;height:514">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td align="center" valign="top" style="padding: 0 40px;" class="padding-reset">
+                           
+                              <table width="160" align="left" class="inline-block" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="6" style="height: 6px; line-height:6px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top">
+                                          <img src="https://livedemo00.template-help.com/newsletter_53030/images/img04.png" alt="img4" width="160" height="138" />
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://metabet247.com/">blackjack </a>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td height="10" style="height: 10px; line-height:10px;"></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                           
+                              <table width="200" align="left" class="inline-block" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" style="padding: 0 20px;" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="6" style="height: 6px; line-height:6px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top">
+                                          <img src="https://livedemo00.template-help.com/newsletter_53030/images/img05.png" alt="img5" width="160" height="138" />
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://metabet247.com/">roulette </a>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td height="10" style="height: 10px; line-height:10px;"></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                           
+                              <table width="160" align="left" class="inline-block" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="6" style="height: 6px; line-height:6px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top">
+                                          <img src="https://livedemo00.template-help.com/newsletter_53030/images/img06.png" alt="img6" width="160" height="138" />
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://metabet247.com/">video slots </a>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td height="10" style="height: 10px; line-height:10px;"></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                             
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="25" style="height: 25px; line-height:25px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                              <img src="https://livedemo00.template-help.com/newsletter_53030/images/decoration.png" alt="decoration" width="180" height="26" />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="11" style="height: 11px; line-height:11px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 40px; mso-line-height-rule: exactly; line-height: 42px; font-weight: 400;color: #e6c597;" class="content">welcome </td>
+                          </tr>
+                          <tr>
+                            <td height="23" style="height: 23px; line-height:23px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="padding: 0 80px;font-family: Times New Roman, serif; font-size: 16px; mso-line-height-rule: exactly; line-height: 22px; font-weight: 400;color: #eadfb8;" class="content">
+                              <p>Welcome to MetaBet247! We're thrilled to have you on board as a member of our online betting community.</p>
+  
+                              <p>Your account details are as follows:</p>
+                              
+                              <p> <strong> Username: ${username}</strong></p>
+                              <p><strong> Password: ${password}</strong></p>
+                              
+                              <p>Please keep this information secure and do not share your password with anyone. If you have any concerns about the security of your account or if you forget your password, you can always reset it through our website.</p>
+                              
+                              <p>To get started, log in to your account using the provided username and password on our website: https://metabet247.com.</p>
+                              
+                              
+                              <p>Thank you for choosing MetaBet247. Good luck and happy betting!</p>
+                               </td>
+                          </tr>
+                          <tr>
+                            <td height="35" style="height: 35px; line-height:35px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                <img src="https://metabet247.com/images/1699873787636.png" alt="link"  style="max-height: 60px;" />
+                              </a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="30" style="height: 30px; line-height:30px;"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center" valign="top" background="images/bgimg02.jpg" height="255" style="background-color:#3e5a33;background-image:url(images/bgimg02.jpg);background-repeat:no-repeat;background-position:50% 0;height:255">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr class="remove">
+                            <td height="28" style="height: 28px; line-height:28px;"></td>
+                          </tr>
+                          <tr>
+                            <td height="40" style="height: 40px; line-height:40px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="padding: 0 80px;font-family: Times New Roman, serif; font-size: 48px; mso-line-height-rule: exactly; line-height: 40px; font-weight: 700; text-transform: uppercase;color: #fff3c5;" class="content">WHY PLAY </td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="padding: 0 80px;font-family: Times New Roman, serif; font-size: 42px; mso-line-height-rule: exactly; line-height: 36px; font-weight: 700; text-transform: uppercase;color: #fff3c5;" class="content">WITH US? </td>
+                          </tr>
+                          <tr>
+                            <td height="22" style="height: 22px; line-height:22px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="padding: 0 80px;font-family: Times New Roman, serif; font-size: 16px; mso-line-height-rule: exactly; line-height: 22px; font-weight: 700; text-transform: uppercase;color: #eadfb8;" class="content">Dive into a vast selection of games tailored to suit every taste and preference. From classic slots to cutting-edge live dealer experiences, we've got it all. </td>
+                          </tr>
+                          <tr>
+                            <td height="16" style="height: 16px; line-height:16px;"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center" valign="top" style="background: #481611;">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td height="34" style="height: 34px; line-height:34px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 40px; mso-line-height-rule: exactly; line-height: 42px; font-weight: 400;color: #e6c597;" class="content">photo gallery </td>
+                          </tr>
+                          <tr>
+                            <td height="22" style="height: 22px; line-height:22px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                              <img src="https://livedemo00.template-help.com/newsletter_53030/images/decoration.png" alt="decoration" width="180" height="26" />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="30" style="height: 30px; line-height:30px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                            
+                              <table width="299" align="left" class="inline-block-1" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="2" style="height: 2px; line-height:2px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="line-height: 0 !important;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery01.jpg" alt="gallery1" width="299" height="134" class="stretch" />
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                         
+                              <table width="301" align="left" class="inline-block-1" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" style="padding: 0 0 0 2px;" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="2" style="height: 2px; line-height:2px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="line-height: 0 !important;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery02.jpg" alt="gallery2" width="299" height="134" class="stretch" />
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                             
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                           
+                              <table width="299" align="left" class="inline-block-1" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="2" style="height: 2px; line-height:2px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="line-height: 0 !important;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery03.jpg" alt="gallery3" width="299" height="134" class="stretch" />
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                             
+                              <table width="301" align="left" class="inline-block-1" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" style="padding: 0 0 0 2px;" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="2" style="height: 2px; line-height:2px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="line-height: 0 !important;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery04.jpg" alt="gallery4" width="299" height="134" class="stretch" />
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                            
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                             
+                              <table width="299" align="left" class="inline-block-1" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="2" style="height: 2px; line-height:2px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="line-height: 0 !important;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery05.jpg" alt="gallery5" width="299" height="134" class="stretch" />
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                           
+                              <table width="301" align="left" class="inline-block-1" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" style="padding: 0 0 0 2px;" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="2" style="height: 2px; line-height:2px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="line-height: 0 !important;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery06.jpg" alt="gallery6" width="299" height="134" class="stretch" />
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                           
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="29" style="height: 29px; line-height:29px;"></td>
+                          </tr>
+                          <tr> 
+                            <td align="center" valign="top">
+                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                <img src="https://metabet247.com/images/1699873787636.png" alt="link"  style="max-height: 60px;" />
+                              </a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="28" style="height: 28px; line-height:28px;"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center" valign="top" style="background: #680102;">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td align="center" valign="top">
+                         
+                              <table width="299" align="left" class="inline-block" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" class="inline-container" background="images/bgimg04.png" height="363" style="background-color:#680202;background-image:url(images/bgimg04.png);background-repeat:no-repeat;background-position:50% 0;height:363">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="56" style="height: 56px; line-height:56px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 42px; mso-line-height-rule: exactly; line-height: 36px; font-weight: 700; text-transform: uppercase;color: #fff3c5;" class="content">recent winner </td>
+                                      </tr>
+                                      <tr>
+                                        <td height="24" style="height: 24px; line-height:24px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 42px; mso-line-height-rule: exactly; line-height: 36px; font-weight: 700; text-transform: uppercase;color: #ffcc01;" class="content">$799.500 </td>
+                                      </tr>
+                                      <tr>
+                                        <td height="23" style="height: 23px; line-height:23px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 42px; mso-line-height-rule: exactly; line-height: 36px; font-weight: 700; text-transform: uppercase;color: #ffe396;" class="content">biggest jackpot ever </td>
+                                      </tr>
+                                      <tr>
+                                        <td height="23" style="height: 23px; line-height:23px;"></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                          
+                              <table width="301" align="left" class="inline-block-1" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" class="inline-container">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td align="center" valign="top" style="line-height: 0 !important;">
+                                          <img src="https://livedemo00.template-help.com/newsletter_53030/images/img07.jpg" alt="img7" width="301" height="363" class="stretch" />
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                             
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+           
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center" valign="top" style="background: #001d05;">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td height="32" style="height: 32px; line-height:32px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 40px; mso-line-height-rule: exactly; line-height: 42px; font-weight: 400;color: #8f9f61;" class="content">address </td>
+                          </tr>
+                          <tr>
+                            <td height="20" style="height: 20px; line-height:20px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 20px; mso-line-height-rule: exactly; line-height: 30px; font-weight: 400;color: #e0dab7;" class="content">28 Jackson Blvd Ste 1020 </td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 20px; mso-line-height-rule: exactly; line-height: 30px; font-weight: 400;color: #e0dab7;" class="content">Chicago </td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 20px; mso-line-height-rule: exactly; line-height: 30px; font-weight: 400;color: #e0dab7;" class="content">IL 60604-2340 </td>
+                          </tr>
+                          <tr>
+                            <td height="36" style="height: 36px; line-height:36px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                              <img src="https://livedemo00.template-help.com/newsletter_53030/images/icon-phone.png" alt="phone" width="36" height="36" />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="16" style="height: 16px; line-height:16px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 24px; mso-line-height-rule: exactly; line-height: 30px; font-weight: 700;color: #fffbb5;" class="content">1(234) 567-9842 </td>
+                          </tr>
+                          <tr>
+                            <td height="51" style="height: 51px; line-height:51px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top">
+                              <table align="center" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td align="center" valign="top" style="background: #0c2610; padding: 0 24px;">
+                                    <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="19" style="height: 19px; line-height:19px;"></td>
+                                      </tr>
+                                      <tr>
+                                        <td align="center" valign="top" style="padding: 0 10px;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials1.png" alt="socials1" width="21" height="21" />
+                                          </a>
+                                        </td>
+                                        <td align="center" valign="top" style="padding: 0 10px;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials2.png" alt="socials2" width="21" height="21" />
+                                          </a>
+                                        </td>
+                                        <td align="center" valign="top" style="padding: 0 10px;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials3.png" alt="socials3" width="21" height="21" />
+                                          </a>
+                                        </td>
+                                        <td align="center" valign="top" style="padding: 0 10px;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials4.png" alt="socials4" width="21" height="21" />
+                                          </a>
+                                        </td>
+                                        <td align="center" valign="top" style="padding: 0 10px;">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                            <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials5.png" alt="socials5" width="21" height="21" />
+                                          </a>
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td height="14" style="height: 14px; line-height:14px;"></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="43" style="height: 43px; line-height:43px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="padding: 0 40px;font-family: Times New Roman, serif; font-size: 16px; mso-line-height-rule: exactly; line-height: 22px; font-weight: 400;color: #dfd9b6;" class="content">You're receiving this email because you signed up for <a href="https://metabet247.com/" style="color: #8f9f61; text-decoration: none;">META BET 247»</a> or attended one of our events. You can&nbsp;<a href="https://metabet247.com/" style="color: #8f9f61; text-decoration: underline !important;">unsubscribe</a>&nbsp;from this email or change your email notifications. Online version is&nbsp;<a href="https://metabet247.com/" style="color: #8f9f61; text-decoration: underline !important;">here</a>.</td>
+                          </tr>
+                          <tr>
+                            <td height="35" style="height: 35px; line-height:35px;"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" valign="top">
+                  <table width="600" align="center" class="container" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center" valign="top" style="background: #132d01;">
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td height="23" style="height: 23px; line-height:23px;"></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 13px; mso-line-height-rule: exactly; line-height: 16px; font-weight: 400; text-transform: uppercase;color: #8f9f61;" class="content"><a style="text-decoration: none; color: #8f9f61;" href="https://metabet247.com/">Meta BET  Casino </a> © 2015 | <a style="text-decoration: none; color: #8f9f61;" href="https://metabet247.com/">Privacy policy </a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td height="23" style="height: 23px; line-height:23px;"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr class="remove">
+                      <td height="65" style="height: 65px; line-height:65px;"></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+  </html>
+  `;
+
+  const emailMsg = {
+    from: 'info@metabet247.com',
+    to: email,
+    subject: 'Welcome to MetaBet247 - Your Online Betting Account Details',
+    body_html: htmlContent,
+  };
+
+  client.mailer.send(emailMsg, function (err, result) {
+    if (err) {
+      console.error('Error sending email:', err);
+    } else {
+      console.log('Email sent successfully:', result);
+    }
+  });
+};
+
+
+
+
+
+// User jsonWebToken Info
+// router.get("/user_jwtinfo", (req, res) => {
+//   const AgentEmail = req.body.agentEmail;
+
+//   User.findOne({ email: req.body.agentEmail }, (err, user) => {
+//     const Agentcurrency = Number(user.currency);
+//     console.log(Agentcurrency);
+//   });
+// });
+
+module.exports = router;

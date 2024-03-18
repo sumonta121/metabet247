@@ -1,0 +1,170 @@
+
+.comment-row {
+    display:flex;
+    width: 100%;
+}
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    background-color: black;
+    align-self: flex-end;
+    width: 100%;
+}
+
+.comment-btn-div {
+  background-color: black;
+}
+
+.current-comments {
+  width: 100%;
+  background-color: black;
+}
+
+
+.body{
+  background: #d4e7ff;
+  border: none;
+  border-radius: 3px;
+  margin-top: 5px;
+  color:rgb(49, 49, 49);
+}
+.input-box:focus{
+    outline: none;
+}
+.input-div{
+    background: #d4e7ff;
+    width: 100%;
+    padding:10px;
+    display: flex;
+    flex-direction: column;
+}
+.input-name{
+    color:rgb(49, 49, 49);
+}
+.comment-btn-div{
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+    }
+
+.comment-post-btn{
+    border : 2px solid white;
+    border-radius: 5px;
+    background-color: #53d337;
+    padding: 5px 14px;
+    color: black;
+    font-weight:bolder;
+    margin-right: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+.comment-post-btn:active{
+    outline: none;
+}
+
+.comment-bar {
+  display: flex;
+  width: 70%;
+  flex-direction: row-reverse;
+  background-color: #53d337;
+  border-radius: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  justify-content: flex-end;
+  margin-left: 2%;
+}
+
+.comment-handles {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: black;
+  width: 70%;
+  margin-left: 2%;
+}
+
+.comment-handles2 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: black;
+  width: 70%;
+  margin-left: 28%;
+}
+
+.comment-owner, .comment-timestamps {
+  background-color: black;
+  color: white;
+  font-family: 'Lucida Sans';
+  font-size: 10px;
+}
+
+.no-comments {
+  color: white;
+}
+
+.i {
+  background-color: black;
+}
+
+.comment {
+  width: 100%;
+  background-color: black;
+}
+
+.comment-body {
+  background-color: #53d337;
+  font-family:'Lucida Sans','bold', 'italic';
+  font-size: auto;
+  padding: 5px 10px 5px 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.comment-bar2 {
+  display: flex;
+  width: 70%;
+  flex-direction: row-reverse;
+  background-color: white;
+  border-radius: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 28%;
+
+
+}
+
+.comment-body2 {
+  background-color: white;
+  font-family:'Lucida Sans','bold', 'italic';
+  font-size: auto;
+  padding: 5px 10px 5px 10px;
+  border-radius: 10px;
+}
+
+.comment-buttons {
+  display: flex;
+  background-color: black;
+  width: 100%;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.comment-delete {
+  height: 2px;
+  width: 2px;
+  background-color: black;
+  margin-top: -5px;
+  padding: 5px;
+  margin-left: 10%;
+}
+
+.comment-edit {
+  height: 2px;
+  width: 2px;
+  background-color: black;
+  margin-top: -5px;
+  padding: 5px;
+  margin-left: 10%;
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>METABET 247 - Master Admin</title>
+    <meta property="og:title" content="METABET 247 " />
+    <meta property="og:image" content="https://metabet247.com/images/1699873787636.png" />
+    <meta
+      property="og:description"
+      content="METABET 247  is a MERN-stack web-aplication."
+    />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/assets/images/favicon.png" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!--main css-->
+    <!-- <link rel="stylesheet" href="%PUBLIC_URL%/assets/css/main.css"> -->
+
+    <link
+      href="%PUBLIC_URL%/assets/vendor/jquery-nice-select/css/nice-select.css"
+      rel="stylesheet"
+    />
+    <link
+      href="%PUBLIC_URL%/assets/vendor/swiper/css/swiper-bundle.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <!-- <link
+      rel="stylesheet"
+      href="../../cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.css"
+    /> -->
+    <!-- Style css -->
+    <link href="%PUBLIC_URL%/assets/css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <div id="root"></div>
+  </body>
+
+  <!--Jquery 3 6 0 Min Js-->
+  <!-- <script src="%PUBLIC_URL%/assets/js/jquery-3.6.0.min.js"></script> -->
+
+  <!-- Required vendors -->
+  <script src="%PUBLIC_URL%/assets/vendor/global/global.min.js"></script>
+  <script src="%PUBLIC_URL%/assets/vendor/chart.js/Chart.bundle.min.js"></script>
+  <script src="%PUBLIC_URL%/assets/vendor/jquery-nice-select/js/jquery.nice-select.min.js"></script>
+
+  <!-- Dashboard 1 -->
+  <script src="%PUBLIC_URL%/assets/js/dashboard/dashboard-1.js"></script>
+  <!-- Apex Chart -->
+  <script src="%PUBLIC_URL%/assets/vendor/swiper/js/swiper-bundle.min.js"></script>
+
+  <script src="%PUBLIC_URL%/assets/js/custom.js"></script>
+  <script src="%PUBLIC_URL%/assets/js/deznav-init.js"></script>
+  <script src="%PUBLIC_URL%/assets/js/demo.js"></script>
+  <script src="%PUBLIC_URL%/assets/js/styleSwitcher.js"></script>
+
+  <script>
+  
+        let  name = 'version';
+        let  value = 'dark';
+        let  days = '';
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    
+  </script>
+
+  <!-- <script src="../../s3.tradingview.com/tv.js"></script> -->
+  <!-- <script src="../../cdnjs.cloudflare.com/ajax/libs/wnumb/1.2.0/wNumb.min.js"></script> -->
+  <!-- <script src="../../cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.js"></script> -->
+  <!-- <script src="%PUBLIC_URL%/assets/vendor/apexchart/apexchart.js"></script> -->
+  <!-- <script src="%PUBLIC_URL%/assets/vendor/morris/morris.min.js"></script> -->
+  <!-- <script src="%PUBLIC_URL%/assets/js/dashboard/tradingview-1.js"></script> -->
+</html>
