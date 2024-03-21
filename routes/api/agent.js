@@ -1619,31 +1619,57 @@ const pendingBalanceCheck = async (order_id, user_id) => {
       const decode = response.data;
       if (decode.status === "SUCCESS" && decode.data.status === "PAID") {
           const order_details = await Binancepayment.findOne({ uuid: order_id, status: 0 });
-
-          const requestBody = {
-              schema_id: 1,
-              invest_amount: order_details.amount,
-              wallet: 'main',
-              payment_id: order_id,
-              order_id: order_id,
-              pay_id: order_details.id,
-              payment_status: decode.data.status,
-              payin_hash: 'Binance',
-              actually_paid: order_details.amount,
-              user_id: order_details.user_id
-          };
+          
+          await Binancepayment.updateOne({ id: order_details.id }, { status: 1, updated_at: new Date() });
         
-          await Payment.updateOne({ id: order_details.id }, { status: 1, updated_at: new Date() });
-
-          res.status(200).send('success');
+          await User.findOneAndUpdate(
+              { user_id: user_id }, 
+              { $inc: { currency: order_details.amount } }, // Increment the balance by order.amount
+              { new: true } // Return the updated document
+          );
+          
+        return  res.status(200).send('successully balance added...');
       } else {
-        res.status(200).send('Internal Server Error');
+        return  res.status(200).send('Internal Server Error');
       }
   } catch (error) {
       console.error(error);
       res.status(500).send(error);
   }
 };
+
+
+
+
+//  paginatedUserBalanceReport
+router.get("/agent_deposit_report", async (req, res) => {
+
+  const allUser = await Binancepayment.find({ status: 1, user_id : req.query.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+  
+});
+
 
 
 

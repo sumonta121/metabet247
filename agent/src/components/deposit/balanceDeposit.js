@@ -80,7 +80,7 @@ const BalanceDeposit = () => {
                         <div className="card">
                             <div className="card-header">
                                 <h4 className="card-title">Balance Deposit</h4>
-                                <Link to="/user-bal-list">
+                                <Link to="/agent-deposit-list">
                                     <button type="button" className="btn btn-success float-right">Deposit Report</button>
                                 </Link>
                             </div>

@@ -58,7 +58,7 @@ const List = () => {
 
   function getPaginatedUsers() {
     fetch(
-      `${apiConfig.baseURL}/api/agent/deposited_report?page=${currentPage.current}&limit=${limit}&user_id=${user_id}`,
+      `${apiConfig.baseURL}/api/agent/agent_deposit_report?page=${currentPage.current}&limit=${limit}&user_id=${user_id}`,
       {
         method: "GET",
       }
@@ -156,16 +156,26 @@ const List = () => {
                            const statusStyle = {
                             color: element.status_type === 0 ? 'red' : 'green',
                           };
-                          return (
+                      
+                                                // Convert createdAt to the desired format
+                          const createdAtDate = new Date(element.createdAt);
+                          const hours = createdAtDate.getHours();
+                          const minutes = createdAtDate.getMinutes();
+                          const ampm = hours >= 12 ? 'PM' : 'AM';
+                          const formattedHours = hours % 12 || 12; // Convert hours to 12-hour format
+                          const formattedMinutes = minutes.toString().padStart(2, '0'); // Add leading zero if needed
+                          const formattedDate = `${formattedHours}:${formattedMinutes} ${ampm} ${createdAtDate.getDate()}/${createdAtDate.getMonth() + 1}/${createdAtDate.getFullYear()}`;
+
+                          return ( 
                             <>
                               <tr>
                                 {/* <th scope="row" key={id} item={element}>
                                   {id + 1}
                                 </th> */}
-                                <td>{element.payment_type}</td>
+                                <td>Binance Pay</td>
                                 <td>{element.amount}</td>
-                                <td>{element.transaction_id}</td>
-                                <td>{element.createdAt}</td>
+                                <td>{element.uuid}</td>
+                                <td>{formattedDate}</td>
                                 <td style={statusStyle}>
                                   {element.status_type === 0 ? 'Pending' : 'Paid'}
                                 </td>

@@ -37,6 +37,7 @@ import AffiliateCreate from './affiliate/create';
 import AffiliateEdit from './affiliate/edit';
 import AffiliateList from './affiliate/list';
 import BalanceDeposit from './deposit/balanceDeposit';
+import AgentDepositList from './deposit/AgentDepositList';
 import Down from './frontend/down';
 
 
@@ -72,6 +73,7 @@ const App = () => (
         <ProtectedRoute exact path="/editsubreseller/:usAutoId" component={SubResellerEdit } /> 
 
         <ProtectedRoute exact path="/balance-deposit" component={BalanceDeposit } />
+        <ProtectedRoute exact path="/agent-deposit-list" component={AgentDepositList } />
         <ProtectedRoute exact path="/affiliate-index" component={AffiliateList } />
         <ProtectedRoute exact path="/affiliate-create" component={AffiliateCreate } />
         <ProtectedRoute exact path="/editAffiliate/:_id" component={AffiliateEdit } />
