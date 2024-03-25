@@ -13,7 +13,7 @@ import axios from 'axios';
 document.addEventListener('DOMContentLoaded', () => {
   let store;
   
-   // axios.defaults.baseURL = 'http://localhost:5000';
+  //  axios.defaults.baseURL = 'http://localhost:5000';
   axios.defaults.baseURL = 'https://metabet247.onrender.com';
 
   // If a returning user has a session token stored in localStorage

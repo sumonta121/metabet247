@@ -5,6 +5,7 @@ const db = require('./config/keys_development').mongoURI;
 const users = require("./routes/api/users");
 const comments = require('./routes/api/comments');
 const AdminController = require('./routes/api/AdminController');
+const Broadcast = require('./routes/api/Broadcast');
 const commonData = require('./routes/api/commonData');
 const agent = require('./routes/api/agent');
 const games = require("./routes/api/games");
@@ -55,6 +56,7 @@ app.use("/api/games", games);
 app.use("/api/bets", bets);
 app.use("/api/comments", comments);
 app.use("/api/AdminController", AdminController);
+app.use("/api/Broadcast", Broadcast);
 app.use("/api/commonData", commonData);
 app.use("/api/withdraw", withdraw);
  

@@ -172,13 +172,26 @@ export default class leftSidebar extends Component {
                   <li>
                     <Link to="/tpin-manage">S-Pin Manage</Link>
                   </li>
-
                   {/* <li>
                     <a href="javascript:void(0);">2-factor Authentication </a>
                   </li> */}
                 </ul>
               </li>
 
+              <li>
+                <Link to="/chats" className="" ariaExpanded="false">
+                  <i class="material-icons">credit_card</i>
+                  <span class="nav-text">Chats</span>
+                </Link>
+              </li>
+      
+              <li>
+                <Link to="/new-chats" className="" ariaExpanded="false">
+                  <i class="material-icons">credit_card</i>
+                  <span class="nav-text">New Chats</span>
+                </Link>
+              </li>
+      
               <li>
                 <a href="#" className="" ariaExpanded="false">
                   <button className=" btn btn-danger" onClick={this.logoutUser}>

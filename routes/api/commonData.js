@@ -33,10 +33,25 @@ router.get("/agent_list", (req, res) => {
   
 
 router.get("/master_agent_list", (req, res) => {  
-  const agent_type = 2.1;
-  User.find({ role_as: agent_type }).sort({ _id: -1 }).then((data) => {
+
+    const { user_id, role_as } = req.query;
+    if(role_as == 4){
+      const agent_type = 2.1;
+      User.find({ role_as: agent_type }).sort({ _id: -1 }).then((data) => {
         return res.json(data);
-    });
+      });
+    }else if(role_as == 2.1){
+      const agent_type = 2;
+      User.find({ role_as: agent_type }).sort({ _id: -1 }).then((data) => {
+        return res.json(data);
+      });
+    }else if(role_as == 2){
+      const agent_type = 1;
+      User.find({ role_as: agent_type }).sort({ _id: -1 }).then((data) => {
+        return res.json(data);
+      });
+    }
+
   });
   
 
@@ -45,10 +60,6 @@ router.get("/basicinfo", (req, res) => {
   BasicSetting.findOne({ _id: rowId }).then((data) => {
       return res.json(data);
   });
-
-    //const rowId = req.params.id;
-    //BasicSetting.findOne({ _id: rowId }).then((user) => res.json(user));
-
 
 });
   
@@ -78,10 +89,6 @@ router.post('/create', (req, res) => {
   } )
 })
 
-//req.body.userId
-//req.body.gameId
-//req.body.body
-//req.body.commentId
 router.patch('/update', (req, res) => {
   let gameId = req.body.gameId
 

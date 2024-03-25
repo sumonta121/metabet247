@@ -38,6 +38,9 @@ import AffiliateEdit from './affiliate/edit';
 import AffiliateList from './affiliate/list';
 import BalanceDeposit from './deposit/balanceDeposit';
 import AgentDepositList from './deposit/AgentDepositList';
+import chats from './chats/ChatsHistory';
+import chatWith from './chats/ChatWith';
+import NewChats from './chats/NewChats';
 import Down from './frontend/down';
 
 
@@ -78,7 +81,9 @@ const App = () => (
         <ProtectedRoute exact path="/affiliate-create" component={AffiliateCreate } />
         <ProtectedRoute exact path="/editAffiliate/:_id" component={AffiliateEdit } />
 
-
+        <ProtectedRoute exact path="/chats" component={chats} />
+        <ProtectedRoute exact path="/chat-with/:userId" component={chatWith} /> 
+        <ProtectedRoute exact path="/new-chats" component={NewChats} /> 
         <Route path="/" component={Admin_fr} /> 
 
         {/* <Route path="/" component={Down} /> */}
