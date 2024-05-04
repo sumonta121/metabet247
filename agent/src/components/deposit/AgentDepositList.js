@@ -154,7 +154,7 @@ const List = () => {
                       <tbody>
                         {data.map((element, id) => {
                            const statusStyle = {
-                            color: element.status_type === 0 ? 'red' : 'green',
+                            color: element.status === 0 ? 'red' : 'green',
                           };
                       
                                                 // Convert createdAt to the desired format
@@ -177,7 +177,7 @@ const List = () => {
                                 <td>{element.uuid}</td>
                                 <td>{formattedDate}</td>
                                 <td style={statusStyle}>
-                                  {element.status_type === 0 ? 'Pending' : 'Paid'}
+                                  {element.status === 0 ? 'Pending' : 'Paid'}
                                 </td>
                               </tr>
                             </>

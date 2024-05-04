@@ -1,0 +1,411 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\CPU\BackEndHelper;
+use App\Http\Controllers\Controller;
+use App\Model\SellerWallet;
+use App\Model\WithdrawRequest;
+use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Hash;
+use GuzzleHttp\Client;
+use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
+
+class BinanceGatewayController extends Controller
+{
+
+    private $KEY = 'FfXBETlMZ0PyPoveHRneFxcYXF1dpfbANNBB7untJY2rSAYrjvXsZsCjNBE2ORbM';
+    private $SECRET = 'tX5nHuYRTKimFMAhtThvoayTNYJ47daR2rIoH3l1hTFD4tqvM99HFKSIcBOME74v';
+    private $BASE_URL = 'https://api.binance.com/'; 
+ 
+    public function getAccountInformation()
+    {
+        $response = $this->signedRequest('GET', 'api/v3/account');
+        return response()->json($response);
+    }
+
+    private function getAllCoins()
+    {
+        $response = $this->signedRequest('GET', 'sapi/v1/capital/config/getall');
+        return response()->json($response);
+    }
+
+    public function getDepositHistory($params = [])
+    { 
+        $asset     = "USDT";
+        $timestamp = round(microtime(true) * 1000);
+        try {
+            $response  = $this->signedRequest('GET', 'sapi/v1/capital/deposit/hisrec', [
+                // 'startTime' => strtotime('-10 days'), // Default: 90 days from current timestamp
+                 //'endTime' => time(), // Default: present timestamp
+                // 'offset' => 0, // Default: 0
+                // 'limit' => 20, // Default: 1000, Max: 1000
+                // 'recvWindow' => 60000,
+               // 'timestamp' => time(),
+                //'txId' => '0x62adc6c578db12a275f52e424e9d56916afd082c911413e52128684e5921aa27',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 400);
+        }
+    
+       return response()->json($response, 200);
+    }
+    
+    
+    public function withdraw_distribute($address,$amount)
+    { 
+        
+        $asset     = "USDT";
+        $timestamp = round(microtime(true) * 1000);
+        try {
+            $response  = $this->signedRequest('POST', 'sapi/v1/capital/withdraw/apply', [
+                 'coin'       => $asset,
+                 'address'    => $address,
+                 'amount'     => $amount,
+                 'timestamp'  => $timestamp,
+                 'transactionFeeFlag'  => 'True',
+                 'network'    => 'BSC',
+                 'walletType' => 0,
+                 'recvWindow' => 5000,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 400);
+        }
+    
+       return response()->json($response, 200);
+    }
+    
+  
+    private function sendRequest($method, $path)
+    {
+        $url = "{$this->BASE_URL}{$path}";
+        $client = new Client();
+
+        $response = $client->request($method, $url, [
+            'headers' => ['X-MBX-APIKEY' => $this->KEY],
+           
+        ]);
+
+        return json_decode($response->getBody(), true);
+    }
+
+    private function signedRequest($method, $path, $parameters = [])
+    {
+        $parameters['timestamp'] = round(microtime(true) * 1000);
+        $query = $this->buildQuery($parameters);
+        $signature = $this->signature($query, $this->SECRET);
+
+        $response = $this->sendRequest($method, "{$path}?{$query}&signature={$signature}");
+
+        return $response;
+    }
+
+    private function signature($query_string, $secret)
+    {
+        return hash_hmac('sha256', $query_string, $secret);
+    }
+
+    private function buildQuery(array $params)
+    {
+        $query_array = [];
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $query_array = array_merge($query_array, array_map(function ($v) use ($key) {
+                    return urlencode($key) . '=' . urlencode($v);
+                }, $value));
+            } else {
+                $query_array[] = urlencode($key) . '=' . urlencode($value);
+            }
+        }
+
+        return implode('&', $query_array);
+    }
+    
+    
+    
+    private function isValidWalletAddress($address)
+    {
+        $addressVal =   preg_match('/^0x[a-fA-F0-9]{40}$/', $address);
+        if ($addressVal) {
+        } else {
+            return 'Invalid_wallet_address!';
+            exit();
+        }
+    }
+    
+    
+    
+    public function deposit_generate(Request $request)
+    {             
+       // Check if $amount_normal is not a number
+        $amount_normal   = $request->pay_amount;
+        if (!is_numeric($amount_normal)) {
+            notify()->error('Invalid amount', 'Error');
+            return redirect()->back();
+        }
+
+        $amount_normal   = $request->pay_amount;
+        if($amount_normal < 99){
+             notify()->error('Minimum deposit $100 USDT', 'Error');
+            return redirect()->back();
+        }
+        
+        $amount          = $request->pay_amount;
+        $payment_type    = 'USDT';
+        $user_id         =  auth()->id();
+        $binance_pay     ="oidz4vrojgmwh7mniilm02thexogz0i9nabcn5vfd6x86fw8mpvmuxdeokvzymzg";
+        $binance_pay_secret ="ngps7xxddg666iwcwykq70vpe3uopacxkmf2npesk5s3cs4l0qnovahmk7wyelkd";
+        // Generate nonce string
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $nonce = '';
+        for($i=1; $i <= 32; $i++)
+        {
+            $pos = mt_rand(0, strlen($chars) - 1);
+            $char = $chars[$pos];
+            $nonce .= $char;
+        } 
+        $ch = curl_init();
+        $timestamp = round(microtime(true) * 1000);
+        $order_id  = uniqid();
+        // Request body
+        $request = '{
+            "env":
+            {
+               "terminalType":"MINI_PROGRAM"
+            },
+            "merchantTradeNo":"'.$order_id.'",
+            "orderAmount": '.$amount.',
+            "currency":"'.$payment_type.'",
+            "goods":
+            {
+               "goodsType":"01",
+               "goodsCategory":"0000",
+               "referenceGoodsId":"abc001",
+               "goodsName":"Balance Deposit",
+               "goodsUnitAmount":
+               {
+                  "currency":"'.$payment_type.'",
+                  "amount":'.$amount.'
+               }
+            },
+            "shipping":
+            {
+               "shippingName":
+               {
+                  "firstName":"Capital Revenue",
+                  "lastName":"Capital Revenue"
+               },
+               "shippingAddress":
+               {
+                  "region":"BD"
+               }
+            },
+            "buyer":
+            {
+               "buyerName":
+               {
+                  "firstName":"Capital Revenue",
+                  "lastName":"Capital Revenue"
+               }
+            }
+         }';
+
+        $json_request = $request;
+        $payload = $timestamp."\n".$nonce."\n".$json_request."\n";
+        $signature = strtoupper(hash_hmac('SHA512',$payload,$binance_pay_secret));
+
+        $headers = array();
+        $headers[] = "Content-Type: application/json";
+        $headers[] = "BinancePay-Timestamp:$timestamp";
+        $headers[] = "BinancePay-Nonce:$nonce";
+        $headers[] = "BinancePay-Certificate-SN:$binance_pay";
+        $headers[] = "BinancePay-Signature:$signature";
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_URL, "https://bpay.binanceapi.com/binancepay/openapi/v2/order");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+
+        $result = curl_exec($ch);
+        if (curl_errno($ch)) { echo 'Error:' . curl_error($ch); }
+        curl_close ($ch);
+
+        $data['uuid']        = $order_id;
+        $data['user_id']     = $user_id;
+        $data['amount']      = $amount_normal;
+        $data['dollar']      = $amount;
+        $data['queue']       = 'pending';
+        $data['status']      = 0;
+        $data['created_at']  = now();
+        $data['updated_at']  = now();     
+        DB::table('payments')->insert($data);
+        
+        $decode = json_decode($result);
+        
+     
+
+   
+     //   $payment_url = $decode->data->checkoutUrl;  
+      
+        $user_id              =  auth()->id();
+        $data['decode']       = $decode; 
+       
+        return view('frontend.deposit.payment_qr', $data);
+    }
+
+
+    
+    public function balance_check()
+    {      
+        $user_id                  =  auth()->id();
+        $currentDateTime = Carbon::now();
+        $previousDateTime = Carbon::now()->subHours(24);
+        $order_details =  DB::table('payments')->where('user_id',$user_id)->where('status',0)
+                                    ->whereBetween('created_at', [$previousDateTime, $currentDateTime])
+                                    ->get();  
+    
+        foreach ($order_details as $v) {  
+           $this->pending_balance_check($v->uuid,$v->user_id);
+        }
+    }  
+    
+    private function pending_balance_check($order_id,  $user_id)
+    {               
+  
+        $binance_pay     ="oidz4vrojgmwh7mniilm02thexogz0i9nabcn5vfd6x86fw8mpvmuxdeokvzymzg";
+        $binance_pay_secret ="ngps7xxddg666iwcwykq70vpe3uopacxkmf2npesk5s3cs4l0qnovahmk7wyelkd";
+        // Generate nonce string
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $nonce = '';
+        for($i=1; $i <= 32; $i++)
+        {
+            $pos = mt_rand(0, strlen($chars) - 1);
+            $char = $chars[$pos];
+            $nonce .= $char;
+        } 
+        $ch = curl_init();
+        $timestamp = round(microtime(true) * 1000);
+        // Request body
+        $request = '{"merchantTradeNo":"'.$order_id.'"}';
+        $json_request = $request;
+        $payload = $timestamp."\n".$nonce."\n".$json_request."\n";
+        $signature = strtoupper(hash_hmac('SHA512',$payload,$binance_pay_secret));
+
+        $headers = array();
+        $headers[] = "Content-Type: application/json";
+        $headers[] = "BinancePay-Timestamp:$timestamp";
+        $headers[] = "BinancePay-Nonce:$nonce";
+        $headers[] = "BinancePay-Certificate-SN:$binance_pay";
+        $headers[] = "BinancePay-Signature:$signature";
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_URL, "https://bpay.binanceapi.com/binancepay/openapi/v2/order/query");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+
+        $result = curl_exec($ch);
+        if (curl_errno($ch)) { echo 'Error:' . curl_error($ch); }
+        curl_close ($ch);
+        $decode = json_decode($result);
+         
+     
+        if( $decode->status == "SUCCESS" ){ 
+            if( $decode->data->status == "PAID" ){    
+                $order_details       =  DB::table('payments')->where('uuid',$order_id)->where('status',0)->first();  
+                $request = new Request([
+                    'schema_id'  => 1,
+                    'invest_amount' =>$order_details->amount,
+                    //'invest_amount' => 100,
+                    'wallet'     => 'main',
+                    'payment_id' => $order_id,
+                    'order_id'   => $order_id,                   
+                    'pay_id' => $order_details->id,                   
+                    'payment_status' => $decode->data->status,                   
+                    'payin_hash' => 'Binance',                   
+                    'actually_paid' =>$order_details->amount,            
+                    'user_id' => $order_details->user_id,
+                ]);
+
+                app('App\Http\Controllers\Frontend\InvestController')->investNow($request); 
+
+                // $data['status']      = 1;              
+                // $data['updated_at']  = now();     
+                // DB::table('payments')->where('id',$order_details->id)->update($data);
+
+                notify()->success('Congratulations! $'.$order_details->amount.' is credited to your Deposit balance successfully');
+
+                return redirect('seller/initiat-gateway');  
+
+              return  $decode->data->status;  
+            }else{
+              return 'FAIL';  
+            }
+        }else{
+              return   $decode->status;  ;  
+        }
+    }
+    
+    
+    public function binance_deposit_status($order_id)
+    {               
+  
+        $binance_pay     ="2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
+        $binance_pay_secret ="nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
+
+        
+        // Generate nonce string
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $nonce = '';
+        for($i=1; $i <= 32; $i++)
+        {
+            $pos = mt_rand(0, strlen($chars) - 1);
+            $char = $chars[$pos];
+            $nonce .= $char;
+        } 
+        $ch = curl_init();
+        $timestamp = round(microtime(true) * 1000);
+        // Request body
+        $request = '{"merchantTradeNo":"'.$order_id.'"}';
+        $json_request = $request;
+        $payload = $timestamp."\n".$nonce."\n".$json_request."\n";
+        $signature = strtoupper(hash_hmac('SHA512',$payload,$binance_pay_secret));
+
+        $headers = array();
+        $headers[] = "Content-Type: application/json";
+        $headers[] = "BinancePay-Timestamp:$timestamp";
+        $headers[] = "BinancePay-Nonce:$nonce";
+        $headers[] = "BinancePay-Certificate-SN:$binance_pay";
+        $headers[] = "BinancePay-Signature:$signature";
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_URL, "https://bpay.binanceapi.com/binancepay/openapi/v2/order/query");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+
+        $result = curl_exec($ch);
+        if (curl_errno($ch)) { echo 'Error:' . curl_error($ch); }
+        curl_close ($ch);
+        $decode = json_decode($result);
+         
+     
+        if( $decode->status == "SUCCESS" ){ 
+            if( $decode->data->status == "PAID" ){    
+               return json_encode(array($decode, 'status'=>200));  
+            }else{
+              return 'FAIL';  
+            }
+        }else{
+              return   $decode->status;  ;  
+        }
+    }
+    
+
+}

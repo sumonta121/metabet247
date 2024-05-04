@@ -1671,7 +1671,7 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
 //  paginatedUserBalanceReport
 router.get("/agent_deposit_report", async (req, res) => {
 
-  const allUser = await Binancepayment.find({ status: 1, user_id : req.query.user_id });
+  const allUser = await Binancepayment.find({ user_id : req.query.user_id });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
 
