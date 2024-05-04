@@ -101,7 +101,7 @@ class SignupForm extends React.Component {
               </div>
               <div className="line"></div>
               <div className="warning-text">
-              Meta Bet 247
+              MAXX BAT
               </div>
             </div>
           </form>

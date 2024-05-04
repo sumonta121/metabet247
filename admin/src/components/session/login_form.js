@@ -72,7 +72,7 @@ class LoginForm extends React.Component {
           <form className="form-container-login" onSubmit={this.handleSubmit}>
             <div className="form-container-login-2">
             <h1 className="login-header">
-                 <img style={{ maxHeight:'70px' }} src='https://metabet247.com/images/1699873787636.png' />
+                 <img style={{ maxHeight:'70px' }} src='https://i.ibb.co/YjmrvpP/1699873787636.webp' />
                 </h1>
                 <div>Email</div>
                 <input type="text"
@@ -96,7 +96,7 @@ class LoginForm extends React.Component {
               </div> */}
               <div className="line"></div>
               <div className="warning-text">
-              METABET 247
+              MAXX BAT
               </div>
             </div>
           </form>

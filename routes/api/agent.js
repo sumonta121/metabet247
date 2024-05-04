@@ -1565,15 +1565,14 @@ router.post("/agent_balance_deposit", async (req, res) => {
 });
 
 
-router.get("/agent_balance_check", async (req, res) => {
-  try {
-      const user_id = req.body.user_id; // Assuming user_id is sent in the request body
 
-      // Perform your logic using user_id here
+  router.get("/agent_balance_check/:userId", async(req, res) => {
+      const user_id = req.params.userId;
+
       const currentDateTime = new Date();
       const previousDateTime = new Date(currentDateTime.getTime() - (24 * 60 * 60 * 1000)); // Subtract 24 hours
 
-      const order_details = await Binancepayment.find({ user_id, status: 0, created_at: { $gte: previousDateTime, $lte: currentDateTime } });
+      const order_details = await Binancepayment.find({ user_id: user_id});
 
       for (const order of order_details) {
           await pendingBalanceCheck(order.uuid, order.user_id);
@@ -1581,11 +1580,7 @@ router.get("/agent_balance_check", async (req, res) => {
 
       // Send response indicating success
       res.status(200).json({ message: 'Balance check successful' });
-  } catch (error) {
-      console.error(error);
-      // Handle errors and send appropriate response
-      res.status(500).json({ message: 'Internal server error' });
-  }
+  
 });
 
 
@@ -2087,7 +2082,7 @@ router.get("/paginatedBlFromAdmin/:user_id", async (req, res) => {
 
 const sendWelcomeEmail = (username, password, email) => {
   const client = elasticemail.createClient({
-    username: 'info@metabet247.com',
+    username: 'info@maxxbat.com',
     apiKey: '3844F86FEEA1889DC63C6A52ECC86443214BC6D33F19AD443DA27189A464854CDCF0700DB6C08EDD41F589CFC75760CA'
   });
 
@@ -2098,7 +2093,7 @@ const sendWelcomeEmail = (username, password, email) => {
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
       <meta name="viewport" content="initial-scale=1.0" />
       <meta name="format-detection" content="telephone=no" />
-      <title>METABET247</title>
+      <title>maxxbat</title>
        <style type="text/css">
       .ReadMsgBody {
         width: 100%;
@@ -2256,7 +2251,7 @@ const sendWelcomeEmail = (username, password, email) => {
                         <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
                           <tr>
                             <td align="center" valign="top" style="line-height: 0 !important;">
-                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                              <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                 <img src="https://livedemo00.template-help.com/newsletter_53030/images/logo.jpg" alt="logo" width="600" height="175" class="stretch" />
                               </a>
                             </td>
@@ -2282,8 +2277,8 @@ const sendWelcomeEmail = (username, password, email) => {
                           </tr>
                           <tr>
                             <td align="center" valign="top" style="line-height: 0 !important;">
-                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
-                                <img src="https://metabet247.com/images/emailbanner.png" alt="img2" width="200" height="60" class="stretch" />
+                              <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
+                                <img src="https://maxxbat.com/images/emailbanner.png" alt="img2" width="200" height="60" class="stretch" />
                               </a>
                             </td>
                           </tr>
@@ -2322,7 +2317,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                         </td>
                                       </tr>
                                       <tr>
-                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://metabet247.com/">blackjack </a>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://maxxbat.com/">blackjack </a>
                                         </td>
                                       </tr>
                                       <tr>
@@ -2346,7 +2341,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                         </td>
                                       </tr>
                                       <tr>
-                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://metabet247.com/">roulette </a>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://maxxbat.com/">roulette </a>
                                         </td>
                                       </tr>
                                       <tr>
@@ -2370,7 +2365,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                         </td>
                                       </tr>
                                       <tr>
-                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://metabet247.com/">video slots </a>
+                                        <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 18px; mso-line-height-rule: exactly; line-height: 20px; font-weight: 700; text-transform: uppercase;color: #fff1c0;"><a style="text-decoration: none; color: #fff1c0;" href="https://maxxbat.com/">video slots </a>
                                         </td>
                                       </tr>
                                       <tr>
@@ -2402,7 +2397,7 @@ const sendWelcomeEmail = (username, password, email) => {
                           </tr>
                           <tr>
                             <td align="center" valign="top" style="padding: 0 80px;font-family: Times New Roman, serif; font-size: 16px; mso-line-height-rule: exactly; line-height: 22px; font-weight: 400;color: #eadfb8;" class="content">
-                              <p>Welcome to MetaBet247! We're thrilled to have you on board as a member of our online betting community.</p>
+                              <p>Welcome to maxxbat! We're thrilled to have you on board as a member of our online betting community.</p>
   
                               <p>Your account details are as follows:</p>
                               
@@ -2411,10 +2406,10 @@ const sendWelcomeEmail = (username, password, email) => {
                               
                               <p>Please keep this information secure and do not share your password with anyone. If you have any concerns about the security of your account or if you forget your password, you can always reset it through our website.</p>
                               
-                              <p>To get started, log in to your account using the provided username and password on our website: https://metabet247.com.</p>
+                              <p>To get started, log in to your account using the provided username and password on our website: https://maxxbat.com.</p>
                               
                               
-                              <p>Thank you for choosing MetaBet247. Good luck and happy betting!</p>
+                              <p>Thank you for choosing maxxbat. Good luck and happy betting!</p>
                                </td>
                           </tr>
                           <tr>
@@ -2422,8 +2417,8 @@ const sendWelcomeEmail = (username, password, email) => {
                           </tr>
                           <tr>
                             <td align="center" valign="top">
-                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
-                                <img src="https://metabet247.com/images/1699873787636.png" alt="link"  style="max-height: 60px;" />
+                              <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
+                                <img src="https://i.ibb.co/YjmrvpP/1699873787636.webp" alt="link"  style="max-height: 60px;" />
                               </a>
                             </td>
                           </tr>
@@ -2508,7 +2503,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                       </tr>
                                       <tr>
                                         <td align="center" valign="top" style="line-height: 0 !important;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery01.jpg" alt="gallery1" width="299" height="134" class="stretch" />
                                           </a>
                                         </td>
@@ -2527,7 +2522,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                       </tr>
                                       <tr>
                                         <td align="center" valign="top" style="line-height: 0 !important;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery02.jpg" alt="gallery2" width="299" height="134" class="stretch" />
                                           </a>
                                         </td>
@@ -2551,7 +2546,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                       </tr>
                                       <tr>
                                         <td align="center" valign="top" style="line-height: 0 !important;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery03.jpg" alt="gallery3" width="299" height="134" class="stretch" />
                                           </a>
                                         </td>
@@ -2570,7 +2565,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                       </tr>
                                       <tr>
                                         <td align="center" valign="top" style="line-height: 0 !important;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery04.jpg" alt="gallery4" width="299" height="134" class="stretch" />
                                           </a>
                                         </td>
@@ -2594,7 +2589,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                       </tr>
                                       <tr>
                                         <td align="center" valign="top" style="line-height: 0 !important;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery05.jpg" alt="gallery5" width="299" height="134" class="stretch" />
                                           </a>
                                         </td>
@@ -2613,7 +2608,7 @@ const sendWelcomeEmail = (username, password, email) => {
                                       </tr>
                                       <tr>
                                         <td align="center" valign="top" style="line-height: 0 !important;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/gallery06.jpg" alt="gallery6" width="299" height="134" class="stretch" />
                                           </a>
                                         </td>
@@ -2630,8 +2625,8 @@ const sendWelcomeEmail = (username, password, email) => {
                           </tr>
                           <tr> 
                             <td align="center" valign="top">
-                              <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
-                                <img src="https://metabet247.com/images/1699873787636.png" alt="link"  style="max-height: 60px;" />
+                              <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
+                                <img src="https://i.ibb.co/YjmrvpP/1699873787636.webp" alt="link"  style="max-height: 60px;" />
                               </a>
                             </td>
                           </tr>
@@ -2762,27 +2757,27 @@ const sendWelcomeEmail = (username, password, email) => {
                                       </tr>
                                       <tr>
                                         <td align="center" valign="top" style="padding: 0 10px;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials1.png" alt="socials1" width="21" height="21" />
                                           </a>
                                         </td>
                                         <td align="center" valign="top" style="padding: 0 10px;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials2.png" alt="socials2" width="21" height="21" />
                                           </a>
                                         </td>
                                         <td align="center" valign="top" style="padding: 0 10px;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials3.png" alt="socials3" width="21" height="21" />
                                           </a>
                                         </td>
                                         <td align="center" valign="top" style="padding: 0 10px;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials4.png" alt="socials4" width="21" height="21" />
                                           </a>
                                         </td>
                                         <td align="center" valign="top" style="padding: 0 10px;">
-                                          <a style="text-decoration: none; display: inline-block;" href="https://metabet247.com/">
+                                          <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
                                             <img src="https://livedemo00.template-help.com/newsletter_53030/images/socials5.png" alt="socials5" width="21" height="21" />
                                           </a>
                                         </td>
@@ -2800,7 +2795,7 @@ const sendWelcomeEmail = (username, password, email) => {
                             <td height="43" style="height: 43px; line-height:43px;"></td>
                           </tr>
                           <tr>
-                            <td align="center" valign="top" style="padding: 0 40px;font-family: Times New Roman, serif; font-size: 16px; mso-line-height-rule: exactly; line-height: 22px; font-weight: 400;color: #dfd9b6;" class="content">You're receiving this email because you signed up for <a href="https://metabet247.com/" style="color: #8f9f61; text-decoration: none;">META BET 247»</a> or attended one of our events. You can&nbsp;<a href="https://metabet247.com/" style="color: #8f9f61; text-decoration: underline !important;">unsubscribe</a>&nbsp;from this email or change your email notifications. Online version is&nbsp;<a href="https://metabet247.com/" style="color: #8f9f61; text-decoration: underline !important;">here</a>.</td>
+                            <td align="center" valign="top" style="padding: 0 40px;font-family: Times New Roman, serif; font-size: 16px; mso-line-height-rule: exactly; line-height: 22px; font-weight: 400;color: #dfd9b6;" class="content">You're receiving this email because you signed up for <a href="https://maxxbat.com/" style="color: #8f9f61; text-decoration: none;">MAXX BAT»</a> or attended one of our events. You can&nbsp;<a href="https://maxxbat.com/" style="color: #8f9f61; text-decoration: underline !important;">unsubscribe</a>&nbsp;from this email or change your email notifications. Online version is&nbsp;<a href="https://maxxbat.com/" style="color: #8f9f61; text-decoration: underline !important;">here</a>.</td>
                           </tr>
                           <tr>
                             <td height="35" style="height: 35px; line-height:35px;"></td>
@@ -2823,7 +2818,7 @@ const sendWelcomeEmail = (username, password, email) => {
                             <td height="23" style="height: 23px; line-height:23px;"></td>
                           </tr>
                           <tr>
-                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 13px; mso-line-height-rule: exactly; line-height: 16px; font-weight: 400; text-transform: uppercase;color: #8f9f61;" class="content"><a style="text-decoration: none; color: #8f9f61;" href="https://metabet247.com/">Meta BET  Casino </a> © 2015 | <a style="text-decoration: none; color: #8f9f61;" href="https://metabet247.com/">Privacy policy </a>
+                            <td align="center" valign="top" style="font-family: Times New Roman, serif; font-size: 13px; mso-line-height-rule: exactly; line-height: 16px; font-weight: 400; text-transform: uppercase;color: #8f9f61;" class="content"><a style="text-decoration: none; color: #8f9f61;" href="https://maxxbat.com/">MAXX BAT  Casino </a> © 2015 | <a style="text-decoration: none; color: #8f9f61;" href="https://maxxbat.com/">Privacy policy </a>
                             </td>
                           </tr>
                           <tr>
@@ -2847,9 +2842,9 @@ const sendWelcomeEmail = (username, password, email) => {
   `;
 
   const emailMsg = {
-    from: 'info@metabet247.com',
+    from: 'info@maxxbat.com',
     to: email,
-    subject: 'Welcome to MetaBet247 - Your Online Betting Account Details',
+    subject: 'Welcome to maxxbat - Your Online Betting Account Details',
     body_html: htmlContent,
   };
 

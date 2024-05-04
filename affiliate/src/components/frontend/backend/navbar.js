@@ -9,17 +9,17 @@ export default class navbar extends Component {
           <Link to="/affiliate" class="brand-logo">
           
             <img
-              src="https://metabet247.com/images/1699873787636.png?1"
+              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
               class="brand-title"
               alt=""
             />
             <img
-              src="https://metabet247.com/images/1699873787636.png?1"
+              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
               class="logo-color"
               alt=""
             />
             <img
-              src="https://metabet247.com/images/1699873787636.png?1"
+              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
               class="brand-title color-title"
               alt=""
             />

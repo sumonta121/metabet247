@@ -25,7 +25,7 @@ export default class admin_fr  extends React.Component  {
                             <div className="col-xl-12">
                                 <div className="auth-form">
 									<div className="text-center mb-3">
-										<a href="#">   <img style={{ maxHeight:'50px' }} src='https://metabet247.com/images/1699873787636.png' /></a>
+										<a href="#">   <img style={{ maxHeight:'50px' }} src='https://i.ibb.co/YjmrvpP/1699873787636.webp' /></a>
 									</div>
                                     <h4 className="text-center mb-4">  Hello Agent! Welcome to your Business    </h4>
                                     <form action="#">
@@ -34,7 +34,7 @@ export default class admin_fr  extends React.Component  {
                                         </div>
                                     </form>
                                     <div className="text-center">
-                                        METABET247
+                                        MAXX BAT
                                     </div>
                                 </div>
                             </div>

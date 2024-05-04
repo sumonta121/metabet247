@@ -91,7 +91,9 @@ const DashContent =  () => {
   useEffect(() => {
 	const fetchData = async () => {
 		try {
-			const response = await axios.get('/api/agent/agent_balance_check', { userID });
+			console.log('binance user ', userID);
+
+			const response = await axios.get(`/api/agent/agent_balance_check/${userID}`);
 			console.log(response.data); // Log the response data
 			// Handle the response data as needed
 		} catch (error) {
@@ -196,7 +198,7 @@ const DashContent =  () => {
 						<div className="overflow-hidden bg-transparent dz-crypto-scroll shadow-none">
 						<div className="js-conveyor-example">
 							<marquee class="marq" direction="left" style={{ color:'white', fontWeight:'900', fontSize:'18px' }} loop="">
-								Welcome Meta Bet 247
+								Welcome MAXX BAT
 							</marquee>
 						</div>
 						</div>
