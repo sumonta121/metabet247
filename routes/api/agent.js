@@ -1569,17 +1569,49 @@ router.post("/agent_balance_deposit", async (req, res) => {
   router.get("/agent_balance_check/:userId", async(req, res) => {
       const user_id = req.params.userId;
 
-      const currentDateTime = new Date();
-      const previousDateTime = new Date(currentDateTime.getTime() - (24 * 60 * 60 * 1000)); // Subtract 24 hours
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // Calculate the date 24 hours ago
 
-      const order_details = await Binancepayment.find({ user_id: user_id});
+      const order_details = await Binancepayment.find({ 
+        user_id: user_id, 
+        status: 0,
+        createdAt: { $gte: twentyFourHoursAgo } // Filter records with updated_at greater than or equal to twentyFourHoursAgo
+      });
 
-      for (const order of order_details) {
-          await pendingBalanceCheck(order.uuid, order.user_id);
+      
+      for (const order of order_details) {      
+          const order_id = order.uuid;
+  
+          const externalApiResponse = await axios.get(`https://capitalrevenue.uk.com/binance-deposit-status/${order_id}`);
+          const relevantData = externalApiResponse.data[0];     
+            if (relevantData.status === "SUCCESS" && relevantData.data.status === "PAID") {
+            
+              const order_details = await Binancepayment.findOne({ uuid: order_id, status: 0 });
+              const deposit_amount = order_details.amount;
+         
+            await Binancepayment.findOneAndUpdate(
+              { _id: order_details._id }, // Assuming _id is the primary key
+              { $set: { status: 1, updated_at: new Date() } },
+              { new: true }
+            );
+            
+            // 5% commission bonus
+            const bonus_amount      = (deposit_amount * 5 /100);            
+            const with_bonus_amount = deposit_amount + bonus_amount; 
+
+            await User.findOneAndUpdate(
+                { user_id: user_id }, 
+                { $inc: { currency: with_bonus_amount } },
+                { new: true } 
+            );        
+            
+            const country_agent = await User.findOne({user_id:'CA290'}).select('name user_id email currency');
+            country_agent.currency -= deposit_amount;            
+            await country_agent.save();
+            
+          }
       }
-
-      // Send response indicating success
-      res.status(200).json({ message: 'Balance check successful' });
+     
+       return res.status(200).json('Balance updated success');
   
 });
 
@@ -1634,57 +1666,6 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
 };
 
 
-
-
-  const pendingBalanceCheck = async (order_id, user_id, res) => {
-
-  const BINANCE_PAY_CERTIFICATE_SN = "2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
-  const BINANCE_PAY_SECRET = "nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
-
-
-  // Generate nonce string (32 random characters)
-  const nonce = crypto.randomBytes(32).toString('hex');
-
-  // Timestamp in milliseconds
-  const timestamp = Date.now();
-
-  // Request body
-  const request = { merchantTradeNo: order_id };
-  const jsonRequest = JSON.stringify(request);
-
-  // Payload for signature generation
-  const payload = `${timestamp}\n${nonce}\n${jsonRequest}\n`;
-
-  // Signature using SHA512 with HMAC (replace with a more secure hashing algorithm like SHA-256)
-  const signature = crypto.createHmac('sha512', BINANCE_PAY_SECRET).update(payload).digest('hex').toUpperCase();
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'BinancePay-Timestamp': timestamp,
-    'BinancePay-Nonce': nonce,
-    'BinancePay-Certificate-SN': BINANCE_PAY_CERTIFICATE_SN,
-    'BinancePay-Signature': signature,
-  };
-
-
-    const response = await axios.post('https://bpay.binanceapi.com/binancepay/openapi/v2/order/query', request, { headers }); // Use axios for HTTP request
-    const data = response.data; // Access response data directly
-
-    if (data.status === 'SUCCESS') {
-      if (data.data.status === 'PAID') {
-        // Handle successful payment (e.g., update database, process order)
-        // Replace with your actual logic and database interaction
-        res.json({ status: 'SUCCESS', message: 'Payment successful' });
-      } else {
-        res.json({ status: 'FAIL', message: 'Payment not yet complete' });
-      }
-    } else {
-      // Handle API error
-      res.status(500).json({ status: 'ERROR', message: data.message });
-    }
- 
-
-};
 
 
 //  paginatedUserBalanceReport
