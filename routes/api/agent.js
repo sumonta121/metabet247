@@ -20,7 +20,7 @@ const AgentWithdraw = require("../../models/AgentWithdraw");
 var elasticemail = require('elasticemail');
 const axios = require('axios');
 const crypto = require('crypto');
-const request = require('request');
+
 
 //// ================================ From Admin dashboard =========================== //////
 
@@ -1641,6 +1641,7 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
   const BINANCE_PAY_CERTIFICATE_SN = "2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
   const BINANCE_PAY_SECRET = "nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
 
+
   // Generate nonce string (32 random characters)
   const nonce = crypto.randomBytes(32).toString('hex');
 
@@ -1665,16 +1666,9 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
     'BinancePay-Signature': signature,
   };
 
-  const options = {
-    url: 'https://bpay.binanceapi.com/binancepay/openapi/v2/order/query',
-    method: 'POST',
-    headers,
-    json: request, // Assuming request body is JSON
-  };
 
-
-    const response = await request(options);
-    const data = JSON.parse(response.body);
+    const response = await axios.post('https://bpay.binanceapi.com/binancepay/openapi/v2/order/query', request, { headers }); // Use axios for HTTP request
+    const data = response.data; // Access response data directly
 
     if (data.status === 'SUCCESS') {
       if (data.data.status === 'PAID') {
@@ -1688,6 +1682,7 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
       // Handle API error
       res.status(500).json({ status: 'ERROR', message: data.message });
     }
+ 
 
 };
 
