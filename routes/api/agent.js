@@ -1672,7 +1672,7 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
     json: request, // Assuming request body is JSON
   };
 
-  try {
+
     const response = await request(options);
     const data = JSON.parse(response.body);
 
@@ -1688,10 +1688,7 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
       // Handle API error
       res.status(500).json({ status: 'ERROR', message: data.message });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: 'ERROR', message: 'Internal server error' });
-  }
+
 };
 
 
