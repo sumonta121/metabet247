@@ -1586,8 +1586,8 @@ router.post("/agent_balance_deposit", async (req, res) => {
 
 
 // Function to check pending balance
-const pendingBalanceCheck = async (order_id, user_id) => {
-  
+const pendingBalanceCheck_back = async (order_id, user_id, res) => {
+  try {
       const binance_pay = "2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
       const binance_pay_secret = "nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
 
@@ -1627,10 +1627,72 @@ const pendingBalanceCheck = async (order_id, user_id) => {
       } else {
         return  res.status(200).send('Internal Server Error');
       }
- 
+  } catch (error) {
+      console.error(error);
+      res.status(500).send(error);
+  }
 };
 
 
+
+
+  const pendingBalanceCheck = async (order_id, user_id, res) => {
+
+  const BINANCE_PAY_CERTIFICATE_SN = "2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
+  const BINANCE_PAY_SECRET = "nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
+
+  // Generate nonce string (32 random characters)
+  const nonce = crypto.randomBytes(32).toString('hex');
+
+  // Timestamp in milliseconds
+  const timestamp = Date.now();
+
+  // Request body
+  const request = { merchantTradeNo: order_id };
+  const jsonRequest = JSON.stringify(request);
+
+  // Payload for signature generation
+  const payload = `${timestamp}\n${nonce}\n${jsonRequest}\n`;
+
+  // Signature using SHA512 with HMAC (replace with a more secure hashing algorithm like SHA-256)
+  const signature = crypto.createHmac('sha512', BINANCE_PAY_SECRET).update(payload).digest('hex').toUpperCase();
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'BinancePay-Timestamp': timestamp,
+    'BinancePay-Nonce': nonce,
+    'BinancePay-Certificate-SN': BINANCE_PAY_CERTIFICATE_SN,
+    'BinancePay-Signature': signature,
+  };
+
+  const options = {
+    url: 'https://bpay.binanceapi.com/binancepay/openapi/v2/order/query',
+    method: 'POST',
+    headers,
+    json: request, // Assuming request body is JSON
+  };
+
+  try {
+    const response = await request(options);
+    const data = JSON.parse(response.body);
+
+    if (data.status === 'SUCCESS') {
+      if (data.data.status === 'PAID') {
+        // Handle successful payment (e.g., update database, process order)
+        // Replace with your actual logic and database interaction
+        res.json({ status: 'SUCCESS', message: 'Payment successful' });
+      } else {
+        res.json({ status: 'FAIL', message: 'Payment not yet complete' });
+      }
+    } else {
+      // Handle API error
+      res.status(500).json({ status: 'ERROR', message: data.message });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: 'ERROR', message: 'Internal server error' });
+  }
+};
 
 
 //  paginatedUserBalanceReport
