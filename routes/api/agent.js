@@ -1587,7 +1587,7 @@ router.post("/agent_balance_deposit", async (req, res) => {
 
 // Function to check pending balance
 const pendingBalanceCheck = async (order_id, user_id) => {
-  try {
+  
       const binance_pay = "2yog30mywpkwgjrduhu7gvwgpgqd728zuur6ko9jdc00g2x4kugrf5a8zc2r2l9m";
       const binance_pay_secret = "nqp8y2zozm3clyk5zkrvd2kfwfcrhgsnatdf1bsdnmkcumda7skjnkcu5aif6psl";
 
@@ -1627,10 +1627,7 @@ const pendingBalanceCheck = async (order_id, user_id) => {
       } else {
         return  res.status(200).send('Internal Server Error');
       }
-  } catch (error) {
-      console.error(error);
-      res.status(500).send(error);
-  }
+ 
 };
 
 
