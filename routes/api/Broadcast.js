@@ -12,9 +12,9 @@ const Pusher          = require('pusher');
 
     // Create a new instance of Pusher
     const pusher = new Pusher({
-        appId: '1765000',
-        key: '8e7bc97f89292c2f4e41',
-        secret: 'c2a416f0893619ab9c92',
+        appId: '1799947',
+        key: '263926cec81537c7c913',
+        secret: '52b57d6943f7d40c1095',
         cluster: 'ap2',
     });
 

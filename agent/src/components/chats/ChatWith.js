@@ -28,7 +28,7 @@ const ChatWith = () => {
     const [receiverInfo, setReceiverInfo] = useState({});
 
     useEffect(() => {
-        const pusher = new Pusher('8e7bc97f89292c2f4e41', {
+        const pusher = new Pusher('263926cec81537c7c913', {
             cluster: 'ap2',
         });
         const channel = pusher.subscribe('public');
@@ -79,7 +79,7 @@ const ChatWith = () => {
       
       const handleSubmit = async (e) => {
         e.preventDefault();
-        const pusher = new Pusher('8e7bc97f89292c2f4e41', {
+        const pusher = new Pusher('263926cec81537c7c913', {
             cluster: 'ap2',
         });
     
@@ -115,8 +115,15 @@ const ChatWith = () => {
         }
     };
 
+   
     const formatTimestamp = (timestamp) => {
-        const date = new Date(timestamp);
+        let date;
+        if (timestamp !== undefined && timestamp !== null) {
+            date = new Date(timestamp);
+        } else {
+            date = new Date(); // Set to current time if timestamp is undefined or null
+        }
+    
         const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
@@ -125,7 +132,7 @@ const ChatWith = () => {
             hour: 'numeric',
             minute: '2-digit'
         }).toLowerCase();
-     
+    
         if (date.toDateString() === today.toDateString()) {
             return formattedTime;
         } else if (date.toDateString() === yesterday.toDateString()) {
@@ -146,7 +153,6 @@ const ChatWith = () => {
             }
         }
     };
-    
 
     return (
         <>
