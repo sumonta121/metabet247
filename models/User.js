@@ -112,12 +112,21 @@ const UserSchema = new Schema(
     ref_percentage: {
       type: String
     },
+
     deposit_percentage: {
       type: String
     },
+
     status: {
       type: String
-    }
+    },
+
+    account_status: {
+      type: String,
+      default: 1,
+      ref: "1 = active, 2 = blocked ",
+    },    
+
   },
   
   {

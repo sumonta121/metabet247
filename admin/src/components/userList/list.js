@@ -25,6 +25,12 @@ const UserList = () => {
   const [pageCount, setPageCount] = useState(1);
   const currentPage = useRef();
 
+  const [users, setUsers] = useState([]); // State to hold user data
+  const [isLoading, setIsLoading] = useState(false); // State to indicate loading status
+  const [error, setError] = useState(null); // State to hold any errors
+
+  
+  
   useEffect(() => {
     currentPage.current = 1;
     // getAllUser();
@@ -78,6 +84,30 @@ const UserList = () => {
         // setData(data.result);
       });
   }
+
+
+  
+  const handleBlockUnblock = async (userId, action) => {
+    try {
+      const response = await axios.put(`${apiConfig.baseURL}/api/agent/${action}/${userId}`); // Replace with your API endpoint
+
+      if (response.status === 200) {
+        // Update user data locally (optional for immediate UI feedback)
+        const updatedUsers = users.map(user =>
+          user._id === userId ? { ...user, isBlocked: action === 'block' } : user
+        );
+        setUsers(updatedUsers);
+        alert(response.data.message);
+      } else {
+        console.error('Error blocking/unblocking user:', response.data);
+        setError('Failed to block/unblock user. Please try again later.'); // More user-friendly error message
+      }
+    } catch (error) {
+      console.error('Error during blocking/unblocking:', error);
+      setError('Failed to block/unblock user. Please try again later.'); // More user-friendly error message
+    }
+  };
+
 
   // css
   const MyPaginate = styled(ReactPaginate).attrs({
@@ -166,7 +196,7 @@ const UserList = () => {
                           const handleDelete = async () => {
                             try {
                               const response = await axios.delete(
-                                `/api/agent/deleteAgent/${element._id}`
+                                `${apiConfig.baseURL}/api/agent/deleteAgent/${element._id}`
                               );
                               if (response.status === 200) {
                                 alert("Delete Successfully");
@@ -194,6 +224,22 @@ const UserList = () => {
                                 <td>{element.email}</td>
                                 <td>
                                   <div className="d-flex">
+                                
+                                  <button
+                                    className={`btn btn-${element.account_status === '2' ? 'danger' : 'success'} shadow btn-xs sharp`}
+                                    onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'block' : 'block')}
+                                  >
+                                    {element.account_status === '2' ? (
+                                      <>
+                                        <i className="fa fa-times"></i> 
+                                      </>
+                                    ) : (
+                                      <>
+                                      <i className="fa  fa-check"></i> 
+                                      </>
+                                    )}
+                                  </button>
+
                                     <Link
                                       className="edit-link btn btn-primary shadow btn-xs sharp me-1 "
                                       to={`edit-user/${element._id}`}
@@ -202,7 +248,11 @@ const UserList = () => {
                                     </Link>
 
                                     <button
-                                      onClick={handleDelete}
+                                      onClick={() => {
+                                        if (window.confirm('Are you sure you want to delete this user?')) {
+                                          handleDelete();
+                                        }
+                                      }}
                                       className="btn btn-danger shadow btn-xs sharp"
                                     >
                                       <i className="fa fa-trash"></i>

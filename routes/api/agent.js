@@ -1397,6 +1397,47 @@ router.get("/editsubreseller/:usAutoId").get(function (req, res) {
   User.findOne({ usAutoId: rowId }).then((user) => res.json(user));
 });
 
+
+router.put('/block/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const agent_details = await User.findOne({ _id:userId});
+
+    if(agent_details.account_status == 1){
+
+      const update = { account_status: 2 }; 
+
+      const updatedUser = await User.findByIdAndUpdate(userId, update, { new: true }); // Return updated document
+  
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+     
+      return res.status(200).json({ message: 'User blocked successfully' });
+
+    } else if(agent_details.account_status == 2){
+      
+      const update = { account_status: 1 }; 
+
+      const updatedUser = await User.findByIdAndUpdate(userId, update, { new: true }); // Return updated document
+  
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+       return res.status(200).json({ message: 'User unblocked successfully' });
+    }
+
+
+ 
+  } catch (error) {
+    console.error('Error blocking user:', error);
+  }
+});
+
+
 // Update SubAffiliate
 
 // getdataSubAffiliate
