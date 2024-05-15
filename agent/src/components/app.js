@@ -18,6 +18,12 @@ import Admin_fr from './frontend/admin_fr';
 import UserBalList from './user_bl_tr/list.js';
 import UserBalTransfer from './user_bl_tr/transfer.js';
 import UserBalanceReport from './UserBalanceReport/list.js';
+
+
+import addWallet from './addWallet/transfer.js';
+import addWalletReport from './addWallet/list.js';
+import PendingBalanceRequest from './addWallet/pendingBalanceRequest.js';
+
 import Withdraw from './Withdraw/withdraw.js';
 import BlFromAdmin from './BalanceFromAdminReport/list.js';
 import CashIn from './CashIn/cashin.js';
@@ -55,6 +61,11 @@ const App = () => (
         <ProtectedRoute exact path="/user-bal-list" component={UserBalList } />
         <ProtectedRoute exact path="/user-bal-tr" component={UserBalTransfer } />
         <ProtectedRoute exact path="/user-balance-report" component={UserBalanceReport } />
+        <ProtectedRoute exact path="/pending-balance-request" component={PendingBalanceRequest } />
+
+        <ProtectedRoute exact path="/add-wallet" component={addWallet } />
+        <ProtectedRoute exact path="/add-wallet-list" component={addWalletReport } />
+
         <ProtectedRoute exact path="/withdraw" component={Withdraw } />
         <ProtectedRoute exact path="/balance-from-admin" component={BlFromAdmin } />
 

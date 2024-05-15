@@ -96,10 +96,26 @@ export default class leftSidebar extends Component {
                     </Link>
               </li>
 
+            
               <li>
                    <Link to="/balance-from-admin" className="" ariaExpanded="false">
                    <i class="material-icons">credit_card</i>
                      <span class="nav-text">  Balance Received Report</span>
+                    </Link>
+              </li>
+
+              <li>
+                 <Link to="/pending-balance-request" className="" ariaExpanded="false">
+                       <i class="material-icons">credit_card</i>
+                      <span class="nav-text">Pending Balance Request </span>
+                    </Link>
+              </li>
+
+
+              <li>
+                   <Link to="/add-wallet-list" className="" ariaExpanded="false">
+                   <i class="material-icons">credit_card</i>
+                     <span class="nav-text"> Add Wallet</span>
                     </Link>
               </li>
 

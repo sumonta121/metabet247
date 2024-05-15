@@ -13,6 +13,8 @@ const validateAgentWithdraw = require("../../validation/agentWithdraw");
 const quickSort = require("../../util/sort");
 const BalanceDeposit = require("../../models/BalanceDeposit");
 const AgentBLTR = require("../../models/AgentBLTR");
+const AgentWallets = require("../../models/AgentWallets");
+const Deposit = require("../../models/Deposit");
 const UserBLTR = require("../../models/UserBLTR");
 const AgentCommission = require("../../models/AgentCommission");
 // const Agent = require("../../models/Agent");
@@ -1740,8 +1742,6 @@ router.get("/agent_deposit_report", async (req, res) => {
 
 
 
-
-
 //  paginatedUserBalanceReport
 router.get("/agentCommission/:user_id", async (req, res) => {
     const result = await AgentCommission.aggregate([
@@ -1794,6 +1794,135 @@ router.get("/deposited_report", async (req, res) => {
 });
 
 
+router.post("/agent_wallet_create", async (req, res) => {
+  try {
+
+    const newAgentWallet = new AgentWallets({
+      user_id: req.body.user_id,
+      wallet_method: req.body.wallet_method,
+      wallet_type: req.body.wallet_type,
+      agent_wallet: req.body.agent_wallet,
+      status: 'active', 
+    });
+  
+    const savedBalanceDeposit = await newAgentWallet.save();
+    return res.status(200).json({ message: 'Successfully created  wallet.', data: savedBalanceDeposit });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+
+//  paginatedUserBalanceReport
+router.get("/agent_wallet_list", async (req, res) => {
+
+  const allUser = await AgentWallets.find({ user_id : req.query.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+
+
+
+//  paginatedUserBalanceReport
+router.get("/pending_balance_request", async (req, res) => {
+
+  const allUser = await Deposit.find({ agent_id : req.query.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+
+
+
+router.post("/user_transfer_update", async (req, res) => {
+  try {
+    const depositId = req.body.depositId;
+
+    // Fetch the deposit details
+    const result = await Deposit.findOne({ _id: depositId });
+
+    if (!result) {
+      return res.status(404).json({ message: 'Deposit not found' });
+    }
+
+    if (result.status == 'paid') {
+      return res.status(404).json({ message: 'Sorry! This is already paid' });
+    }
+
+    // Fetch user details based on the user_id in the result
+    const user_details = await User.findOne({ user_id: result.user_id });
+    if (!user_details) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Fetch agent details based on the agent_id in the result
+    const agent_details = await User.findOne({ user_id: result.agent_id });
+    if (!agent_details) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+    // Update user and agent currency amounts
+    user_details.currency += result.send_amount;
+    await user_details.save();
+
+    agent_details.currency -= result.send_amount;
+    await agent_details.save();
+
+    // Update the status of the deposit
+    result.status = "paid";
+    await result.save();
+
+    // Send the appropriate response
+    res.json({ message: 'Payment approved successfully!' });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 
 router.post("/user_transfer_update", (req, res) => {
   //  let gameId = req.body.gameId
@@ -1838,17 +1967,6 @@ router.post("/user_transfer_update", (req, res) => {
             const newCurrency = Number(req.body.amount);
 
             const currency = newCurrency + oldCurrncy;
-
-            // console.log(
-            //   "oldCurrncy: " +
-            //     oldCurrncy +
-            //     " newCurrency: " +
-            //     newCurrency +
-            //     " Total currency " +
-            //     currency
-            // );
-
-            // console.log(currency);
 
             User.updateOne(
               { user_id: req.body.user_id },
