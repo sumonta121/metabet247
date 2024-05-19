@@ -15,6 +15,7 @@ const BalanceDeposit = require("../../models/BalanceDeposit");
 const AgentBLTR = require("../../models/AgentBLTR");
 const AgentWallets = require("../../models/AgentWallets");
 const Deposit = require("../../models/Deposit");
+const Withdraw = require("../../models/Withdraw");
 const UserBLTR = require("../../models/UserBLTR");
 const AgentCommission = require("../../models/AgentCommission");
 // const Agent = require("../../models/Agent");
@@ -1875,6 +1876,105 @@ router.get("/pending_balance_request", async (req, res) => {
 
 
 
+//  paginatedUserBalanceReport
+router.get("/pending_withdraw_request", async (req, res) => {
+
+  const allUser = await Withdraw.find({ agent_id : req.query.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+
+
+
+router.post("/user_withdraw_update", async (req, res) => {
+  try {
+    const depositId       = req.body.depositId;
+    const withdraw_status = req.body.status;
+
+    // Fetch the deposit details
+    const result = await Withdraw.findOne({ _id: depositId });
+
+    if (!result) {
+      return res.status(404).json({ message: 'Withdraw not found' });
+    }
+
+    if (result.status == 'Paid') {
+      return res.status(404).json({ message: 'Sorry! This is already paid' });
+    }
+    
+    if (result.status == 'Reject') {
+      return res.status(404).json({ message: 'Sorry! This is already Rejected' });
+    }
+
+    // Fetch user details based on the user_id in the result
+    const user_details = await User.findOne({ user_id: result.user_id });
+    if (!user_details) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Fetch agent details based on the agent_id in the result
+    const agent_details = await User.findOne({ user_id: result.agent_id });
+    if (!agent_details) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+    if (withdraw_status == 'Paid') {
+        agent_details.currency += Number(result.withdraw_amount);
+        await agent_details.save();
+
+        // Update the status of the deposit
+        result.status = "Paid";
+        await result.save();
+
+        // Send the appropriate response
+        res.json({ message: 'Withdraw approved successfully!' });
+    } 
+
+
+    if (withdraw_status == 'Reject') {
+        user_details.currency += Number(result.withdraw_amount);
+        await user_details.save();
+
+        // Update the status of the deposit
+        result.status = "Reject";
+        await result.save();
+
+        // Send the appropriate response
+        res.json({ message: 'Withdraw rejected successfully!' });
+    } 
+
+    
+  
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
+
 
 router.post("/user_transfer_update", async (req, res) => {
   try {
@@ -1904,10 +2004,10 @@ router.post("/user_transfer_update", async (req, res) => {
     }
 
     // Update user and agent currency amounts
-    user_details.currency += result.send_amount;
+    user_details.currency += Number(result.send_amount);
     await user_details.save();
 
-    agent_details.currency -= result.send_amount;
+    agent_details.currency -= Number(result.send_amount);
     await agent_details.save();
 
     // Update the status of the deposit

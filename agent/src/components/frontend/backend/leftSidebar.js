@@ -110,6 +110,12 @@ export default class leftSidebar extends Component {
                       <span class="nav-text">Pending Balance Request </span>
                     </Link>
               </li>
+              <li>
+                 <Link to="/pending-withdraw-request" className="" ariaExpanded="false">
+                       <i class="material-icons">credit_card</i>
+                      <span class="nav-text">Pending withdraw Request </span>
+                    </Link>
+              </li>
 
 
               <li>

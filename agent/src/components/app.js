@@ -23,6 +23,7 @@ import UserBalanceReport from './UserBalanceReport/list.js';
 import addWallet from './addWallet/transfer.js';
 import addWalletReport from './addWallet/list.js';
 import PendingBalanceRequest from './addWallet/pendingBalanceRequest.js';
+import PendingWithdrawRequest from './Withdraw/pendingWithdrawRequest.js';
 
 import Withdraw from './Withdraw/withdraw.js';
 import BlFromAdmin from './BalanceFromAdminReport/list.js';
@@ -62,6 +63,7 @@ const App = () => (
         <ProtectedRoute exact path="/user-bal-tr" component={UserBalTransfer } />
         <ProtectedRoute exact path="/user-balance-report" component={UserBalanceReport } />
         <ProtectedRoute exact path="/pending-balance-request" component={PendingBalanceRequest } />
+        <ProtectedRoute exact path="/pending-withdraw-request" component={PendingWithdrawRequest } />
 
         <ProtectedRoute exact path="/add-wallet" component={addWallet } />
         <ProtectedRoute exact path="/add-wallet-list" component={addWalletReport } />
