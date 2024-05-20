@@ -117,6 +117,13 @@ export default class leftSidebar extends Component {
                     </Link>
               </li>
 
+              <li>
+                 <Link to="/balance-withdraw-history" className="" ariaExpanded="false">
+                       <i class="material-icons">credit_card</i>
+                      <span class="nav-text">Balance Withdraw</span>
+                    </Link>
+              </li>
+
 
               <li>
                    <Link to="/add-wallet-list" className="" ariaExpanded="false">

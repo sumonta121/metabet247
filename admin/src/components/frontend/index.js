@@ -22,7 +22,7 @@ const Index = () => {
       {/* <Loader /> */}
       {/* <div id="loader"></div> */}
 
-      <div id="main-wrapper">
+      <div id="main-wrapper" className="show">
         <Navbar />
         <Chatbox />
         <HeaderRight />

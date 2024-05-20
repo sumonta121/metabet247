@@ -19,6 +19,9 @@ import UserBalList from './user_bl_tr/list.js';
 import UserBalTransfer from './user_bl_tr/transfer.js';
 import UserBalanceReport from './UserBalanceReport/list.js';
 
+import balanceWithdraw from './Withdraw/withdraw.js';
+import balanceWithdrawReport from './Withdraw/agenWithdrawList.js';
+
 
 import addWallet from './addWallet/transfer.js';
 import addWalletReport from './addWallet/list.js';
@@ -78,6 +81,8 @@ const App = () => (
         <ProtectedRoute exact path="/add-balance" component={addBalance} />
         <ProtectedRoute exact path="/add-balance-history" component={addBalanceHistory} />
 
+        <ProtectedRoute exact path="/balance-withdraw" component={balanceWithdraw } />
+        <ProtectedRoute exact path="/balance-withdraw-history" component={balanceWithdrawReport } />
 
 
         <ProtectedRoute exact path="/profile-manage" component={ProfileManage } />

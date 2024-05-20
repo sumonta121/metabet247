@@ -1,34 +1,42 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import classNames from 'classnames';
 
-export default class navbar extends Component {
+export default class Navbar extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      menuActive: false
+    };
+  }
+
+  toggleMenu = () => {
+    this.setState(prevState => ({
+      menuActive: !prevState.menuActive
+    }));
+  };
+
   render() {
+    const { menuActive } = this.state;
+
     return (
       <>
-        <div class="nav-header">
-          <Link to="/agent" class="brand-logo">
-           
+        <div className="nav-header">
+          <Link to="/agent" className="brand-logo">
             <img
               src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
-              class="brand-title"
+              className="brand-title"
               alt=""
             />
-            {/* <img
-              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
-              class="logo-color"
-              alt=""
-            />
-            <img
-              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
-              class="brand-title color-title"
-              alt=""
-            /> */}
           </Link>
-          <div class="nav-control">
-            <div class="hamburger">
-              <span class="line"></span>
-              <span class="line"></span>
-              <span class="line"></span>
+          <div className="nav-control">
+            <div
+              className={classNames("hamburger", { "is-active": menuActive })}
+              onClick={this.toggleMenu}
+            >
+              <span className="line"></span>
+              <span className="line"></span>
+              <span className="line"></span>
               <svg
                 style={{ width: "26", height: "26" }}
                 viewBox="0 0 26 26"
@@ -95,6 +103,12 @@ export default class navbar extends Component {
               </svg>
             </div>
           </div>
+        </div>
+        <div
+          id="main-wrapper"
+          className={classNames({ "show menu-toggle": menuActive })}
+        >
+          {/* Add your main content here */}
         </div>
       </>
     );

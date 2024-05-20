@@ -37,7 +37,7 @@ const Withdraw = () => {
   // input field
 
   const [inpval, setINP] = useState({
-    receiver_user_id: "",
+    receiver_user_id: "CA290",
     user_id: userInfo.user_id,
     amount: "",
     payment: "",
@@ -47,7 +47,7 @@ const Withdraw = () => {
   });
 
   const setdata = (e) => {
-    console.log(e.target.value);
+   
     const { name, value } = e.target;
     setINP((preval) => {
       return {
@@ -76,45 +76,20 @@ const Withdraw = () => {
       }),
     });
 
-    const data = await res.json();
-    console.log(data);
+    try {
+            
+      const data = await res.json();
 
-    if (res.status === 200) {
-      alert("Withdraw Successfully");
-
-      history.push("/agent");
-
-    } else {
-      if (data.email) {
-        // alert(data.email);
+      if (res.status === 200) {
+        alert("Withdraw Successfully");
+        history.push("/balance-withdraw-history");
+      } else {
+        alert(data);
       }
-
-      if (data.amount) {
-        // alert(data.amount);
-      }
-      if (data.s_key) {
-        // alert(data.s_key);
-      }
-      console.log(res.status);
+    } catch (error) {
+        
     }
 
-    if (res.status === 404) {
-      alert("This User does not exist");
-      // console.log("Data Inserted successfully");
-    }
-    if (res.status === 422) {
-      alert("Not Available Money");
-      // console.log("Data Inserted successfully");
-    }
-
-    if (res.status === 400) {
-      alert("Incorrect Security T-PIN");
-      // console.log("Data Inserted successfully");
-    }
-    if (res.status === 401) {
-      alert("Fillup All Field");
-      // console.log("Data Inserted successfully");
-    }
   };
 
   return (
@@ -134,11 +109,11 @@ const Withdraw = () => {
               <div class="card-header">
                 <h4 class="card-title">Withdraw</h4>
 
-                {/* <Link to="/user-bal-list">
+                 <Link to="/balance-withdraw-history">
                   <button type="button" className="btn btn-success float-right">
-                    Balance Transfer List{" "}
+                    Withdraw List
                   </button>
-                </Link> */}
+                </Link> 
 
               </div>
 
@@ -155,6 +130,7 @@ const Withdraw = () => {
                           name="receiver_user_id"
                           class="form-control"
                           placeholder="Receiver User ID"
+                          readOnly
                           onChange={setdata}
                           value={inpval.receiver_user_id}
                         />
@@ -198,7 +174,7 @@ const Withdraw = () => {
                         <option value="1">Nagad</option>
                         <option value="2">Rocket</option>
                         <option value="3">Upay</option>
-                        <option value="4">Bank Acc Number</option>
+                        <option value="4">Binance Pay ID</option>
                       </select>
                       {/* 0= Bkash, 1= Nagad, 2= Rocket, 3= Upay, 4= Bank Number */}
 
@@ -226,7 +202,7 @@ const Withdraw = () => {
                       </label>
                       <div class="col-sm-9">
                         <input
-                          type="text"
+                          type="password"
                           name="s_key"
                           required
                           class="form-control"

@@ -2203,8 +2203,110 @@ router.get("/paginatedAgentBalanceTransferReport", async (req, res) => {
 
 
 // AgentWithdraw
+router.post("/withdraw", async (req, res) => {
+  const { errors, isValid } = validateAgentWithdraw(req.body);
 
-router.post("/withdraw", (req, res) => {
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  if (req.body.amount < 0) {
+    return res.status(401).json("Amount is invalid");
+  }
+
+  try {
+    const user = await User.findOne({ user_id: req.body.receiver_user_id });
+    if (!user) {
+      return res.status(404).json("This user does not exist");
+    }
+
+    const agent = await User.findOne({ email: req.body.agentEmail });
+    if (!agent) {
+      return res.status(404).json("Agent not found" );
+    }
+
+    const Agentcurrency = Number(agent.currency);
+    const transferMoney = Number(req.body.amount);
+
+    if (Agentcurrency < transferMoney) {
+      return res.status(422).json("Not Available Money" );
+    }
+
+    const isMatch = await bcrypt.compare(req.body.s_key, agent.tpin);
+    if (!isMatch) {
+      return res.status(400).json("Incorrect T-PIN");
+    }
+
+    // Update user balance
+    const oldCurrency = Number(user.currency);
+    const newCurrency = oldCurrency + Number(req.body.amount);
+    await User.updateOne(
+      { user_id: req.body.receiver_user_id },
+      { currency: newCurrency }
+    );
+
+    // Update agent balance
+    const AgentNewAmount = Agentcurrency - transferMoney;
+    await User.updateOne(
+      { email: req.body.agentEmail },
+      { currency: AgentNewAmount }
+    );
+
+    // Create a new AgentWithdraw record
+    const agentWithdraw = new AgentWithdraw({
+      receiver_user_id: req.body.receiver_user_id,
+      user_id: req.body.user_id,
+      agentEmail: req.body.agentEmail,
+      amount: req.body.amount,
+      pay_amount: req.body.amount - (req.body.amount * 0.05),      
+      payment: req.body.payment,
+      acc_number: req.body.acc_number,
+      status_type: 0,
+      voucher: 1,
+      transaction_id : Math.random().toString(36).substring(2, 15), 
+    });
+
+    await agentWithdraw.save();
+
+    return res.json({ message: "Withdrawal successful" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
+//  paginatedUserBalanceReport
+router.get("/pending_agent_withdraw", async (req, res) => {
+
+  const allUser = await AgentWithdraw.find({ user_id : req.query.user_id });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+
+router.post("/withdraw_old", (req, res) => {
   const { errors, isValid } = validateAgentWithdraw(req.body);
 
   if (!isValid) {
@@ -2224,24 +2326,20 @@ router.post("/withdraw", (req, res) => {
     User.findOne({ email: req.body.agentEmail }, (err, agent) => {
       const Agentcurrency = Number(agent.currency);
       const transferMoney = Number(req.body.amount);
-      console.log("Money: " + Agentcurrency + " Email: " + AgentEmail);
+      // console.log("Money: " + Agentcurrency + " Email: " + AgentEmail);
 
       const checkBalance = Agentcurrency < transferMoney;
 
       if (checkBalance) {
         return res.status(422).json({ checkBalance: "Not Available Money" });
       } else {
-        // T-pin security
-
+        
         const tpin = agent.tpin;
-        const s_key = req.body.s_key;
+        //const s_key = req.body.s_key;
         const AgentEmail = req.body.agentEmail;
-
-        // console.log("T-pin: " + tpin + " Agent Email: " + AgentEmail + " S-key " + s_key );
 
         bcrypt.compare(req.body.s_key, agent.tpin).then((isMatch) => {
           if (!!isMatch) {
-            // update Adminuser Table  Currency Field Add
 
             var date = new Date(Date.now());
 
@@ -2250,17 +2348,6 @@ router.post("/withdraw", (req, res) => {
 
             const currency = newCurrency + oldCurrncy;
 
-            // console.log(
-            //   "oldCurrncy: " +
-            //     oldCurrncy +
-            //     " newCurrency: " +
-            //     newCurrency +
-            //     " Total currency " +
-            //     currency
-            // );
-
-            // console.log(currency);
-
             User.updateOne(
               { user_id: req.body.receiver_user_id },
               { currency: currency }
@@ -2268,18 +2355,9 @@ router.post("/withdraw", (req, res) => {
               .then((user) => res.json(user))
               .catch((err) => console.log(err));
 
-            // Agent user table Balance Minus
-
             const AgentCurrencyHas = Number(agent.currency);
             const NewTransferMoney = Number(req.body.amount);
             const AgentNewAmount = AgentCurrencyHas - NewTransferMoney;
-
-            // console.log(
-            //   "Money has: " +
-            //     AgentCurrencyHas +
-            //     " AgentNewAmount: " +
-            //     AgentNewAmount
-            // );
 
             User.updateOne(
               { email: req.body.agentEmail },
@@ -2295,11 +2373,12 @@ router.post("/withdraw", (req, res) => {
               user_id: req.body.user_id,
               agentEmail: req.body.agentEmail,
               amount: req.body.amount,
+              pay_amount: req.body.amount,
               payment: req.body.payment,
               acc_number: req.body.acc_number,
               status_type: 0,
-              s_key: req.body.s_key,
-              history: [{ x: date }],
+              voucher: 1,
+              //s_key: req.body.s_key,
             });
 
             agentWithdraw
