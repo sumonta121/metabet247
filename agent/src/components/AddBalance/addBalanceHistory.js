@@ -120,6 +120,7 @@ const user_id = userInfo.user_id;
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
 
       <Chatbox />
@@ -208,6 +209,7 @@ const user_id = userInfo.user_id;
       </div>
 
       <Footer />
+      </div>
     </>
   );
 };

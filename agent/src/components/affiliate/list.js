@@ -122,6 +122,7 @@ const AffiliateList = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
 
       <Chatbox />
@@ -264,6 +265,7 @@ const AffiliateList = () => {
       </div>
 
       <Footer />
+       </div>
     </>
   );
 };

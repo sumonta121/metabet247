@@ -19,9 +19,6 @@ const decodedToken = jwt_decode(token);
 const userInfo = decodedToken;
 const user_id = userInfo.user_id;
 
-
-
-
   //setting state paginate
   const [data, setData] = useState([]);
   const [limit, setLimit] = useState(10);
@@ -120,6 +117,7 @@ const user_id = userInfo.user_id;
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
 
       <Chatbox />
@@ -210,6 +208,7 @@ const user_id = userInfo.user_id;
       </div>
 
       <Footer />
+       </div>
     </>
   );
 };

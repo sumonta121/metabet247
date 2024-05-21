@@ -85,6 +85,7 @@ const Transfer = () => {
 
   return (
     <>
+     <div id="main-wrapper">
     <Navbar />
 
     <Chatbox />
@@ -173,6 +174,7 @@ const Transfer = () => {
     </div>
 
     <Footer />
+    </div>
   </>
   );
 };

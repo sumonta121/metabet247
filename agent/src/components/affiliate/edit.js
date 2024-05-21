@@ -99,6 +99,7 @@ const AffiliateEdit = ({ match }) => {
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
 
       <Chatbox />
@@ -279,6 +280,7 @@ const AffiliateEdit = ({ match }) => {
       </div>
 
       <Footer />
+      </div>
     </>
   );
 };

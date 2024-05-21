@@ -69,6 +69,7 @@ const BalanceDeposit = () => {
 
     return (
         <>
+         <div id="main-wrapper">
           <Navbar />
           <Chatbox />
           <HeaderRight />
@@ -139,6 +140,7 @@ const BalanceDeposit = () => {
             </div>
              </div>
            <Footer />
+           </div>
         </>
     );
 };

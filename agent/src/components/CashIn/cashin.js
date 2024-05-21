@@ -79,6 +79,7 @@ const Cashin = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <ToastContainer style={{ zIndex: 999999999 }}  />
       <Navbar />
 
@@ -176,6 +177,7 @@ const Cashin = () => {
       </div>
 
       <Footer />
+       </div>
     </>
   );
 };

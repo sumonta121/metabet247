@@ -78,6 +78,7 @@ const AddBalance = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <ToastContainer style={{ zIndex: 999999999 }}  />
       <Navbar />
 
@@ -188,6 +189,7 @@ const AddBalance = () => {
       </div>
 
       <Footer />
+      </div>
     </>
   );
 };

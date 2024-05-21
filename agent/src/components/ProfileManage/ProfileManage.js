@@ -7,6 +7,8 @@ import LeftSidebar from "../frontend/backend/leftSidebar.js";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min.js";
 import jwt_decode from "jwt-decode";
 import axios from "axios";
+import apiConfig from '../apiConfig';
+
 
 const ProfileManage = () => {
   const history = useHistory();
@@ -30,7 +32,7 @@ const ProfileManage = () => {
     // Fetch current user data
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`/api/users/singleUserBalance/${userInfo.user_id}`);
+        const response = await axios.get(`${apiConfig.baseURL}/api/users/singleUserBalance/${userInfo.user_id}`);
         const userData = response.data;
 
         // Set initial state with user data
@@ -81,7 +83,7 @@ const ProfileManage = () => {
     }
 
     try {
-      const res = await axios.post(`/api/users/ProfileManage/${user_id}`, {
+      const res = await axios.post(`${apiConfig.baseURL}/api/users/ProfileManage/${user_id}`, {
         first_name,
         last_name,
         country,
@@ -110,6 +112,7 @@ const ProfileManage = () => {
 
   return (
     <>
+    <div id="main-wrapper"> 
       <Navbar />
       <Chatbox />
       <HeaderRight />
@@ -993,6 +996,7 @@ const ProfileManage = () => {
       </div>
 
       <Footer />
+       </div>
     </>
   );
 };

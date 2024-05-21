@@ -115,12 +115,10 @@ const List = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
-
       <Chatbox />
-
       <HeaderRight />
-
       <LeftSidebar />
 
       <div class="content-body">
@@ -223,6 +221,7 @@ const List = () => {
       </div>
 
       <Footer />
+      </div>
     </>
   );
 };

@@ -1,18 +1,22 @@
+
+import { Switch, Route, Link } from 'react-router-dom';
+
+
 // import React, { Component, useState, useEffect } from "react";
-import React, { Component, useEffect, useState } from "react";
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import React, { Component, useEffect, useState, useRef } from "react";
 import Navbar from "../frontend/backend/navbar.js";
 import Footer from "../frontend/backend/footer.js";
-import Chatbox from "../frontend/backend/chatbox.js";
 import HeaderRight from "../frontend/backend/header_right.js";
 import LeftSidebar from "../frontend/backend/leftSidebar.js";
 import jwt_decode from 'jwt-decode';
 import ReactPaginate from "react-paginate";
-import { useRef } from "react";
+
 import styled from "styled-components";
 import apiConfig from '../apiConfig';
 
+
 const WithdrawList = () => {
+
 
   const token = localStorage.getItem('jwtToken');
   const decodedToken = token ? jwt_decode(token) : null;
@@ -142,109 +146,110 @@ const WithdrawList = () => {
 
   return (
     <>
-      <Navbar />
+   
+      <div id="main-wrapper">
+        <Navbar />
+         <HeaderRight />
+         <LeftSidebar />
+       
+          <div class="content-body">
+            <div class="container-fluid">
+              <div className="col-lg-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h4 className="card-title">Balance Withdraw Request</h4>
+                    <Link to="/balance-withdraw">
+                      <button type="button" className="btn btn-success float-right">
+                      Make Withdraw
+                      </button>
+                    </Link>
+                  </div>
 
-      <Chatbox />
+                  <div className="card-body">
+                    <div className="table-responsive">
+                      <div className="">
+                        <table className="table">
+                          <thead>
+                          <tr>
+                              <th className="text-nowrap">Transaction ID</th>
+                              <th className="text-nowrap">Date</th>
+                              <th className="text-nowrap">Method type</th>
+                              <th className="text-nowrap">Wallet</th>
+                              <th className="text-nowrap">Amount USD</th>
+                              <th className="text-nowrap">Net Amount USD</th>
+                              <th className="text-nowrap">Country Agent ID</th>
+                              <th className="text-nowrap">Status</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          {data.map((withdraw, index) => (
+                                <tr key={index}>
+                                  <td className="text-nowrap">{withdraw.transaction_id}</td>
+                                  <td className="text-nowrap">{withdraw.createdAt}</td>
+                                  <td className="text-nowrap">
+                                  {withdraw.payment === 1 && 'bkash'}
+                                  {withdraw.payment === 2 && 'Nagad'}
+                                  {withdraw.payment === 3 && 'Rocket'}
+                                  {withdraw.payment === 4 && 'Binance Pay'}
+                                  </td>
+                                  <td className="text-nowrap">{withdraw.acc_number}</td>
+                                  <td className="text-nowrap">${withdraw.amount}</td>
+                                  <td className="text-nowrap">${withdraw.pay_amount}</td>
+                                  <td className="text-nowrap">{withdraw.receiver_user_id}</td>
+                                  <td>
+                                    <button 
+                                      className={`btn ${withdraw.status_type === 1 ? 'btn-success' : 'btn-danger'}`}
+                                    >
+                                  
+                                      {withdraw.status_type === 0 ? 'Pending' : withdraw.status_type === 1 ? 'Paid' : withdraw.status_type === 2 ? 'Rejected' : ''}
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
 
-      <HeaderRight />
+                          </tbody>
+                        </table>
 
-      <LeftSidebar />
+                        {/*  paginate */}
 
-      <div class="content-body">
-        <div class="container-fluid">
-          <div className="col-lg-12">
-            <div className="card">
-              <div className="card-header">
-                <h4 className="card-title">Balance Withdraw Request</h4>
-                <Link to="/balance-withdraw">
-                  <button type="button" className="btn btn-success float-right">
-                   Make Withdraw
-                  </button>
-                </Link>
-              </div>
+                        <MyPaginate
+                          breakLabel="..."
+                          nextLabel="next >"
+                          onPageChange={handlePageClick}
+                          pageRangeDisplayed={5}
+                          pageCount={pageCount}
+                          previousLabel="< previous"
+                          renderOnZeroPageCount={null}
+                          marginPagesDisplayed={2}
+                          containerClassName="pagination justify-content-center"
+                          pageClassName="page-item"
+                          pageLinkClassName="page-link"
+                          previousClassName="page-item"
+                          previousLinkClassName="page-link"
+                          nextClassName="page-item"
+                          nextLinkClassName="page-link"
+                          activeClassName="active"
+                          forcePage={currentPage.current - 1}
+                        />
 
-              <div className="card-body">
-                <div className="table-responsive">
-                  <div className="">
-                    <table className="table">
-                      <thead>
-                      <tr>
-                          <th className="text-nowrap">Transaction ID</th>
-                          <th className="text-nowrap">Date</th>
-                          <th className="text-nowrap">Method type</th>
-                          <th className="text-nowrap">Wallet</th>
-                          <th className="text-nowrap">Amount USD</th>
-                          <th className="text-nowrap">Net Amount USD</th>
-                          <th className="text-nowrap">Country Agent ID</th>
-                          <th className="text-nowrap">Status</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      {data.map((withdraw, index) => (
-                            <tr key={index}>
-                              <td className="text-nowrap">{withdraw.transaction_id}</td>
-                              <td className="text-nowrap">{withdraw.createdAt}</td>
-                              <td className="text-nowrap">
-                              {withdraw.payment === 1 && 'bkash'}
-                              {withdraw.payment === 2 && 'Nagad'}
-                              {withdraw.payment === 3 && 'Rocket'}
-                              {withdraw.payment === 4 && 'Binance Pay'}
-                               </td>
-                              <td className="text-nowrap">{withdraw.acc_number}</td>
-                              <td className="text-nowrap">${withdraw.amount}</td>
-                              <td className="text-nowrap">${withdraw.pay_amount}</td>
-                              <td className="text-nowrap">{withdraw.receiver_user_id}</td>
-                              <td>
-                                <button 
-                                  className={`btn ${withdraw.status_type === 1 ? 'btn-success' : 'btn-danger'}`}
-                                >
-                               
-                                  {withdraw.status_type === 0 ? 'Pending' : withdraw.status_type === 1 ? 'Paid' : withdraw.status_type === 2 ? 'Rejected' : ''}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                        {/* Page Sorting  */}
 
-                      </tbody>
-                    </table>
+                        {/* <input placeholder="Limit" onChange={(e) => setLimit(e.target.value)}
+                        />
+                        <button onClick={changeLimit}>Set Limit</button> */}
 
-                    {/*  paginate */}
-
-                    <MyPaginate
-                      breakLabel="..."
-                      nextLabel="next >"
-                      onPageChange={handlePageClick}
-                      pageRangeDisplayed={5}
-                      pageCount={pageCount}
-                      previousLabel="< previous"
-                      renderOnZeroPageCount={null}
-                      marginPagesDisplayed={2}
-                      containerClassName="pagination justify-content-center"
-                      pageClassName="page-item"
-                      pageLinkClassName="page-link"
-                      previousClassName="page-item"
-                      previousLinkClassName="page-link"
-                      nextClassName="page-item"
-                      nextLinkClassName="page-link"
-                      activeClassName="active"
-                      forcePage={currentPage.current - 1}
-                    />
-
-                    {/* Page Sorting  */}
-
-                    {/* <input placeholder="Limit" onChange={(e) => setLimit(e.target.value)}
-                    />
-                    <button onClick={changeLimit}>Set Limit</button> */}
-
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <Footer />
+         
+        <Footer />
+      </div>
+      
     </>
   );
 };

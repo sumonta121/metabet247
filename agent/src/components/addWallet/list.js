@@ -116,6 +116,8 @@ const List = () => {
 
   return (
     <>
+      <div id="main-wrapper">
+
       <Navbar />
 
       <Chatbox />
@@ -216,6 +218,7 @@ const List = () => {
       </div>
 
       <Footer />
+       </div>
     </>
   );
 };

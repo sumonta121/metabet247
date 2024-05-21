@@ -34,7 +34,7 @@ console.log(role_as);
   const getAllUser = async () => {
     setIsLoading(true);
     try {
-        const response = await axios.get(`/api/commonData/master_agent_list`, {
+        const response = await axios.get(`${apiConfig.baseURL}/api/commonData/master_agent_list`, {
             params: {
                 user_id: user_id,
                 role_as: role_as
@@ -51,6 +51,7 @@ console.log(role_as);
 
   return (
     <>
+     <div id="main-wrapper">
     <Navbar />
     <HeaderRight />
     <LeftSidebar />
@@ -71,7 +72,8 @@ console.log(role_as);
                           <th>Connect</th>
                         </thead>
                         <tbody>
-                          {agentdata.map((item, index) => (
+                        {agentdata.length > 0 ? (
+                          agentdata.map((item, index) => (
                             <tr className="tb1" key={item.id}>
                               <td>
                                 <span className="text1">{index + 1}</span>
@@ -79,15 +81,21 @@ console.log(role_as);
                               <td>{item.user_id}</td>
                               <td>
                                 <Link to={`/chat-with/${item.user_id}`} style={{ backgroundColor: '#ff000000' }}>
-                                    <img
-                                        style={{ maxHeight: '50px' }}
-                                        src="https://cdn-icons-png.freepik.com/512/5962/5962463.png"
-                                        alt="Chat Icon"
-                                    />
+                                  <img
+                                    style={{ maxHeight: '50px' }}
+                                    src="https://cdn-icons-png.freepik.com/512/5962/5962463.png"
+                                    alt="Chat Icon"
+                                  />
                                 </Link>                              
                               </td>
                             </tr>
-                          ))}
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="3">Loading...</td>
+                          </tr>
+                        )}
+
                         </tbody>
                       </table>
                    
@@ -99,6 +107,7 @@ console.log(role_as);
         </div>
       </div>
       <Footer />
+      </div>
     </>
   );
 };

@@ -7,6 +7,8 @@ import LeftSidebar from "../frontend/backend/leftSidebar.js";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min.js";
 import jwt_decode from "jwt-decode";
 import axios from "axios";
+import apiConfig from '../apiConfig';
+
 
 const TpinManage = () => {
   const history = useHistory();
@@ -28,7 +30,7 @@ const TpinManage = () => {
     // Fetch user T-pin data when the component mounts
     const fetchTpinData = async () => {
       try {
-        const response = await axios.get(`/api/users/${userInfo.user_id}`);
+        const response = await axios.get(`${apiConfig.baseURL}/api/users/${userInfo.user_id}`);
         const userData = response.data;
 
         // Set initial T-pin value
@@ -65,7 +67,7 @@ const TpinManage = () => {
     }
 
     try {
-      const res = await axios.post(`/api/users/TpinManage/${user_id}`, {
+      const res = await axios.post(`${apiConfig.baseURL}/api/users/TpinManage/${user_id}`, {
         tpin,
         email,
         user_id,
@@ -85,6 +87,7 @@ const TpinManage = () => {
 
   return (
     <>
+    <div id="main-wrapper">
       <Navbar />
       <Chatbox />
       <HeaderRight />
@@ -155,6 +158,7 @@ const TpinManage = () => {
       </div>
 
       <Footer />
+        </div>
     </>
   );
 };

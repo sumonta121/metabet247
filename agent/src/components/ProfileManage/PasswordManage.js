@@ -8,6 +8,8 @@ import { Link, useHistory } from "react-router-dom/cjs/react-router-dom.min.js";
 import jwt_decode from "jwt-decode";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import apiConfig from '../apiConfig';
+
 
 const PasswordManage = () => {
   const history = useHistory();
@@ -43,7 +45,7 @@ const PasswordManage = () => {
     }
 
     try {
-      const res = await axios.post(`/api/users/PasswordManage/${user_id}`, {
+      const res = await axios.post(`${apiConfig.baseURL}/api/users/PasswordManage/${user_id}`, {
         password,
         email,
         user_id,
@@ -67,6 +69,7 @@ const PasswordManage = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
       <Chatbox />
       <HeaderRight />
@@ -137,6 +140,7 @@ const PasswordManage = () => {
       </div>
 
       <Footer />
+       </div>
     </>
   );
 };

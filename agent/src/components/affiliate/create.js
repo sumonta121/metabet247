@@ -89,6 +89,7 @@ const AffiliateCreate = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
 
       <Chatbox />
@@ -261,6 +262,7 @@ const AffiliateCreate = () => {
       </div>
 
       <Footer />
+      </div>
     </>
   );
 };

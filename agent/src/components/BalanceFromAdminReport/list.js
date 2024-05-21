@@ -120,6 +120,7 @@ const MyPaginate = styled(ReactPaginate).attrs({
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
 
       <Chatbox />
@@ -231,6 +232,7 @@ const MyPaginate = styled(ReactPaginate).attrs({
       </div>
 
       <Footer />
+      </div>
     </>
   );
 };

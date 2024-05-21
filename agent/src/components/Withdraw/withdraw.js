@@ -94,6 +94,7 @@ const Withdraw = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
 
       <Chatbox />
@@ -248,6 +249,7 @@ const Withdraw = () => {
       </div>
 
       <Footer />
+        </div>
     </>
   );
 };

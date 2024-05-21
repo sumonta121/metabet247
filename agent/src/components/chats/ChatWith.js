@@ -34,7 +34,7 @@ const ChatWith = () => {
         const channel = pusher.subscribe('public');
         channel.bind('chat', async function (data) {
           try {
-              const response = await axios.post('/api/broadcast/receive', {
+              const response = await axios.post(`${apiConfig.baseURL}/api/broadcast/receive`, {
                   message: data.message,  senderid: data.senderid, receiverid: data.receiverid,
               });
                 
@@ -60,7 +60,7 @@ const ChatWith = () => {
     
       const fetchChatMessages = async () => {
         try {
-            const response = await axios.post('/api/broadcast/chats', {
+            const response = await axios.post(`${apiConfig.baseURL}/api/broadcast/chats`, {
                 senderid: senderid, receiverid: userId,
             });
             setMessages(response.data.chatMessages);
@@ -85,7 +85,7 @@ const ChatWith = () => {
     
         try {
             const response = await axios.post(
-                '/api/broadcast/broadcast',
+                `${apiConfig.baseURL}/api/broadcast/broadcast`,
                 {
                     message: messageInput, senderid: senderid, receiverid: userId,
                 },
@@ -156,6 +156,7 @@ const ChatWith = () => {
 
     return (
         <>
+          <div id="main-wrapper">
             <Navbar />
             <HeaderRight />
             <LeftSidebar />
@@ -169,23 +170,26 @@ const ChatWith = () => {
                             <div className="card-body">
 
                                 <div className="chat">
-                                    <div className="top">
-                                        <img src="https://assets.edlin.app/images/rossedlin/03/rossedlin-03-100.jpg" alt="Avatar" />
-                                        <div>
-                                            <p> {receiverInfo.first_name} {receiverInfo.last_name} </p>
-                                            <small>Online</small>
-                                        </div>
-                                    </div>
-                               
+                                 
                                     <div className="messages">
-                                        {messages.map((message, index) => (
-                                            <div key={index} className={`message ${message.senderid === senderid ? 'right' : 'left'}`}>
-                                                <img src="https://wac-cdn.atlassian.com/dam/jcr:ba03a215-2f45-40f5-8540-b2015223c918/Max-R_Headshot%20(1).jpg" alt="Avatar" />
-                                                <p>{message.message}</p>
-                                                <br/>
-                                                <small> {formatTimestamp(message.createdAt)} </small>
-                                            </div>
+                                    {messages.map((message, index) => (
+                                            message.senderid === senderid ? (
+                                                <div key={index} className="message right">
+                                                    <img src="https://cdn-icons-png.flaticon.com/32/3135/3135715.png" alt="Avatar" />
+                                                    <p>{message.message}</p>
+                                                    <br/>
+                                                    <small>{formatTimestamp(message.createdAt)}</small>
+                                                </div>
+                                            ) : (
+                                                <div key={index} className="message left">
+                                                    <img src="https://cdn-icons-png.flaticon.com/32/1999/1999625.png" alt="Avatar" />
+                                                    <p>{message.message}</p>
+                                                    <br/>
+                                                    <small>{formatTimestamp(message.createdAt)}</small>
+                                                </div>
+                                            )
                                         ))}
+
                                     </div>
                                     <div className="bottom">
                                         <form onSubmit={handleSubmit}>
@@ -200,6 +204,7 @@ const ChatWith = () => {
                 </div>
             </div>
             <Footer />
+          </div>
         </>
     );
 };

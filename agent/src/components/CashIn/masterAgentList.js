@@ -47,13 +47,14 @@ const user_id = userInfo.user_id;
 
   return (
     <>
+     <div id="main-wrapper">
     <Navbar />
 
-<Chatbox />
+    <Chatbox />
 
-<HeaderRight />
+    <HeaderRight />
 
-<LeftSidebar />
+    <LeftSidebar />
       {/* ... other components */}
       <div className="content-body">
         <div className="container-fluid">
@@ -118,6 +119,7 @@ const user_id = userInfo.user_id;
         </div>
       </div>
       <Footer />
+       </div>
     </>
   );
 };

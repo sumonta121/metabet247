@@ -1,24 +1,20 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
-import classNames from 'classnames';
+import { Link } from "react-router-dom";
+import $ from "jquery";
 
 export default class Navbar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      menuActive: false
-    };
+  componentDidMount() {
+    $(".nav-control").on('click', function() {
+      $('#main-wrapper').toggleClass("menu-toggle");
+      $(".hamburger").toggleClass("is-active");
+    });
   }
 
-  toggleMenu = () => {
-    this.setState(prevState => ({
-      menuActive: !prevState.menuActive
-    }));
-  };
+  componentWillUnmount() {
+    $(".nav-control").off('click');
+  }
 
   render() {
-    const { menuActive } = this.state;
-
     return (
       <>
         <div className="nav-header">
@@ -30,15 +26,12 @@ export default class Navbar extends Component {
             />
           </Link>
           <div className="nav-control">
-            <div
-              className={classNames("hamburger", { "is-active": menuActive })}
-              onClick={this.toggleMenu}
-            >
+            <div className="hamburger">
               <span className="line"></span>
               <span className="line"></span>
               <span className="line"></span>
               <svg
-                style={{ width: "26", height: "26" }}
+                style={{ width: "26px", height: "26px" }}
                 viewBox="0 0 26 26"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -46,57 +39,66 @@ export default class Navbar extends Component {
                 <rect
                   x="22"
                   y="11"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
                   x="11"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
                   x="22"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
                   x="11"
                   y="11"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
                   x="11"
                   y="22"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
                   y="11"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
                   x="22"
                   y="22"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
                 <rect
                   y="22"
-                  style={{ width: "4", height: "4" }}
+                  width="4"
+                  height="4"
                   rx="2"
                   fill="#2A353A"
                 />
@@ -104,10 +106,7 @@ export default class Navbar extends Component {
             </div>
           </div>
         </div>
-        <div
-          id="main-wrapper"
-          className={classNames({ "show menu-toggle": menuActive })}
-        >
+        <div id="main-wrapper">
           {/* Add your main content here */}
         </div>
       </>

@@ -11,6 +11,7 @@ import { useRef } from "react";
 import styled from "styled-components";
 import apiConfig from '../apiConfig';
 import axios from 'axios';
+
 const NewChat = () => {
 
 const token = localStorage.getItem("jwtToken");
@@ -34,7 +35,7 @@ console.log(role_as);
   const getAllUser = async () => {
     setIsLoading(true);
     try {
-        const response = await axios.post(`/api/broadcast/new_chats`, {
+        const response = await axios.post(`${apiConfig.baseURL}/api/broadcast/new_chats`, {
                 user_id: user_id,
                 role_as: role_as
         });   
@@ -49,6 +50,7 @@ console.log(role_as);
 
   return (
     <>
+     <div id="main-wrapper">
     <Navbar />
     <HeaderRight />
     <LeftSidebar />
@@ -57,7 +59,7 @@ console.log(role_as);
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="card-title">Chat Lists</h4>
+                <h4 className="card-title">New Chat Lists</h4>
               </div>
               <div className="card-body">
                 <div className="table-responsive">
@@ -81,7 +83,9 @@ console.log(role_as);
                                         style={{ maxHeight: '50px' }}
                                         src="https://cdn-icons-png.freepik.com/512/5962/5962463.png"
                                         alt="Chat Icon"
-                                    />
+                                    /> 
+                                      <span style={{background:'red',padding:'7px', borderRadius:'25px'}}>{item.unreadCount}</span>
+                                   
                                 </Link>                              
                               </td>
                             </tr>
@@ -97,6 +101,7 @@ console.log(role_as);
         </div>
       </div>
       <Footer />
+       </div>
     </>
   );
 };
