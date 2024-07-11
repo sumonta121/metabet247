@@ -32,12 +32,12 @@ module.exports = function validateAgentInput(data) {
     if (Validator.isEmpty(data.mobile)) {
       errors.mobile = "mobile cannot be empty";
     }
-    if (Validator.isEmpty(data.ref_percentage)) {
-      errors.ref_percentage = "Ref Percentage cannot be empty";
-    }
-    if (Validator.isEmpty(data.deposit_percentage)) {
-        errors.deposit_percentage = "Deposit Percentage cannot be empty";
-      }
+    // if (Validator.isEmpty(data.ref_percentage)) {
+    //   errors.ref_percentage = "Ref Percentage cannot be empty";
+    // }
+    // if (Validator.isEmpty(data.deposit_percentage)) {
+    //     errors.deposit_percentage = "Deposit Percentage cannot be empty";
+    //   }
     
     return {
       errors,

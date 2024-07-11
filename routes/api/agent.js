@@ -337,7 +337,7 @@ router.post("/agent_create", (req, res) => {
           let new_user_id;
           if (Agents) {
             const lastId = Agents.user_id;
-            const newStr = lastId.replace(/^./, "");
+            const newStr = lastId.replace(/[A-Za-z]/g, '');
 
             const newRandomNumber = () => {
               const min = 100; // Minimum 3-digit number
@@ -570,11 +570,12 @@ router.post("/SubResellerCreate", (req, res) => {
           // Otherwise create a new user
 
         const last_user = await User.findOne({ role_as: 2.1 }).sort({ _id: -1 });
-        
+      
+
         let New_user_id;
         if (last_user) {
           const lastId = last_user.user_id;
-          const newStr = lastId.replace(/^./, "");
+          const newStr = lastId.replace(/[A-Za-z]/g, '');
 
           const newRandomNumber = () => {
             const min = 100; // Minimum 3-digit number
@@ -636,7 +637,119 @@ router.post("/SubResellerCreate", (req, res) => {
             });
           });
 
-          await sendWelcomeEmail(New_user_id, req.body.password, req.body.email);
+        //  await sendWelcomeEmail(New_user_id, req.body.password, req.body.email);
+
+
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+
+      getAgent();
+    }
+  });
+});
+
+
+
+
+router.post("/super_agent_creat", (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+
+  //return res.status(400).json(req.body);
+
+
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  // Check to make sure nobody has already registered with a duplicate email
+
+  User.findOne({ email: req.body.email }).then((user) => {
+    if (user) {
+      // Throw a 400 error if the email address already exists
+      return res
+        .status(400)
+        .json({ email: "Already registered with this address" });
+    } else {
+      // or latest query
+
+      async function getAgent() {
+        try {
+          // Otherwise create a new user
+
+        const last_user = await User.findOne({ role_as: 2.1 }).sort({ _id: -1 });
+      
+
+        let New_user_id;
+        if (last_user) {
+          const lastId = last_user.user_id;
+        //  const newStr =  lastId.replace(/^./, "");
+          const newStr = lastId.replace(/[A-Za-z]/g, '');
+       
+          const newRandomNumber = () => {
+            const min = 100; // Minimum 3-digit number
+            const max = 999; // Maximum 3-digit number
+            const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+            return randomNumber;
+          };
+          const latestId = Number(newStr);       
+          const Randomuser_id = Number(newRandomNumber());
+          const IdAdd = latestId + Randomuser_id;
+          New_user_id = "MA" + IdAdd;
+
+
+        } else {
+          const newStr = 1;
+          const newRandomNumber = () => {
+            const min = 100; // Minimum 3-digit number
+            const max = 999; // Maximum 3-digit number
+            const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+            return randomNumber;
+          };
+
+          const latestId = Number(newStr);
+          const Randomuser_id = Number(newRandomNumber());
+          const IdAdd = latestId + Randomuser_id;
+          New_user_id = "MA" + IdAdd;
+        }
+
+        
+
+          const newAgent = new User({
+            user_id: New_user_id,
+            handle: req.body.handle,
+            email: req.body.email,
+            password: req.body.password,
+            tpin: req.body.password,
+            mobile: req.body.mobile,
+            ref_percentage: req.body.ref_percentage,
+            deposit_percentage: req.body.deposit_percentage,
+            status: "Master Agent",
+            refferer: req.body.referrer,
+            role_as: 2.1,
+          //  "1 = Admin, 2 = Country Agent, 2.1 = Master Agent, , 2.2 = Agent, 3 = User, 4 = Affiliate",
+            // currency: 0,
+            history: [{ x: 0, y: 1000 }],
+          });
+
+          bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(newAgent.password, salt, (err, hash) => {
+              if (err) throw err;
+              newAgent.password = hash;
+
+              bcrypt.hash(newAgent.tpin, salt, (err, hash) => {
+                if (err) throw err;
+                newAgent.tpin = hash;
+                newAgent
+                  .save()
+                  .then((user) => res.json(user))
+                  .catch((err) => console.log(err));
+              });
+            });
+          });
+
+        //  await sendWelcomeEmail(New_user_id, req.body.password, req.body.email);
 
 
         } catch (error) {
@@ -1093,7 +1206,7 @@ router.post("/affiliate_create", (req, res) => {
           let new_user_id;
           if (Agents) {
             const lastId = Agents.user_id;
-            const newStr = lastId.replace(/^./, "");
+            const newStr = lastId.replace(/[A-Za-z]/g, '');
 
             const newRandomNumber = () => {
               const min = 100; // Minimum 3-digit number
@@ -1156,7 +1269,7 @@ router.post("/affiliate_create", (req, res) => {
             });
           });
 
-          await sendWelcomeEmail(new_user_id, req.body.password, req.body.email);
+         // await sendWelcomeEmail(new_user_id, req.body.password, req.body.email);
           
         } catch (error) {
           console.log(error.message);

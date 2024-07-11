@@ -86,6 +86,7 @@ const AgentBalanceReport = () => {
 
   return (
     <>
+     <div id="main-wrapper">
       <Navbar />
       <Chatbox />
       <HeaderRight />
@@ -154,6 +155,7 @@ const AgentBalanceReport = () => {
       </div>
 
       <Footer />
+       </div>
     </>
   );
 };

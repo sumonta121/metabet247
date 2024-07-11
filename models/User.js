@@ -109,6 +109,10 @@ const UserSchema = new Schema(
       type: String
     },
 
+    agent_id: {
+      type: String
+    },
+
     ref_percentage: {
       type: String
     },

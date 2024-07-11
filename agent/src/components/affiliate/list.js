@@ -136,11 +136,11 @@ const AffiliateList = () => {
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="card-title">Agent List</h4>
+                <h4 className="card-title">Master Agent List</h4>
 
                 <Link to="/affiliate-create">
                   <button type="button" className="btn btn-success float-right">
-                    Create Agent
+                  Master  Create Agent
                   </button>
                 </Link>
               </div>

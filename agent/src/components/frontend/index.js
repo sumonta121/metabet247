@@ -17,31 +17,17 @@ const index = () => {
     <>
       {/* <Loader /> */}
       {/* <div id="loader"></div> */}
-
       <div id="main-wrapper">
         <Navbar />
-
          <Chatbox />
-
          <HeaderRight />
-
          <LeftSidebar />
-
             {/* <Outlet /> */}
-        
              <DashContent />
             {/* <MainContent /> */}
-
         <Footer />
       </div>
-
-
-
-
-
       {/* <MainContent /> */}
-
-      
     </>
   );
 };

@@ -172,7 +172,7 @@ const List = () => {
                         <th className="text-nowrap">Transaction ID</th>
                         <th className="text-nowrap">Date</th>
                         <th className="text-nowrap">Method type</th>
-                        <th className="text-nowrap">Amount USD</th>
+                        {/* <th className="text-nowrap">Amount </th> */}
                         <th className="text-nowrap">Amount BDT</th>
                         <th className="text-nowrap">From</th>
                         <th className="text-nowrap">TO</th>
@@ -189,7 +189,7 @@ const List = () => {
                                     <td className="text-nowrap">{deposit.trxid}</td> 
                                     <td className="text-nowrap">{deposit.createdAt}</td> 
                                     <td className="text-nowrap">{deposit.selected_method}</td>
-                                    <td className="text-nowrap">${deposit.send_amount}</td> 
+                                    {/* <td className="text-nowrap">${deposit.send_amount}</td>  */}
                                     <td className="text-nowrap">{deposit.send_amount_in_bdt}</td> 
                                     <td className="text-nowrap">{deposit.sender_number}</td> 
                                     <td className="text-nowrap">{deposit.agent_wallet}</td> 

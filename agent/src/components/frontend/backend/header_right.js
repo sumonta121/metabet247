@@ -37,10 +37,10 @@ const HeaderRight = () => {
                     {userInfo && (
                       ` ${
                         userInfo.role_as === 2
-                          ? "Country Agent"
+                          ? "Admin"
                           : userInfo.role_as === 4
-                            ? "Agent"
-                            : "Master Agent"
+                            ? "Master Agent"
+                            : "Super Agent"
                       } Dashboard`
                     )}
                   </div>

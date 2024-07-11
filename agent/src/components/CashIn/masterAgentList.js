@@ -61,7 +61,7 @@ const user_id = userInfo.user_id;
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="card-title">Master Agent List</h4>
+                <h4 className="card-title">Super Agent List</h4>
               </div>
 
               <div className="card-body">

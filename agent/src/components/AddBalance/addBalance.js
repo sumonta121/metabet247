@@ -52,7 +52,7 @@ const AddBalance = () => {
 
     try {
         const { user_id, voucher_id, s_key, agent_userid } = inpval;
-        const response = await axios.post(`api/withdraw/cashin`, {user_id,voucher_id,s_key,agent_userid});
+        const response = await axios.post(`${apiConfig.baseURL}api/withdraw/cashin`, {user_id,voucher_id,s_key,agent_userid});
 
         toast.success(response.data.message, {
             position: toast.POSITION.TOP_RIGHT,

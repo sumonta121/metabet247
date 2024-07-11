@@ -26,8 +26,8 @@ const SubResellerCreate = () => {
     email: "",
     password: "",
     mobile: "",
-    ref_percentage: "",
-    deposit_percentage: "",
+    ref_percentage: 0,
+    deposit_percentage: 0,
     
   });
 
@@ -45,7 +45,7 @@ const SubResellerCreate = () => {
   const addinpdata = async (e) => {
     e.preventDefault();
     const { referrer, handle, email, password, mobile, ref_percentage, deposit_percentage } = inpval;
-    const res = await fetch(`${apiConfig.baseURL}/api/agent/SubResellerCreate`, {
+    const res = await fetch(`${apiConfig.baseURL}/api/agent/super_agent_creat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,11 +99,11 @@ const SubResellerCreate = () => {
           <div class=" col-lg-12">
             <div class="card">
               <div class="card-header">
-                <h4 class="card-title">Reseller Create</h4>
+                <h4 class="card-title"> Create</h4>
 
                 <Link to="/subreseller-index">
                   <button type="button" className="btn btn-success float-right">
-                    Reseller List{" "}
+                     List{" "}
                   </button>
                 </Link>
               </div>
@@ -112,7 +112,7 @@ const SubResellerCreate = () => {
                   <form>
 
                     <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Reseller Name</label>
+                      <label class="col-sm-3 col-form-label"> Name</label>
                       <div class="col-sm-9">
                         <input
                           type="text"
@@ -126,7 +126,7 @@ const SubResellerCreate = () => {
                     </div>
                     
                     <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Reseller Email</label>
+                      <label class="col-sm-3 col-form-label"> Email</label>
                       <div class="col-sm-9">
                         <input
                           type="email"
@@ -166,34 +166,6 @@ const SubResellerCreate = () => {
                         />
                       </div>
                     </div>
-                    
-                    <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Reference Percentage %</label>
-                      <div class="col-sm-9">
-                        <input
-                          type="text"
-                          name="ref_percentage"
-                          class="form-control"
-                          placeholder="Referance Percentage"
-                          onChange={setdata}
-                          value={inpval.ref_percentage}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label"> Deposit Percentage % </label>
-                      <div class="col-sm-9">
-                        <input
-                          type="text"
-                          name="deposit_percentage"
-                          class="form-control"
-                          placeholder="Deposit Percentage"
-                          onChange={setdata}
-                          value={inpval.deposit_percentage}
-                        />
-                      </div>
-                    </div>
 
                     {/* <input
                           type="text"
@@ -228,7 +200,6 @@ const SubResellerCreate = () => {
           </div>
         </div>
       </div>
-
       <Footer />
     </>
   );

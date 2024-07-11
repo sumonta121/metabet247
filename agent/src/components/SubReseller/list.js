@@ -152,11 +152,11 @@ const MyPaginate = styled(ReactPaginate).attrs({
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="card-title">Master Agent List</h4>
+                <h4 className="card-title">Super Agent List</h4>
 
                 <Link to="/subreseller-create">
                   <button type="button" className="btn btn-success float-right">
-                    Create Master Agent
+                    Create Super Agent
                   </button>
                 </Link>
               </div>
@@ -168,7 +168,7 @@ const MyPaginate = styled(ReactPaginate).attrs({
                       <thead>
                         <tr>
                           {/* <th>SL</th> */}
-                          <th> Master Agent ID</th>
+                          <th> Super Agent ID</th>
                           <th>Email</th>
                           <th>Status</th>
                           <th>Action</th>

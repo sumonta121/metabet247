@@ -171,8 +171,8 @@ const List = () => {
                           <th className="text-nowrap">Transaction ID</th>
                           <th className="text-nowrap">Date</th>
                           <th className="text-nowrap">Method type</th>
-                          <th className="text-nowrap">Amount USD</th>
-                          <th className="text-nowrap">Amount USD</th>
+                          {/* <th className="text-nowrap">Amount USD</th>
+                          <th className="text-nowrap">Amount USD</th> */}
                           <th className="text-nowrap">Amount BDT</th>
                           <th className="text-nowrap">From</th>
                           <th className="text-nowrap">User ID</th>

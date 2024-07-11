@@ -28,14 +28,14 @@ export default class leftSidebar extends Component {
         return (
           <Link to="/subreseller-index" className="" ariaExpanded="false">
             <i class="material-icons">grid_view</i>
-            <span class="nav-text"> Create Master Agent </span>
+            <span class="nav-text"> Create Super Agent </span>
           </Link>
         );
       } else if(user_role === 2.1) {
         return (
           <Link to="/affiliate-index" className="" ariaExpanded="false">
           <i class="material-icons">grid_view</i>
-          <span class="nav-text"> Create Agent </span>
+          <span class="nav-text"> Create Master Agent </span>
         </Link>         
         );
       }
@@ -52,9 +52,9 @@ export default class leftSidebar extends Component {
                 </a>
                 <ul ariaExpanded="false">
                   <li>
-                    <Link to="/cashin">Cash In Voucher</Link>
-                    <Link to="/cashin-history">Cash In History</Link>
-                    <Link to="/master-agent-list">Master Agent List (Deposit)</Link>
+                    {/* <Link to="/cashin">Cash In Voucher</Link>
+                    <Link to="/cashin-history">Cash In History</Link> */}
+                    <Link to="/master-agent-list">Super Agent List (Deposit)</Link>
                   </li>
                 </ul>
               </li>
@@ -117,12 +117,12 @@ export default class leftSidebar extends Component {
                     </Link>
               </li>
 
-              <li>
+              {/* <li>
                  <Link to="/balance-withdraw-history" className="" ariaExpanded="false">
                        <i class="material-icons">credit_card</i>
                       <span class="nav-text">Balance Withdraw</span>
                     </Link>
-              </li>
+              </li> */}
 
 
               <li>

@@ -2,18 +2,19 @@ import React, { useEffect, useState } from "react";
 import jwt_decode from "jwt-decode";
 import axios from 'axios';
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import apiConfig from '../../apiConfig';
 
-const DashContent =  () => {
-
+const DashContent = () => {
   // Token
   const token = localStorage.getItem("jwtToken");
   const decodedToken = jwt_decode(token);
   const userInfo = decodedToken;
-  const userID =  userInfo.user_id;
-  const user_role =  userInfo.role_as;
-  // console.log("Id: " + userID);
-  
+  const userID = userInfo.user_id;
+  const user_role = userInfo.role_as;
+  const user_id = userInfo.user_id;
+  const role_as = userInfo.role_as;
 
+  // State variables
   const [totalUsers, setTotalUsers] = useState(() => {
     const storedValue = localStorage.getItem("totalUsers");
     return storedValue ? parseInt(storedValue, 10) : 17842;
@@ -34,16 +35,22 @@ const DashContent =  () => {
     return storedValue ? parseInt(storedValue, 10) : 1309;
   });
 
- const [liveBoardStatus, setLiveBoardStatus] = useState(() => {
+  const [liveBoardStatus, setLiveBoardStatus] = useState(() => {
     const storedValue = localStorage.getItem("liveBoardStatus");
     return storedValue ? parseInt(storedValue, 10) : 2983;
   });
 
-//   const [liveBoardStatus, setLiveBoardStatus] = useState(() => {
-//     const storedValue = localStorage.getItem("liveBoardStatus");
-//     return storedValue || "Active";
-//   });
+  const [inpval, setINP] = useState({
+    agentEmail: userInfo.email,
+  });
 
+  const [data, setDataAxios] = useState(null);
+  const [AgentComm, setAgentComm] = useState(null);
+  const [agentdata, setAgentData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Effects
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTotalUsers((prev) => {
@@ -68,47 +75,82 @@ const DashContent =  () => {
         const newValue = prev + Math.floor(Math.random() * 1);
         localStorage.setItem("playersWon", newValue.toString());
         return newValue;
-      });  
-	  
-	  setLiveBoardStatus((prev) => {
+      });
+
+      setLiveBoardStatus((prev) => {
         const newValue = prev + Math.floor(Math.random() * 1);
         localStorage.setItem("liveBoardStatus", newValue.toString());
         return newValue;
       });
 
-    //   setLiveBoardStatus((prev) => {
-    //     const newValue = Math.random() > 1 ? "Active" : "Inactive";
-    //     localStorage.setItem("liveBoardStatus", newValue);
-    //     return newValue;
-    //   });
     }, 5000);
 
-    // Cleanup the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log('binance user ', userID);
+
+        const response = await axios.get(`/api/agent/agent_balance_check/${userID}`);
+        console.log(response.data); // Log the response data
+        // Handle the response data as needed
+      } catch (error) {
+        console.error('Error:', error);
+        // Handle errors
+      }
+    };
+
+    fetchData();
+  }, [userID]);
 
   useEffect(() => {
-	const fetchData = async () => {
-		try {
-			console.log('binance user ', userID);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/users/shows/${userID}`);
+        setDataAxios(response.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-			const response = await axios.get(`/api/agent/agent_balance_check/${userID}`);
-			console.log(response.data); // Log the response data
-			// Handle the response data as needed
-		} catch (error) {
-			console.error('Error:', error);
-			// Handle errors
-		}
-	};
+    fetchData();
+  }, [userID]);
 
-	fetchData(); // Call the fetchData function when component mounts
-}, []); 
+  useEffect(() => {
+    const fetchDataCom = async () => {
+      try {
+        const response = await axios.get(`/api/agent/agentCommission/${userID}`);
+        const formattedBalance = parseFloat(response.data).toFixed(2);
+        setAgentComm(formattedBalance);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-  
-  const [inpval, setINP] = useState({
-    agentEmail: userInfo.email,
-  });
+    fetchDataCom();
+  }, [userID]);
+
+  useEffect(() => {
+    const getAllUser = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.post(`${apiConfig.baseURL}/api/broadcast/new_chats`, {
+          user_id: user_id,
+          role_as: role_as,
+        });
+        const newData = response.data;
+        setAgentData(newData);
+        setIsLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setIsLoading(false);
+      }
+    };
+
+    getAllUser();
+  }, [user_id, role_as]);
 
   const setdata = (e) => {
     console.log(e.target.value);
@@ -121,69 +163,46 @@ const DashContent =  () => {
     });
   };
 
+  const createAgent = (() => {
+    if (user_role === 2) {
+      return (
+        <Link to="/subreseller-index" className="btn btn-success">
+          <i className="fas fa-download"></i>
+          <span className="nav-text"> Create Master Agent </span>
+        </Link>
+      );
+    } else if (user_role === 2.1) {
+      return (
+        <Link to="/affiliate-index" className="btn btn-success">
+          <i className="fas fa-download"></i>
+          <span className="nav-text"> Create Agent </span>
+        </Link>
+      );
+    }
+    return null; // Default return if no condition is met
+  })();
 
-  // fetch
 
-  const [data, setDataAxios] = useState(null);
-
-  useEffect(() => {
-    
-    const fetchData = async () => {
-      
-      try {
-        const response = await axios.get(`/api/users/shows/${userID}`);
-        // const response = await axios.get(`/api/users/shows/7`);
-        setDataAxios(response.data);
-        // console.log(userID);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const [AgentComm, setAgentComm] = useState(null);
-
-  useEffect(() => {
-    
-    const fetchDataCom = async () => {
-      try {
-        const response = await axios.get(`/api/agent/agentCommission/${userID}`);
-        // const response = await axios.get(`/api/users/shows/7`);
-        setAgentComm(response.data);
-        // console.log(userID);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchDataCom();
-  }, []);
+  const welcomeDashboard = (() => {
+    if (user_role === 2) {
+      return (
+        <span style={{ color: '#FFC107'}} className=""> Admin </span>
+      );
+    } else if (user_role === 2.1) {
+		return (
+			<span style={{ color: '#FFC107'}} className="">Super Agent </span>
+		  );
+    }else if (user_role === 4) {
+		return (
+			<span style={{ color: '#FFC107'}} className="">Master Agent </span>
+		  );
+    }
+    return null; // Default return if no condition is met
+  })();
 
   if (!data) {
     return <div>Loading...</div>;
   }
-
-
-  
-  const createAgent = (() => {
-    if(user_role === 2){
-      return (
-        <Link to="/subreseller-index"  className="btn btn-success">
-            <i className="fas fa-download" ></i> 
-          <span class="nav-text"> Create Master Agent </span>
-        </Link>		
-      );
-    } else if(user_role === 2.1) {
-      return (
-        <Link to="/affiliate-index"  className="btn btn-success">
-            <i className="fas fa-download" ></i> 
-          <span class="nav-text"> Create Agent </span>
-        </Link>		
-      );
-    }
-  })();
 
 
   return (
@@ -198,7 +217,7 @@ const DashContent =  () => {
 						<div className="overflow-hidden bg-transparent dz-crypto-scroll shadow-none">
 						<div className="js-conveyor-example">
 							<marquee class="marq" direction="left" style={{ color:'white', fontWeight:'900', fontSize:'18px' }} loop="">
-								Welcome MAXX BAT
+								Welcome to { welcomeDashboard } Panel
 							</marquee>
 						</div>
 						</div>
@@ -210,13 +229,14 @@ const DashContent =  () => {
 							<div className=" bubles-down">
 								<div>
 									<h2>Welcome, { data[0].first_name } { data[0].last_name }  </h2>
-									<h4>Balance</h4>
-									<h3>$ { data[0].currency } USD</h3>
-
-			<h4>User ID :  { data[0].user_id } </h4>
-			<Link to="/user-bal-tr" className="btn btn-primary"><i className="fas fa-paper-plane" ></i> Send  </Link>
-			&nbsp;
-			<Link to="/add-balance" className="btn btn-success"> <i className="fas fa-plus" ></i> Add  </Link>
+								
+									<h3>Balance: { parseFloat(data[0].currency).toFixed(2) } TK</h3>
+									<h4>User ID :  { data[0].user_id } </h4>
+									<Link to="/user-bal-tr" className="btn btn-primary"><i className="fas fa-paper-plane" ></i> Send  </Link>
+									&nbsp;
+									{/* <a href="https://www.maxxbat.com/create-acount" className="btn btn-success" target="_blank" rel="noopener noreferrer">
+										<i className="fas fa-plus"></i> Create User
+										</a> */}
 								</div>
 								<div className="coin-img">
 								
@@ -227,20 +247,19 @@ const DashContent =  () => {
 					
 					
             
-            	<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-warning">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>Current Balance</p>
-										</div>
-									  </div>
-									<div className="card-body p-0 custome-tooltip">
-						  			<h2 className="count-num text-white">  $ { data[0].currency } USD</h2>
-									</div>  
-								</div>
+				<div className="col-xl-3 col-lg-6 col-sm-6">
+					<div className="card card-box bg-warning">
+						<div className="card-header border-0 pb-0">
+							<div className="chart-num-days">
+								<p>Current Balance</p>
 							</div>
-
-
+							</div>
+						<div className="card-body p-0 custome-tooltip">
+						<h2 className="count-num text-white">   {  parseFloat(data[0].currency).toFixed(2)  } TK</h2>
+						</div>  
+					</div>
+				</div>
+				
             	<div className="col-xl-3 col-lg-6 col-sm-6">
 								<div className="card card-box bg-warning">
 									<div className="card-header border-0 pb-0">
@@ -249,36 +268,36 @@ const DashContent =  () => {
 										</div>
 									  </div>
 									<div className="card-body p-0 custome-tooltip">
-						  			<h2 className="count-num text-white">  $0.00 USD</h2>
+						  			<h2 className="count-num text-white">  0.00 TK</h2>
 									</div>  
 								</div>
 							</div>
 
-            	<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-warning">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>Sales Balance</p>
-										</div>
-									  </div>
-									<div className="card-body p-0 custome-tooltip">
-						  			<h2 className="count-num text-white">  $0.00 USD</h2>
-									</div>  
+					<div className="col-xl-3 col-lg-6 col-sm-6">
+						<div className="card card-box bg-warning">
+							<div className="card-header border-0 pb-0">
+								<div className="chart-num-days">
+									<p>Sales Balance</p>
 								</div>
-							</div>
+								</div>
+							<div className="card-body p-0 custome-tooltip">
+							<h2 className="count-num text-white">  0.00 TK</h2>
+							</div>  
+						</div>
+					</div>
 
-            	<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-warning">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>Comission Balance</p>
-										</div>
-									  </div>
-									<div className="card-body p-0 custome-tooltip">
-						  			<h2 className="count-num text-white">  $ {AgentComm} USD</h2>
-									</div>  
-								</div>
+						{/* <div className="col-xl-3 col-lg-6 col-sm-6">
+							<div className="card card-box bg-warning">
+								<div className="card-header border-0 pb-0">
+									<div className="chart-num-days">
+										<p>Comission Balance</p>
+									</div>
+									</div>
+								<div className="card-body p-0 custome-tooltip">
+								<h2 className="count-num text-white">   {AgentComm} TK</h2>
+								</div>  
 							</div>
+						</div> */}
 
             	<div className="col-xl-3 col-lg-6 col-sm-6">
 								<div className="card card-box bg-warning">
@@ -355,7 +374,7 @@ const DashContent =  () => {
 												
 												 Players Won
 											</p>
-											<h2 className="count-num text-white">$ {playersWon}</h2>
+											<h2 className="count-num text-white"> {playersWon} </h2>
 										</div>
                    					  <img src="https://cdn-icons-png.flaticon.com/512/4020/4020839.png" style={{maxHeight:'35px' }} />
 									</div>
@@ -372,7 +391,7 @@ const DashContent =  () => {
 												
 										  		Live Boards
 											</p>
-											<h2 className="count-num text-white">${ liveBoardStatus }</h2>
+											<h2 className="count-num text-white">{ liveBoardStatus }</h2>
 										</div>
                     <img src="https://cdn-icons-png.flaticon.com/512/2061/2061105.png" style={{maxHeight:'35px' }} />
 									</div>
@@ -382,7 +401,7 @@ const DashContent =  () => {
 								</div>
 							</div>
               
-              <div className="col-xl-3 col-lg-6 col-sm-6">
+                           {/* <div className="col-xl-3 col-lg-6 col-sm-6">
 								<div className="card card-box bg-primary">
 									<div className="card-header border-0 pb-0">
 										<div className="chart-num-days">
@@ -394,7 +413,7 @@ const DashContent =  () => {
 									</div>
 								</div>
 							</div>
-   
+    */}
            
            			   <div className="col-xl-3 col-lg-6 col-sm-6" >
 							<div className="card card-box bg-primary">
@@ -421,6 +440,51 @@ const DashContent =  () => {
 					</form>
 
               </div>
+
+
+			  <div className="card-body">
+                <div className="table-responsive">
+                  <div className="">
+                      <table className="table">
+                        <thead>
+                          <th>SL</th>
+                          <th>USER ID</th>
+                          <th>Connect</th>
+                        </thead>
+                        <tbody>
+						{agentdata?.length > 0 ? (
+                            agentdata.map((item, index) => (
+								<tr className="tb1" key={item.id}>
+									<td>
+									<span className="text1">{index + 1}</span>
+									</td>
+									<td>{item.user_id}</td>
+									<td>
+									<Link to={`/chat-with/${item.user_id}`} style={{ backgroundColor: '#ff000000' }}>
+										<img
+											style={{ maxHeight: '50px' }}
+											src="https://cdn-icons-png.freepik.com/512/5962/5962463.png"
+											alt="Chat Icon"
+										/> 
+											<span style={{background:'red',padding:'7px', borderRadius:'25px'}}>{item.unreadCount}</span>
+										
+									</Link>                              
+									</td>
+								</tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="3">Nothing...</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                   
+                  </div>
+                </div>
+              </div>
+
+
             </div>
           </div>
         </div>

@@ -27,8 +27,8 @@ const AffiliateCreate = () => {
     mobile: "",
     personal_mobile: "",
     address: "",
-    ref_percentage: "",
-    deposit_percentage: "",
+    ref_percentage: 0,
+    deposit_percentage: 0,
     
   });
 
@@ -103,7 +103,7 @@ const AffiliateCreate = () => {
           <div class=" col-lg-12">
             <div class="card">
               <div class="card-header">
-                <h4 class="card-title">Agent Create</h4>
+                <h4 class="card-title">Master Agent Create</h4>
 
                 <Link to="/affiliate-index">
                   <button type="button" className="btn btn-success float-right">
@@ -116,7 +116,7 @@ const AffiliateCreate = () => {
                   <form>
 
                     <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Agent Name</label>
+                      <label class="col-sm-3 col-form-label">Master Agent Name</label>
                       <div class="col-sm-9">
                         <input
                           type="text"
@@ -199,7 +199,7 @@ const AffiliateCreate = () => {
                       </div>
                     </div>
 
-                    <div class="mb-3 row">
+                    {/* <div class="mb-3 row">
                       <label class="col-sm-3 col-form-label">Withdrawal Percentage %</label>
                       <div class="col-sm-9">
                         <input
@@ -225,7 +225,7 @@ const AffiliateCreate = () => {
                           value={inpval.deposit_percentage}
                         />
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* <input
                           type="text"
