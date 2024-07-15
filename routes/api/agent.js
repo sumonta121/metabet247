@@ -613,10 +613,10 @@ router.post("/SubResellerCreate", (req, res) => {
             mobile: req.body.mobile,
             ref_percentage: req.body.ref_percentage,
             deposit_percentage: req.body.deposit_percentage,
-            status: "Master Agent",
+            status: "Super Agent",
             refferer: req.body.referrer,
             role_as: 2.1,
-          //  "1 = Admin, 2 = Country Agent, 2.1 = Master Agent, , 2.2 = Agent, 3 = User, 4 = Affiliate",
+          //  "1 = Admin, 2 = Country Agent, 2.1 = Super Agent, , 2.2 = Agent, 3 = User, 4 = Affiliate",
             // currency: 0,
             history: [{ x: 0, y: 1000 }],
           });
@@ -725,10 +725,10 @@ router.post("/super_agent_creat", (req, res) => {
             mobile: req.body.mobile,
             ref_percentage: req.body.ref_percentage,
             deposit_percentage: req.body.deposit_percentage,
-            status: "Master Agent",
+            status: "Super Agent",
             refferer: req.body.referrer,
             role_as: 2.1,
-          //  "1 = Admin, 2 = Country Agent, 2.1 = Master Agent, , 2.2 = Agent, 3 = User, 4 = Affiliate",
+          //  "1 = Admin, 2 = Country Agent, 2.1 = Super Agent, , 2.2 = Agent, 3 = User, 4 = Affiliate",
             // currency: 0,
             history: [{ x: 0, y: 1000 }],
           });
@@ -813,7 +813,7 @@ router.get("/paginatedSubReseller", async (req, res) => {
   const referrerid  = req.query.referrerid;
 
   //const allUser = await User.find({  refferer: referrerid  });
-  const allUser = await User.find({  status: 'Master Agent'  });
+  const allUser = await User.find({  refferer: referrerid , status: 'Super Agent'  });
 
   const page = parseInt(req.query.page)
   const limit = parseInt(req.query.limit)
@@ -2090,6 +2090,61 @@ router.post("/user_withdraw_update", async (req, res) => {
 
 
 router.post("/user_transfer_update", async (req, res) => {
+  try {
+    const depositId = req.body.depositId;
+
+    // Fetch the deposit details
+    const result = await Deposit.findOne({ _id: depositId });
+
+    if (!result) {
+      return res.status(404).json({ message: 'Deposit not found' });
+    }
+
+    if (result.status == 'paid') {
+      return res.status(404).json({ message: 'Sorry! This is already paid' });
+    }
+
+    // Fetch user details based on the user_id in the result
+    const user_details = await User.findOne({ user_id: result.user_id });
+    if (!user_details) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Fetch agent details based on the agent_id in the result
+    const agent_details = await User.findOne({ user_id: result.agent_id });
+    if (!agent_details) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+   if (agent_details.currency < result.send_amount) {
+      return res.status(404).json({ message: 'You dont have sufficiant balance...' });
+    }
+
+    
+
+    
+    // Update user and agent currency amounts
+    user_details.currency += Number(result.send_amount);
+    await user_details.save();
+
+    agent_details.currency -= Number(result.send_amount);
+    await agent_details.save();
+
+    // Update the status of the deposit
+    result.status = "paid";
+    await result.save();
+
+    // Send the appropriate response
+    res.json({ message: 'Payment approved successfully!' });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
+router.post("/balance_send_to_superagent", async (req, res) => {
   try {
     const depositId = req.body.depositId;
 

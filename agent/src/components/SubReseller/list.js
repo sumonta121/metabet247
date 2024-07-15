@@ -230,9 +230,9 @@ const MyPaginate = styled(ReactPaginate).attrs({
                                         <i className="fa fa-pencil">  </i>
                                       </Link>
 
-                                      <button onClick={handleDelete} className="btn btn-danger shadow btn-xs sharp">
+                                      {/* <button onClick={handleDelete} className="btn btn-danger shadow btn-xs sharp">
                                         <i className="fa fa-trash"></i>
-                                      </button>
+                                      </button> */}
                                       
 
                                       {/* <Link

@@ -41,13 +41,13 @@ const Transfer = () => {
     if (user_role === 2) {
       return (
         <div className="mb-3 row">
-          <label className="col-sm-3 col-form-label">Master Agent ID</label>
+          <label className="col-sm-3 col-form-label">Super Agent ID</label>
           <div className="col-sm-9">
             <input
               type="text"
               name="user_id"
               className="form-control"
-              placeholder="Master Agent Id"
+              placeholder="Super Agent Id"
               onChange={setdata}
               value={inpval.user_id}
             />
@@ -92,7 +92,7 @@ const Transfer = () => {
   const addinpdata = async (e) => {
     e.preventDefault();
     const { user_id, amount, s_key, agent_id, agentEmail } = inpval;
-    const res = await fetch(`${apiConfig.baseURL}/api/agent/user_transfer_update`, {
+    const res = await fetch(`${apiConfig.baseURL}/api/agent/balance_send_to_superagent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
