@@ -36,7 +36,7 @@ const Transfer = () => {
   };
 
   const history = useHistory();
-
+  const [isLoading, setIsLoading] = useState(false);
   const balanceTransfer = (() => {
     if (user_role === 2) {
       return (
@@ -91,6 +91,7 @@ const Transfer = () => {
 
   const addinpdata = async (e) => {
     e.preventDefault();
+    setIsLoading(true); 
     const { user_id, amount, s_key, agent_id, agentEmail } = inpval;
     const res = await fetch(`${apiConfig.baseURL}/api/agent/balance_send_to_superagent`, {
       method: "POST",
@@ -108,29 +109,17 @@ const Transfer = () => {
 
     const data = await res.json();
     console.log(data);
-
+    setIsLoading(false);
     if (res.status === 200) {
       alert("Transfer Successfully");
-      history.push("/user-bal-list");
-    } else {
-      if (data.email) {
-        // alert(data.email);
-      }
-
-      if (data.amount) {
-        // alert(data.amount);
-      }
-      if (data.s_key) {
-        // alert(data.s_key);
-      }
-      console.log(res.status);
-    }
+      history.push("/user-balance-report");
+    } 
 
     if (res.status === 404) {
       alert("This User does not exist");
     }
     if (res.status === 422) {
-      alert("Not Available Money");
+      alert(data);
     }
     if (res.status === 400) {
       alert("Incorrect Security T-PIN");
@@ -154,7 +143,7 @@ const Transfer = () => {
             <div class="card-header">
               <h4 class="card-title">Balance Transfer</h4>
 
-              <Link to="/user-bal-list">
+              <Link to="/user-balance-report">
                 <button type="button" className="btn btn-success float-right">
                  Report{" "}
                 </button>
@@ -163,19 +152,7 @@ const Transfer = () => {
             <div class="card-body">
               <div class="basic-form">
                 <form>
-                  {/* <div class="mb-3 row">
-                    <label class="col-sm-3 col-form-label">User Email</label>
-                    <div class="col-sm-9">
-                      <input
-                        type="email"
-                        name="email"
-                        class="form-control"
-                        placeholder="Email"
-                        onChange={setdata}
-                        value={inpval.email}
-                      />
-                    </div>
-                  </div> */}
+                 
 
                   { balanceTransfer }
                   <div class="mb-3 row">
@@ -191,11 +168,7 @@ const Transfer = () => {
                         onKeyDown={preventMinus}
                         min={0}
                         step={1}
-                        // keydown={(event) => {
-                        //   if (event.charCode < 48) {
-                        //     event.preventDefault();
-                        //   }
-                        // }}
+                       
                       />
                     </div>
                   </div>
@@ -206,7 +179,7 @@ const Transfer = () => {
                     </label>
                     <div class="col-sm-9">
                       <input
-                        type="text"
+                        type="password"
                         name="s_key"
                         required
                         class="form-control"
@@ -217,12 +190,7 @@ const Transfer = () => {
                     </div>
                   </div>
 
-                  {/* <input
-                        type="text"
-                        name="agentBalance"                       
-                        onChange={setdata}
-                        value={userInfo.currency}
-                      /> */}
+             
 
                   <input
                     type="hidden"
@@ -241,13 +209,14 @@ const Transfer = () => {
                   <div class="mb-3 row" align="right">
                     <div class="col-sm-12">
                       <button
-                        type="submit"
-                        name="send"
-                        onClick={addinpdata}
-                        class="btn btn-primary"
-                      >
-                        Transfer
-                      </button>
+                          type="submit"
+                          name="send"
+                          onClick={addinpdata}
+                          className="btn btn-primary"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "Processing..." : "Transfer"}
+                        </button>
                     </div>
                   </div>
                 </form>

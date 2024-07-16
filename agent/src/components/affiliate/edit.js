@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../frontend/backend/navbar.js";
 import Footer from "../frontend/backend/footer.js";
@@ -7,20 +7,16 @@ import HeaderRight from "../frontend/backend/header_right.js";
 import LeftSidebar from "../frontend/backend/leftSidebar.js";
 import { Link, useHistory } from "react-router-dom/cjs/react-router-dom.min.js";
 import jwt_decode from "jwt-decode";
-// import  { useHistory  } from 'react-router-dom'
 import apiConfig from '../apiConfig';
 
 const AffiliateEdit = ({ match }) => {
   const Id = match.params._id;
-  // console.log("Id: "+ Id)
   let history = useHistory();
 
   // Token
   const token = localStorage.getItem("jwtToken");
   const decodedToken = jwt_decode(token);
   const userInfo = decodedToken;
-  const user_id = userInfo.user_id;
-
 
   // set data
   const [inpval, setINP] = useState({
@@ -30,256 +26,185 @@ const AffiliateEdit = ({ match }) => {
     mobile: "",
     personal_mobile: "",
     address: "",
-    ref_percentage: "",
-    deposit_percentage: "",
+    ref_percentage: "0",
+    deposit_percentage: "0",
   });
+
+  const [isLoading, setIsLoading] = useState(false); // Loading state for data fetching
+  const [isUpdating, setIsUpdating] = useState(false); // Loading state for updating data
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const res = await axios.get(`${apiConfig.baseURL}/api/agent/getaffiliate/${Id}`);
+        const data = res.data;
+        setINP(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      setIsLoading(false);
+    };
+    fetchData();
+  }, [Id]);
+
   const setdata = (e) => {
-    console.log(e.target.value);
     const { name, value } = e.target;
-    setINP((preval) => {
-      return {
-        ...preval,
-        [name]: value,
-      };
-    });
+    setINP((preval) => ({
+      ...preval,
+      [name]: value,
+    }));
   };
 
   const addinpdata = async (e) => {
     e.preventDefault();
-    const {
-      handle,
-      email,
-      password,
-      address,
-      personal_mobile,
-      mobile,
-      ref_percentage,
-      deposit_percentage,
-    } = inpval;
-    // const res = await fetch(`/api/agent/updateaffiliate/11`, {
-    const res = await fetch(`${apiConfig.baseURL}/api/agent/updateaffiliate/${Id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        handle,
-        email,
-        password,
-        address,
-        personal_mobile,
-        mobile,
-        ref_percentage,
-        deposit_percentage,
-      }),
-    });
-
-    const data = await res.json();
-    console.log(data);
-
-    if (res.status === 200) {
-      alert("Update Successfully");
-      history.push("/affiliate-index");
-    } else {
-      if (data.email) {
-        // alert(data.email);
+    setIsUpdating(true);
+    const { handle, email, password, address, personal_mobile, mobile, ref_percentage, deposit_percentage } = inpval;
+    try {
+      const res = await fetch(`${apiConfig.baseURL}/api/agent/updateaffiliate/${Id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          handle,
+          email,
+          password,
+          address,
+          personal_mobile,
+          mobile,
+          ref_percentage,
+          deposit_percentage,
+        }),
+      });
+      const data = await res.json();
+      if (res.status === 200) {
+        alert("Update Successfully");
+        history.push("/affiliate-index");
+      } else {
+        console.log(res.status);
       }
-      console.log(res.status);
+      if (res.status === 400) {
+        alert("A user has already registered with this address");
+      }
+      if (res.status === 401) {
+        alert("Fill up all fields & Password between 6-30 chars");
+      }
+    } catch (error) {
+      console.error("Error updating data:", error);
     }
-
-    if (res.status === 400) {
-      alert("A user has already registered with this address");
-      // console.log("Data Inserted successfully");
-    }
-    if (res.status === 401) {
-      alert("Fillup All field & Password between 6-30 chars");
-      // console.log("Data Inserted successfully");
-    }
+    setIsUpdating(false);
   };
 
   return (
     <>
-     <div id="main-wrapper">
-      <Navbar />
-
-      <Chatbox />
-
-      <HeaderRight />
-
-      <LeftSidebar />
-
-      <div class="content-body">
-        <div class="container-fluid">
-          <div class=" col-lg-12">
-            <div class="card">
-              <div class="card-header">
-                <h4 class="card-title">Agent Edit  </h4>
-
-                {/* <Link to="/agent-index">
-                  <button type="button" className="btn btn-success float-right">
-                    Agent List{" "}
-                  </button>
-                </Link> */}
-              </div>
-              <div class="card-body">
-                <div class="basic-form">
-                  <form>
-
-                   
-
-                    {/* {data.map((element, id) => {
-                      return (
-                        <> */}
+      <div id="main-wrapper">
+        <Navbar />
+        <Chatbox />
+        <HeaderRight />
+        <LeftSidebar />
+        <div className="content-body">
+          <div className="container-fluid">
+            <div className="col-lg-12">
+              <div className="card">
+                <div className="card-header">
+                  <h4 className="card-title">Agent Edit: USER ID ( {inpval.user_id} )</h4>
+                </div>
+                <div className="card-body">
+                  <div className="basic-form">
+                    {isLoading ? (
+                      <div>Loading...</div>
+                    ) : (
+                      <form>
+                        <div className="mb-3 row">
+                          <label className="col-sm-3 col-form-label">Agent Name</label>
+                          <div className="col-sm-9">
+                            <input
+                              type="text"
+                              name="handle"
+                              className="form-control"
+                              placeholder="Name"
+                              onChange={setdata}
+                              value={inpval.handle}
+                            />
+                          </div>
+                        </div>
+                        <div className="mb-3 row">
+                          <label className="col-sm-3 col-form-label">Password</label>
+                          <div className="col-sm-9">
+                            <input
+                              type="password"
+                              name="password"
+                              className="form-control"
+                              placeholder="Password"
+                              onChange={setdata}
+                              value="{inpval.password}"
+                            />
+                          </div>
+                        </div>
+                        <div className="mb-3 row">
+                          <label className="col-sm-3 col-form-label">WTSAPP/Telegram</label>
+                          <div className="col-sm-9">
+                            <input
+                              type="number"
+                              name="mobile"
+                              className="form-control"
+                              placeholder="Enter number with country code"
+                              onChange={setdata}
+                              value={inpval.mobile}
+                            />
+                          </div>
+                        </div>
+                        <div className="mb-3 row">
+                          <label className="col-sm-3 col-form-label">Personal Mobile</label>
+                          <div className="col-sm-9">
+                            <input
+                              type="number"
+                              name="personal_mobile"
+                              className="form-control"
+                              placeholder="Personal Mobile number"
+                              onChange={setdata}
+                              value={inpval.personal_mobile}
+                            />
+                          </div>
+                        </div>
+                        <div className="mb-3 row">
+                          <label className="col-sm-3 col-form-label">Address</label>
+                          <div className="col-sm-9">
+                            <input
+                              type="text"
+                              name="address"
+                              className="form-control"
+                              placeholder="Enter your full address"
+                              onChange={setdata}
+                              value={inpval.address}
+                            />
+                          </div>
+                        </div>
                         
-                          <div class="mb-3 row">
-                            <label class="col-sm-3 col-form-label">
-                              Agent Name
-                            </label>
-                            <div class="col-sm-9">
-                              <input
-                                type="text"
-                                name="handle"
-                                class="form-control"
-                                placeholder="Name"
-                                onChange={setdata}
-                                value={inpval.handle}
-                                // value={element.handle}
-                              />
-                            </div>
+                    
+                        <div className="mb-3 row">
+                          <div className="col-sm-10">
+                            <button
+                              type="submit"
+                              name="send"
+                              onClick={addinpdata}
+                              className="btn btn-primary"
+                              disabled={isUpdating}
+                            >
+                              {isUpdating ? "Updating..." : "Update"}
+                            </button>
                           </div>
-
-                       
-                          <div class="mb-3 row">
-                            <label class="col-sm-3 col-form-label">
-                              Password
-                            </label>
-                            <div class="col-sm-9">
-                              <input
-                                type="password"
-                                name="password"
-                                class="form-control"
-                                placeholder="Password"
-                                onChange={setdata}
-                                value={inpval.password}
-                              />
-                            </div>
-                          </div>
-
-                             
-                    <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">WTSAPP/Telegram</label>
-                      <div class="col-sm-9">
-                        <input
-                          type="number"
-                          name="mobile"
-                          class="form-control"
-                          placeholder="Enter number with country code"
-                          onChange={setdata}
-                          value={inpval.mobile}
-                        />
-                      </div>
-                    </div>
-
-                    <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Personal Mobile</label>
-                      <div class="col-sm-9">
-                        <input
-                          type="number"
-                          name="personal_mobile"
-                          class="form-control"
-                          placeholder="Personal Mobile number"
-                          onChange={setdata}
-                          value={inpval.personal_mobile}
-                        />
-                      </div>
-                    </div>
-
-                    <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Address</label>
-                      <div class="col-sm-9">
-                        <input
-                          type="text"
-                          name="address"
-                          class="form-control"
-                          placeholder="Enter your full address"
-                          onChange={setdata}
-                          value={inpval.address}
-                        />
-                      </div>
-                    </div>
-
-                          <div class="mb-3 row">
-                            <label class="col-sm-3 col-form-label">
-                              Reference Percentage %
-                            </label>
-                            <div class="col-sm-9">
-                              <input
-                                type="text"
-                                name="ref_percentage"
-                                class="form-control"
-                                placeholder="Referance Percentage"
-                                onChange={setdata}
-                                value={inpval.ref_percentage}
-                              />
-                            </div>
-                          </div>
-
-                          <div class="mb-3 row">
-                            <label class="col-sm-3 col-form-label">
-                              {" "}
-                              Deposit Percentage %{" "}
-                            </label>
-                            <div class="col-sm-9">
-                              <input
-                                type="text"
-                                name="deposit_percentage"
-                                class="form-control"
-                                placeholder="Deposit Percentage"
-                                onChange={setdata}
-                                value={inpval.deposit_percentage}
-                              />
-                            </div>
-                          </div>
-
-                          {/* <input
-                          type="text"
-                          name="agentBalance"                       
-                          onChange={setdata}
-                          value={userInfo.currency}
-                        /> */}
-
-                          {/* <input
-                            type="hidden"
-                            name="loginEmail"
-                            onChange={setdata}
-                            value={userInfo.email}
-                          /> */}
-
-                          <div class="mb-3 row">
-                            <div class="col-sm-10">
-                              <button
-                                type="submit"
-                                name="send"
-                                onClick={addinpdata}
-                                class="btn btn-primary"
-                              >
-                                Update
-                              </button>
-                            </div>
-                          </div>
-
-                        {/* </>
-                      );
-                    })} */}
-                  </form>
+                        </div>
+                      </form>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <Footer />
+        <Footer />
       </div>
     </>
   );

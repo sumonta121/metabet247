@@ -45,6 +45,13 @@ export default class leftSidebar extends Component {
     const cashInReport = (() => {
       if(user_role === 4){
         return (
+          <>
+              <li>
+                  <Link to="/add-wallet-list" className="" ariaExpanded="false">
+                    <i class="material-icons">credit_card</i>
+                    <span class="nav-text"> Add Wallet</span>
+                  </Link>
+              </li> 
               <li>
                 <a href="javascript:void(0);" className="has-arrow " ariaExpanded="false">
                   <i className="material-icons">description</i>
@@ -59,6 +66,7 @@ export default class leftSidebar extends Component {
                   </li>
                 </ul>
               </li>
+          </>
         );
       } 
     })();
@@ -125,13 +133,13 @@ export default class leftSidebar extends Component {
                     </Link>
               </li> */}
 
-
+{/* 
               <li>
                    <Link to="/add-wallet-list" className="" ariaExpanded="false">
                      <i class="material-icons">credit_card</i>
                      <span class="nav-text"> Add Wallet</span>
                     </Link>
-              </li> 
+              </li>  */}
 
 
               {/* <li>

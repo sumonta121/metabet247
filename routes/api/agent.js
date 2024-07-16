@@ -1287,6 +1287,20 @@ router.get("/editAffiliate/:_id").get(function (req, res) {
   User.findOne({ _id: rowId }).then((user) => res.json(user));
 });
 
+router.get("/getaffiliate/:_id", async (req, res) => {
+  try {
+    const rowId = req.params._id;
+    const user = await User.findOne({ _id: rowId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 // update affiliate
 router.post("/updateaffiliate/:_id", (req, res) => {
   const { errors, isValid } = validateAgentInput(req.body);
@@ -2178,49 +2192,90 @@ router.post("/user_transfer_update", async (req, res) => {
 
 router.post("/balance_send_to_superagent", async (req, res) => {
   try {
-    const depositId = req.body.depositId;
+    const { user_id, amount, agent_id, s_key } = req.body;
 
-    // Fetch the deposit details
-    const result = await Deposit.findOne({ _id: depositId });
-
-    if (!result) {
-      return res.status(404).json({ message: 'Deposit not found' });
+    if (amount < 0) {
+      return res.status(422).json("Amount is incorrect");
     }
 
-    if (result.status == 'paid') {
-      return res.status(404).json({ message: 'Sorry! This is already paid' });
+    // Fetch sender (agent) details
+    const sender_details = await User.findOne({ user_id: agent_id });
+    if (!sender_details) {
+      return res.status(422).json("Agent not found");
     }
 
-    // Fetch user details based on the user_id in the result
-    const user_details = await User.findOne({ user_id: result.user_id });
-    if (!user_details) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    // Fetch agent details based on the agent_id in the result
-    const agent_details = await User.findOne({ user_id: result.agent_id });
-    if (!agent_details) {
-      return res.status(404).json({ message: 'Agent not found' });
+    // Fetch receiver (user) details
+    const receiver_details = await User.findOne({ user_id: user_id });
+    if (!receiver_details) {
+      return res.status(422).json("User not found");
     }
 
-    // Update user and agent currency amounts
-    user_details.currency += Number(result.send_amount);
-    await user_details.save();
 
-    agent_details.currency -= Number(result.send_amount);
-    await agent_details.save();
+    if(sender_details.role_as == 2){
+      if(receiver_details.role_as != 2.1){
+        return res.status(422).json("You have entered wrong USER ID. Please check again");
+      }
+    }
 
-    // Update the status of the deposit
-    result.status = "paid";
-    await result.save();
+    if(sender_details.role_as == 2.1){
+      if(receiver_details.role_as != 4){
+        return res.status(422).json("You have entered wrong USER ID. Please check again");
+      }
+    }
 
-    // Send the appropriate response
-    res.json({ message: 'Payment approved successfully!' });
+
+    if(sender_details.role_as == 4){
+      if(receiver_details.role_as != 3){
+        return res.status(422).json("You have entered wrong USER ID. Please check again");
+      }
+    }
+
+
+    const agentCurrency = Number(sender_details.currency);
+    const transferAmount = Number(amount);
+
+    if (agentCurrency < transferAmount) {
+      return res.status(422).json("Not Available Balance");
+    }
+
+    const isMatch = await bcrypt.compare(s_key, sender_details.tpin);
+    if (!isMatch) {
+      return res.status(400).json("Incorrect Security PIN");
+    }
+
+    // Update receiver's balance
+    const receiverOldCurrency = Number(receiver_details.currency);
+    const receiverNewCurrency = receiverOldCurrency + transferAmount;
+    await User.updateOne(
+      { user_id: receiver_details.user_id },
+      { currency: receiverNewCurrency }
+    );
+
+    // Update agent's balance
+    const agentNewCurrency = agentCurrency - transferAmount;
+    await User.updateOne(
+      { user_id: sender_details.user_id },
+      { currency: agentNewCurrency }
+    );
+
+    // Save transaction record
+    const userBLTRData = new UserBLTR({
+      sender_id: sender_details.user_id,
+      user_id: receiver_details.user_id,
+      status_type: 1,
+      amount: transferAmount,
+      s_key: 1,
+    });
+
+    await userBLTRData.save();
+
+    res.json({ message: 'Balance transferred successfully!' });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 
 
