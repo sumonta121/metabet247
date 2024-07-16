@@ -25,8 +25,8 @@ const AffiliateCreate = () => {
     email: "",
     password: "",
     mobile: "",
-    personal_mobile: "",
-    address: "",
+    personal_mobile: "0",
+    address: "N/A",
     ref_percentage: 0,
     deposit_percentage: 0,
     
@@ -158,7 +158,7 @@ const AffiliateCreate = () => {
                     </div>
                     
                     <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">WTSAPP/Telegram</label>
+                      <label class="col-sm-3 col-form-label">Mobile</label>
                       <div class="col-sm-9">
                         <input
                           type="number"
@@ -171,7 +171,7 @@ const AffiliateCreate = () => {
                       </div>
                     </div>
 
-                    <div class="mb-3 row">
+                    {/* <div class="mb-3 row">
                       <label class="col-sm-3 col-form-label">Personal Mobile</label>
                       <div class="col-sm-9">
                         <input
@@ -183,9 +183,9 @@ const AffiliateCreate = () => {
                           value={inpval.personal_mobile}
                         />
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div class="mb-3 row">
+                    {/* <div class="mb-3 row">
                       <label class="col-sm-3 col-form-label">Address</label>
                       <div class="col-sm-9">
                         <input
@@ -197,7 +197,7 @@ const AffiliateCreate = () => {
                           value={inpval.address}
                         />
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* <div class="mb-3 row">
                       <label class="col-sm-3 col-form-label">Withdrawal Percentage %</label>

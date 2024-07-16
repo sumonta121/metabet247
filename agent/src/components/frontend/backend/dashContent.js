@@ -199,11 +199,45 @@ const DashContent = () => {
     }
     return null; // Default return if no condition is met
   })();
+  
+  const refferelLingk = (() => {
+    if (user_role === 4) {
+		const refLink = `https://www.maxxbat.com/create-acount?p=${user_id}`;
+		const copyToClipboard = () => {
+			navigator.clipboard.writeText(refLink).then(() => {
+			alert('Referral link copied to clipboard!');
+			});
+		};
+      return (<>
+		<a href={`https://www.maxxbat.com/create-acount?p=${user_id}`} className="btn btn-success" target="_blank" rel="noopener noreferrer">
+			<i className="fas fa-plus"></i> Create User
+		</a>
+		
+			<div style={{ fontWeight: '900', color: '#35C31E', paddingTop:'10px' }} className="">
+				Referral Link: 
+				<div className="d-flex align-items-center">
+					<input type="text" readOnly  value={`https://www.maxxbat.com/create-acount?p=${user_id}`} className="form-control me-2" style={{ backgroundColor: '#301F61' }} />
+					<button onClick={copyToClipboard} className="btn btn-success">
+					Copy
+					</button>
+				</div>
+			</div></>
+      );
+    } else {
+		return (
+			<span> </span>
+		  );
+    }
+   
+  })();
+
 
   if (!data) {
     return <div>Loading...</div>;
   }
 
+
+ 
 
   return (
     <>
@@ -234,9 +268,10 @@ const DashContent = () => {
 									<h4>User ID :  { data[0].user_id } </h4>
 									<Link to="/user-bal-tr" className="btn btn-primary"><i className="fas fa-paper-plane" ></i> Send  </Link>
 									&nbsp;
-									{/* <a href="https://www.maxxbat.com/create-acount" className="btn btn-success" target="_blank" rel="noopener noreferrer">
-										<i className="fas fa-plus"></i> Create User
-										</a> */}
+								
+
+									{refferelLingk}
+									
 								</div>
 								<div className="coin-img">
 								

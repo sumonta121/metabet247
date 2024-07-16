@@ -32,8 +32,7 @@ router.get("/agent_list", (req, res) => {
   });
   
 
-router.get("/master_agent_list", (req, res) => {  
-
+  router.get("/master_agent_list", (req, res) => {  
     const { user_id, role_as } = req.query;
     if(role_as == 4){
       const agent_type = 2.1;
@@ -51,7 +50,6 @@ router.get("/master_agent_list", (req, res) => {
         return res.json(data);
       });
     }
-
   });
   
 

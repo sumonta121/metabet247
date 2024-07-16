@@ -18,6 +18,7 @@ const token = localStorage.getItem("jwtToken");
 const decodedToken = jwt_decode(token);
 const userInfo = decodedToken;
 const user_id = userInfo.user_id;
+const role_as = userInfo.role_as;
 
 
   //setting state paginate
@@ -28,12 +29,12 @@ const user_id = userInfo.user_id;
   useEffect(() => {  
      getAllUser();   
   }, []);
-
+ 
  
   const getAllUser = async () => {
     setIsLoading(true);
     try {
-        const response = await axios.get(`/api/commonData/master_agent_list`);         
+        const response = await axios.get(`${apiConfig.baseURL}/api/commonData/master_agent_list?user_id=${user_id}&role_as=${role_as}`);         
         const newData  = response.data;
         setAgentData(newData);        
         setIsLoading(false);
@@ -41,7 +42,7 @@ const user_id = userInfo.user_id;
         setError(error.message);
         setIsLoading(false);
     }
-};
+  };
 
 
 

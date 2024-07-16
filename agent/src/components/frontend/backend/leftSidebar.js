@@ -48,13 +48,14 @@ export default class leftSidebar extends Component {
               <li>
                 <a href="javascript:void(0);" className="has-arrow " ariaExpanded="false">
                   <i className="material-icons">description</i>
-                  <span className="nav-text">Cashin In (User) </span>
+                  <span className="nav-text">List</span>
                 </a>
                 <ul ariaExpanded="false">
                   <li>
                     {/* <Link to="/cashin">Cash In Voucher</Link>
                     <Link to="/cashin-history">Cash In History</Link> */}
-                    <Link to="/master-agent-list">Super Agent List (Deposit)</Link>
+                    {/* <Link to="/master-agent-list">Super Agent List (Deposit)</Link> */}
+                    <Link to="/reffered-list">Reffered List </Link>
                   </li>
                 </ul>
               </li>
@@ -125,12 +126,12 @@ export default class leftSidebar extends Component {
               </li> */}
 
 
-              {/* <li>
+              <li>
                    <Link to="/add-wallet-list" className="" ariaExpanded="false">
                      <i class="material-icons">credit_card</i>
                      <span class="nav-text"> Add Wallet</span>
                     </Link>
-              </li> */}
+              </li> 
 
 
               {/* <li>

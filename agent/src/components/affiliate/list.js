@@ -153,12 +153,12 @@ const AffiliateList = () => {
                         <tr>
                           {/* <th>SL</th> */}
                           <th>Agent ID</th>
-                          <th>Current Balance</th>
-                          <th>Email</th>
+                          <th>Balance</th>
+                          <th>Name</th>
                           <th>Address</th>
-                          <th>WTSPP/Telegram</th>
-                          <th>Personal Number</th>
-                          <th>Status</th>
+                          {/* <th>WTSPP/Telegram</th>*/}
+                          <th> Number</th> 
+                          {/* <th>Status</th> */}
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -195,11 +195,11 @@ const AffiliateList = () => {
                                 </th> */}
                                 <td>{element.user_id}</td>
                                 <td>{element.currency}</td>
-                                <td>{element.email}</td>
+                                <td>{element.first_name} {element.last_name}</td>
                                 <td>{element.address}</td>
-                                <td>{element.personal_mobile}</td>
+                                {/* <td>{element.personal_mobile}</td> */}
                                 <td>{element.mobile}</td>
-                                <td>{element.status}</td>
+                                {/* <td>{element.status}</td> */}
                                 <td>
                                   <div className="d-flex">
                                     <Link
@@ -210,12 +210,12 @@ const AffiliateList = () => {
                                       <i className="fa fa-pencil"> </i>
                                     </Link>
 
-                                    <button
+                                    {/* <button
                                       onClick={handleDelete}
                                       className="btn btn-danger shadow btn-xs sharp"
                                     >
                                       <i className="fa fa-trash"></i>
-                                    </button>
+                                    </button> */}
                                   </div>
                                 </td>
                               </tr>

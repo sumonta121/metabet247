@@ -129,6 +129,7 @@ const MyPaginate = styled(ReactPaginate).attrs({
   }
   li.disabled a {
     color: grey;
+    background:#2F1D5E !important;
   }
   li.disable,
   li.disabled a {
@@ -167,10 +168,11 @@ const MyPaginate = styled(ReactPaginate).attrs({
                     <table className="table">
                       <thead>
                         <tr>
-                          {/* <th>SL</th> */}
                           <th> Super Agent ID</th>
-                          <th>Email</th>
-                          <th>Status</th>
+                          <th>Name</th>
+                          <th>Mobile</th>
+                          <th>Balance</th>
+                          {/* <th>Status</th> */}
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -203,8 +205,10 @@ const MyPaginate = styled(ReactPaginate).attrs({
                                   {id + 1}
                                 </th> */}
                                 <td>{element.user_id}</td>
-                                <td>{element.email}</td>
-                                <td>{element.status}</td>
+                                <td>{element.first_name} {element.last_name}</td>
+                                <td>{element.mobile}</td>
+                                <td>{element.currency}</td>
+                                {/* <td>{element.status}</td> */}
                                 <td>
                                   <div className="d-flex">
                                     {/* <a

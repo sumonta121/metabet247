@@ -1412,6 +1412,38 @@ router.get("/paginatedAffiliate", async (req, res) => {
   
 });
 
+
+//  paginatedAffiliate
+router.get("/reffered_list", async (req, res) => {
+
+  const user_id  = req.query.user_id;
+  const allUser = await User.find({  agent_id: user_id });
+
+  const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+
+  const startIndex = (page - 1) * limit
+  const lastIndex = (page) * limit
+
+  const results = {}
+  results.totalUser=allUser.length;
+  results.pageCount=Math.ceil(allUser.length/limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    }
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    }
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results)
+  
+});
+
 //   ###  SubAffiliate ###
 
 //  SubAffiliate create
