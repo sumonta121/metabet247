@@ -46,7 +46,6 @@ const List = () => {
   };
 
   const handleApprovePayment = async (depositId, event) => {
-   
     try {
       // Make an API call to your server to approve the payment by ID
       const response = await fetch(`${apiConfig.baseURL}/api/agent/user_transfer_update`, {
@@ -194,19 +193,35 @@ const List = () => {
                                     <td className="text-nowrap">{deposit.sender_number}</td> 
                                     <td className="text-nowrap">{deposit.agent_wallet}</td> 
                                     <td className="text-nowrap">{deposit.user_id}</td> 
-                                    <td className={`text-nowrap btn ${deposit.status === 'btn-danger' ? 'btn-success' : 'txr-green'} fw-normal cpoint`}>{deposit.status}</td>
+                                    <td >  {deposit.status === 'paid' ? (
+                                            <button
+                                              className="btn btn-sm btn-success"
+                                            
+                                            >
+                                              Paid
+                                            </button>
+                                          ) : (
+                                            <button
+                                              className="btn btn-sm btn-danger"
+                                            
+                                            >
+                                              Pending
+                                            </button>
+                                          )}
+                                    </td>
                                     <td>
-                                        <div className="d-flex">
-                                        <a
-                                        href="#"
-                                        className="btn btn-success shadow btn-xs sharp me-1"
-                                        onClick={() => handleApprovePayment(deposit._id)} // Call approvePayment with ID
-                                      >
-                                        <i className="fa fa-check"></i>
-                                      </a>
-                                      
-                                        </div>
-                                      </td>
+                                        {deposit.status === 'paid' ? (
+                                          <button></button>
+                                        ) : (
+                                          <a
+                                            href="#"
+                                            className="btn btn-success shadow btn-xs sharp me-1"
+                                            onClick={() => handleApprovePayment(deposit._id)} 
+                                          >
+                                            <i className="fa fa-check"></i>
+                                          </a>
+                                        )}
+                                    </td>
                                 </tr>
                             </>
                           );

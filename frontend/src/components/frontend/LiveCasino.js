@@ -187,7 +187,7 @@ const Casino = () => {
         window.location.hash = 'login';
         return;
     } else {
-        const currency    = 'USD';
+        const currency    = 'BDT';
         const game_uuid   = gameuuid;
         const player_id   = decodedToken.id;
         const player_name = decodedToken.handle;

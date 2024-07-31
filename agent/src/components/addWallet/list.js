@@ -26,24 +26,9 @@ const List = () => {
 
   useEffect(() => {
     currentPage.current = 1;
-    // getAllUser();
     getPaginatedUsers();
   }, []);
 
-  //fetching all table data
-  const getAllUser = () => {
-    fetch(`${apiConfig.baseURL}/api/agent/getdataUser`, {
-      method: "GET",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "userData");
-
-       const sortedData = data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setData(sortedData);
-        // setData(data.data);
-      });
-  };
 
   //pagination
   function handlePageClick(e) {
@@ -51,6 +36,7 @@ const List = () => {
     currentPage.current = e.selected + 1;
     getPaginatedUsers();
   }
+
   function changeLimit() {
     currentPage.current = 1;
     getPaginatedUsers();
@@ -71,9 +57,9 @@ const List = () => {
        const sortedData = data.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setData(sortedData);
         // setData(data.result);
-
       });
   }
+
 
   // css
   const MyPaginate = styled(ReactPaginate).attrs({
@@ -165,13 +151,12 @@ const List = () => {
                                 <td>{element.status}</td>
                                 <td>
                                   <div className="d-flex">
-                                    <a
-                                      href="#"
-                                      className="btn btn-primary shadow btn-xs sharp me-1"
+                                    <Link
+                                      className="edit-link btn btn-primary shadow btn-xs sharp me-1 "
+                                      to={`/agent-wallet-edit/${element.user_id}`}
                                     >
-                                      <i className="fa fa-pencil"></i>
-                                    </a>
-                                 
+                                      <i className="fa fa-pencil"> </i>
+                                    </Link>
                                   </div>
                                 </td>
                               </tr>

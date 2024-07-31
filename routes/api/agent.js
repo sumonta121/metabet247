@@ -2004,6 +2004,58 @@ router.get("/agent_wallet_list", async (req, res) => {
 
 
 
+router.get("/agent_wallet_edit/:_id", async (req, res) => {
+  try {
+    const user_id = req.params._id;
+    const user = await AgentWallets.findOne({ user_id: user_id });
+    if (!user) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+    return res.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+
+router.post("/agent_wallet_update/:_id", async (req, res) => {
+  try {
+    const user_id = req.params._id;
+
+    // Validate request body
+    const { status, agent_wallet, wallet_type, wallet_method } = req.body;
+    if (typeof status === 'undefined' || typeof agent_wallet === 'undefined' || typeof wallet_type === 'undefined' || typeof wallet_method === 'undefined') {
+      return res.status(400).json({ message: "Invalid input" });
+    }
+
+    // Update the document
+    const updateResult = await AgentWallets.updateOne(
+      { user_id: user_id },
+      {
+        $set: {
+          status: status,
+          agent_wallet: agent_wallet,
+          wallet_type: wallet_type,
+          wallet_method: wallet_method,
+        }
+      }
+    );
+
+    // Check if any document was modified
+    if (updateResult.nModified === 0) {
+      return res.status(404).json({ message: "No document found with the given user_id" });
+    }
+
+    return res.status(200).json({ message: "Data updated successfully..." });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 
 //  paginatedUserBalanceReport
 router.get("/pending_balance_request", async (req, res) => {
@@ -2133,12 +2185,10 @@ router.post("/user_withdraw_update", async (req, res) => {
 
 
 
-
-
 router.post("/user_transfer_update", async (req, res) => {
   try {
     const depositId = req.body.depositId;
-
+  
     // Fetch the deposit details
     const result = await Deposit.findOne({ _id: depositId });
 
@@ -2166,15 +2216,22 @@ router.post("/user_transfer_update", async (req, res) => {
       return res.status(404).json({ message: 'You dont have sufficiant balance...' });
     }
 
+    const bonusAmount = result.send_amount * 0.03;
+    const withrefferamnt  = Number(result.send_amount) + Number(bonusAmount);
+   
+    const sponsor_details = await User.findOne({ user_id: user_details.refferer });
     
+    if (sponsor_details) {
+      sponsor_details.currency += Number(bonusAmount);
+      await sponsor_details.save();
+    }
 
-    
-    // Update user and agent currency amounts
-    user_details.currency += Number(result.send_amount);
+    user_details.currency += Number(withrefferamnt);
     await user_details.save();
 
     agent_details.currency -= Number(result.send_amount);
     await agent_details.save();
+
 
     // Update the status of the deposit
     result.status = "paid";
@@ -2279,7 +2336,7 @@ router.post("/balance_send_to_superagent", async (req, res) => {
 
 
 
-router.post("/user_transfer_update", (req, res) => {
+router.post("/xuser_transfer_updatex", (req, res) => {
   //  let gameId = req.body.gameId
 
   User.findOne({ user_id: req.body.user_id }, (err, user) => {

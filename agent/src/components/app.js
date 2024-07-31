@@ -25,6 +25,7 @@ import balanceWithdrawReport from './Withdraw/agenWithdrawList.js';
 
 import addWallet from './addWallet/transfer.js';
 import addWalletReport from './addWallet/list.js';
+import agentWalletEdit from './addWallet/edit.js';
 import PendingBalanceRequest from './addWallet/pendingBalanceRequest.js';
 import PendingWithdrawRequest from './Withdraw/pendingWithdrawRequest.js';
 
@@ -38,6 +39,7 @@ import addBalanceHistory from './AddBalance/addBalanceHistory.js';
 import ProfileManage from './ProfileManage/ProfileManage.js';
 import PasswordManage from './ProfileManage/PasswordManage.js';
 import TpinManage from './ProfileManage/TpinManage.js';
+import GameSync from './ProfileManage/GameSync.js';
 
 import SubResellerCreate from './SubReseller/create';
 import SubResellerEdit from './SubReseller/edit';
@@ -71,6 +73,8 @@ const App = () => (
 
         <ProtectedRoute exact path="/add-wallet" component={addWallet } />
         <ProtectedRoute exact path="/add-wallet-list" component={addWalletReport } />
+        <ProtectedRoute exact path="/agent-wallet-edit/:_id" component={agentWalletEdit } />
+
 
         <ProtectedRoute exact path="/withdraw" component={Withdraw } />
         <ProtectedRoute exact path="/balance-from-admin" component={BlFromAdmin } />
@@ -89,6 +93,7 @@ const App = () => (
         <ProtectedRoute exact path="/profile-manage" component={ProfileManage } />
         <ProtectedRoute exact path="/password-manage" component={PasswordManage } />
         <ProtectedRoute exact path="/tpin-manage" component={TpinManage } />
+        <ProtectedRoute exact path="/game-sync" component={GameSync} />
 
         <ProtectedRoute exact path="/subreseller-create" component={SubResellerCreate } />
         <ProtectedRoute exact path="/subreseller-index" component={SubResellerList } />

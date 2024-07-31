@@ -24,6 +24,14 @@ const RefferedList = () => {
   const [pageCount, setPageCount] = useState(1);
   const currentPage = useRef();
 
+
+
+    const [users, setUsers] = useState([]); // State to hold user data
+    const [isLoading, setIsLoading] = useState(false); // State to indicate loading status
+    const [error, setError] = useState(null); // State to hold any errors
+  
+  
+    
   useEffect(() => {
     currentPage.current = 1;
     // getAllUser();
@@ -121,6 +129,31 @@ const RefferedList = () => {
     }
   `;
 
+
+  
+  const handleBlockUnblock = async (userId, action) => {
+    try {
+      const response = await axios.put(`${apiConfig.baseURL}/api/agent/${action}/${userId}`); // Replace with your API endpoint
+
+      if (response.status === 200) {
+        // Update user data locally (optional for immediate UI feedback)
+        const updatedUsers = users.map(user =>
+          user._id === userId ? { ...user, isBlocked: action === 'block' } : user
+        );
+        setUsers(updatedUsers);
+        alert(response.data.message);
+        history.push("/reffered-list");
+      } else {
+        console.error('Error blocking/unblocking user:', response.data);
+        setError('Failed to block/unblock user. Please try again later.'); // More user-friendly error message
+      }
+    } catch (error) {
+      console.error('Error during blocking/unblocking:', error);
+      setError('Failed to block/unblock user. Please try again later.'); // More user-friendly error message
+    }
+  };
+
+
   return (
     <>
      <div id="main-wrapper">
@@ -149,7 +182,7 @@ const RefferedList = () => {
                          
                           <th>Mobile Number</th>
                           <th> Balance</th>
-                          {/* <th>Action</th> */}
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -179,9 +212,25 @@ const RefferedList = () => {
                             <>
                               <tr>
                                 <td>{element.user_id}</td>
-                            
                                 <td>{element.mobile}</td>
                                 <td>{element.currency}</td>
+                                <td>
+                                  <button
+                                    className={`btn btn-${element.account_status === '2' ? 'danger' : 'success'} shadow btn-xs sharp`}
+                                    onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'block' : 'block')}
+                                  >
+                                    {element.account_status === '2' ? (
+                                      <>
+                                        <i className="fa fa-times"></i> &nbsp;  Inactive
+                                      </>
+                                    ) : (
+                                      <>
+                                      <i className="fa  fa-check"></i>  &nbsp; Active
+                                      </>
+                                    )}
+                                  </button>
+                                </td>
+
                                 {/* <td>{element.status}</td> */}
                                 {/* <td>
                                   <div className="d-flex">
