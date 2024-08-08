@@ -153,7 +153,7 @@ const List = () => {
                                   <div className="d-flex">
                                     <Link
                                       className="edit-link btn btn-primary shadow btn-xs sharp me-1 "
-                                      to={`/agent-wallet-edit/${element.user_id}`}
+                                      to={`/agent-wallet-edit/${element._id}`}
                                     >
                                       <i className="fa fa-pencil"> </i>
                                     </Link>

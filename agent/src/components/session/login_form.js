@@ -82,7 +82,7 @@ class LoginForm extends React.Component {
                 className="login-form-fields"
                 value={this.state.email}
                 style={{ color: 'black' }}
-                placeholder="Enter your Email Address"
+                placeholder="Enter your User ID"
                 onChange={this.update('email')}
               />
               <br />

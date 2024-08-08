@@ -2006,8 +2006,8 @@ router.get("/agent_wallet_list", async (req, res) => {
 
 router.get("/agent_wallet_edit/:_id", async (req, res) => {
   try {
-    const user_id = req.params._id;
-    const user = await AgentWallets.findOne({ user_id: user_id });
+    const id = req.params._id;
+    const user = await AgentWallets.findOne({ _id: id });
     if (!user) {
       return res.status(404).json({ message: "Data not found" });
     }
@@ -2032,7 +2032,7 @@ router.post("/agent_wallet_update/:_id", async (req, res) => {
 
     // Update the document
     const updateResult = await AgentWallets.updateOne(
-      { user_id: user_id },
+      { _id: user_id },
       {
         $set: {
           status: status,
@@ -2239,6 +2239,44 @@ router.post("/user_transfer_update", async (req, res) => {
 
     // Send the appropriate response
     res.json({ message: 'Payment approved successfully!' });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+
+ router.post("/user_transfer_reject", async (req, res) => {
+  try {
+    const depositId = req.body.depositId;
+    // Fetch the deposit details
+    const result = await Deposit.findOne({ _id: depositId });
+
+    if (!result) {
+      return res.status(404).json({ message: 'Deposit not found' });
+    }
+
+    if (result.status == 'paid') {
+      return res.status(404).json({ message: 'Sorry! This is already paid' });
+    }
+
+    // Fetch user details based on the user_id in the result
+    const user_details = await User.findOne({ user_id: result.user_id });
+    if (!user_details) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Fetch agent details based on the agent_id in the result
+    const agent_details = await User.findOne({ user_id: result.agent_id });
+    if (!agent_details) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+    result.status = "reject";
+    await result.save();
+    
+    res.json({ message: 'Payment rejected successfully!' });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: 'Internal Server Error' });

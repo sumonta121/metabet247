@@ -71,6 +71,32 @@ const List = () => {
     }
   };
     
+  const handleRejectPayment = async (depositId, event) => {
+    try {
+      // Make an API call to your server to approve the payment by ID
+      const response = await fetch(`${apiConfig.baseURL}/api/agent/user_transfer_reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, // Add Content-Type header for JSON data
+        body: JSON.stringify({ depositId }), // Send depositId in request body
+      });
+  
+      const responseData = await response.json(); // Parse the JSON response
+  
+      if (response.ok) {
+        // Handle successful approval response (e.g., update UI, show success message)
+        alert(responseData.message);
+      } else {
+        // Handle API call errors (e.g., display error message)
+        console.error('Failed to approve payment:', responseData.message);
+        alert(`Failed to approve payment: ${responseData.message}`);
+      }
+    } catch (error) {
+      // Handle potential errors during the API call or processing
+      console.error('Error approving payment:', error);
+      alert('Error approving payment: ' + error.message);
+    }
+  };
+    
 
   //pagination
   function handlePageClick(e) {
@@ -134,10 +160,12 @@ const List = () => {
     }
     li.disabled a {
       color: grey;
+        background-color: #15073A !important;
     }
     li.disable,
     li.disabled a {
       cursor: default;
+        background-color: #15073A !important;
     }
   `;
 
@@ -185,7 +213,7 @@ const List = () => {
                           return (
                             <>
                                 <tr key={index}>
-                                    <td className="text-nowrap">{deposit.trxid}</td> 
+                                    <td className="text-nowrap">{deposit.trxid}  </td> 
                                     <td className="text-nowrap">{deposit.createdAt}</td> 
                                     <td className="text-nowrap">{deposit.selected_method}</td>
                                     {/* <td className="text-nowrap">${deposit.send_amount}</td>  */}
@@ -193,33 +221,39 @@ const List = () => {
                                     <td className="text-nowrap">{deposit.sender_number}</td> 
                                     <td className="text-nowrap">{deposit.agent_wallet}</td> 
                                     <td className="text-nowrap">{deposit.user_id}</td> 
-                                    <td >  {deposit.status === 'paid' ? (
-                                            <button
-                                              className="btn btn-sm btn-success"
-                                            
-                                            >
-                                              Paid
-                                            </button>
-                                          ) : (
-                                            <button
-                                              className="btn btn-sm btn-danger"
-                                            
-                                            >
-                                              Pending
-                                            </button>
-                                          )}
+                                    <td>
+                                        {deposit.status === 'paid' ? (
+                                          <button className="btn btn-sm btn-success">
+                                            Paid
+                                          </button>
+                                        ) : deposit.status === 'reject' ? (
+                                          <button className="btn btn-sm btn-danger">
+                                            Rejected
+                                          </button>
+                                        ) : (
+                                          <button className="btn btn-sm btn-danger">
+                                            Pending
+                                          </button>
+                                        )}
                                     </td>
                                     <td>
                                         {deposit.status === 'paid' ? (
                                           <button></button>
+                                        ) : deposit.status === 'reject' ? (
+                                          <button></button>
                                         ) : (
+                                        <>  
                                           <a
                                             href="#"
                                             className="btn btn-success shadow btn-xs sharp me-1"
                                             onClick={() => handleApprovePayment(deposit._id)} 
-                                          >
-                                            <i className="fa fa-check"></i>
-                                          </a>
+                                          ><i className="fa fa-check"></i></a>   
+                                          <a
+                                            href="#"
+                                            className="btn btn-danger shadow btn-xs sharp me-1"
+                                            onClick={() => handleRejectPayment(deposit._id)} 
+                                          ><i className="fa fa-times"></i></a> 
+                                        </>
                                         )}
                                     </td>
                                 </tr>

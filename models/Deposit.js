@@ -42,7 +42,7 @@ trxid: {
 },
 status: {
     type: String,
-    enum: ['pending', 'paid'], 
+    enum: ['pending', 'paid', 'reject'], 
     required: true,
 },
 
