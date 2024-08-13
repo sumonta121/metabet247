@@ -26,12 +26,12 @@ const AgentCreate = () => {
   const [totalCount, setTotalCount] = useState(0);
   const perPage = 10; // Number of items per page
 
-
   const [inpval, setINP] = useState({
     handle: "",
     email: "",
     password: "",
     mobile: "",
+    refferer: "",
     ref_percentage: "",
     deposit_percentage: "",
     
@@ -50,7 +50,7 @@ const AgentCreate = () => {
 
   const addinpdata = async (e) => {
     e.preventDefault();
-    const { handle, email, password, mobile, ref_percentage, deposit_percentage } = inpval;
+    const { handle, email, password, mobile, refferer, ref_percentage, deposit_percentage } = inpval;
     const res = await fetch(`${apiConfig.baseURL}/api/agent/agent_create`, {
       method: "POST",
       headers: {
@@ -60,6 +60,7 @@ const AgentCreate = () => {
         handle,
         email,
         password,
+        refferer,
         mobile,
         ref_percentage, 
         deposit_percentage
@@ -67,7 +68,8 @@ const AgentCreate = () => {
     });
 
     const data = await res.json();
-    console.log(data);
+   // console.log(data);
+
 
     if (res.status === 200) {
       alert("Created Successfully");
@@ -172,33 +174,34 @@ const AgentCreate = () => {
                       </div>
                     </div>
                     
-                    <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Reference Percentage %</label>
-                      <div class="col-sm-9">
-                        <input
+                    {/* <input
                           type="text"
                           name="ref_percentage"
                           class="form-control"
-                          placeholder="Referance Percentage"
+                          placeholder="Promo Code"
                           onChange={setdata}
                           value={inpval.ref_percentage}
-                        />
+                        /> */}
+
+                    <div class="mb-3 row">
+                      <label class="col-sm-3 col-form-label">Promo Code</label>
+                      <div class="col-sm-9">
+                       <select className="form-control" name="refferer"    onChange={setdata} id="refferer" required>
+                          <option value=''>Select Promo Code</option>
+                          <option value='MAX001'>MAX001</option>
+                          <option value='MAX002'>MAX002</option>
+                       </select>
                       </div>
                     </div>
                     
-                    <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label"> Deposit Percentage % </label>
-                      <div class="col-sm-9">
-                        <input
-                          type="text"
+                    <input
+                          type="hidden"
                           name="deposit_percentage"
                           class="form-control"
                           placeholder="Deposit Percentage"
                           onChange={setdata}
-                          value={inpval.deposit_percentage}
+                          value='0'
                         />
-                      </div>
-                    </div>
 
                     {/* <input
                           type="text"

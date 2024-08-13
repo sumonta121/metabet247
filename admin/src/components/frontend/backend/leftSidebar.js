@@ -40,6 +40,7 @@ const LeftSidebar = () => {
                 </Link>
               </li>
               
+              {/* 
               <li>
                 <Link
                   to="/affiliate-index"
@@ -49,7 +50,8 @@ const LeftSidebar = () => {
                   <i className="material-icons">trending_up</i>
                   <span className="nav-text">Agent Create </span>
                 </Link>
-              </li>
+              </li> 
+              */}
 
               <li>
                 <Link to="/agent-bal-list" className="" ariaExpanded="false">

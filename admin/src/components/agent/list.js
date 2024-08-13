@@ -23,19 +23,17 @@ const AgentList = ({ userData }) => {
 
   useEffect(() => {
     currentPage.current = 1;
-    // getAllUser();
     getPaginatedUsers();
   }, []);
 
-  //fetching all table data
+
   const getAllUser = () => {
-    fetch(`${apiConfig.baseURL}/api/agent/getdataAgent`, {
-      method: "GET",
-    })
+      fetch(`${apiConfig.baseURL}/api/agent/getdataAgent`, {
+        method: "GET",
+      })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userData");
-
+       // console.log(data, "userData");
         const sortedData = data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setData(sortedData);
         // setData(data.data);
@@ -48,6 +46,7 @@ const AgentList = ({ userData }) => {
     currentPage.current = e.selected + 1;
     getPaginatedUsers();
   }
+  
   function changeLimit() {
     currentPage.current = 1;
     getPaginatedUsers();
@@ -181,16 +180,15 @@ const AgentList = ({ userData }) => {
                                   <div className="d-flex">
                                     <Link className="edit-link btn btn-primary shadow btn-xs sharp me-1 "
                                       to={`/editagent/${element._id}`}
-                                      // to={`edit-agent/11`}
                                     >
                                       <i className="fa fa-pencil"> </i>
                                     </Link>
-                                    <button
+                                     {/* <button
                                       onClick={handleDelete}
                                       className="btn btn-danger shadow btn-xs sharp"
                                     >
                                       <i className="fa fa-trash"></i>
-                                    </button>
+                                    </button>  */}
                                   </div>
                                 </td>
                               </tr>

@@ -373,6 +373,7 @@ router.post("/agent_create", (req, res) => {
             password: req.body.password,
             tpin: req.body.password,
             mobile: req.body.mobile,
+            refferer: req.body.refferer,
             ref_percentage: req.body.ref_percentage,
             deposit_percentage: req.body.deposit_percentage,
             status: "Country Agent",
