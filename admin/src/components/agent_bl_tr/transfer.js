@@ -114,11 +114,11 @@ const Transfer = () => {
           <div class=" col-lg-12">
             <div class="card">
               <div class="card-header">
-                <h4 class="card-title">Agent Balance Transfer</h4>
+                <h4 class="card-title"> Balance Transfer</h4>
 
-                <Link to="/agent-bal-list">
+                <Link to="/agent-balance-report">
                   <button type="button" className="btn btn-success float-right">
-                    Agent  List{" "}
+                     Report
                   </button>
                 </Link>
               </div>

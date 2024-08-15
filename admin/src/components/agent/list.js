@@ -104,6 +104,7 @@ const AgentList = ({ userData }) => {
     }
     li.disabled a {
       color: grey;
+      background-color: #26B19B !important;
     }
     li.disable,
     li.disabled a {
@@ -126,11 +127,11 @@ const AgentList = ({ userData }) => {
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="card-title">Country Agent List</h4>
+                <h4 className="card-title">Admin  List</h4>
 
                 <Link to="/agent-create">
                   <button type="button" className="btn btn-success float-right">
-                    Create Country Agent
+                    Create Admin 
                   </button>
                 </Link>
               </div>
@@ -142,8 +143,9 @@ const AgentList = ({ userData }) => {
                       <thead>
                         <tr>
                           {/* <th>SL</th> */}
-                          <th>County Agent ID</th>
+                          <th>Admin ID</th>
                           <th>Email</th>
+                          <th>Balance</th>
                           <th>Status</th>
                           <th>Action</th>
                         </tr>
@@ -151,21 +153,17 @@ const AgentList = ({ userData }) => {
                       <tbody>
                         {data.map((element, id) => {
                           // delete
-
                           const handleDelete = async () => {
                             try {
                               const response = await axios.delete(
                                 `/api/agent/deleteAgent/${element._id}`
                               );
-                              console.log(response.data); // Optional: Handle success message
-
                               if (response.status === 200) {
                                 alert("Delete Successfully");
-                                // window.location.replace('/agent-index');
                                 history.push("/admin");
                               }
                             } catch (error) {
-                              console.error(error); // Optional: Handle error
+                              console.error(error); 
                             }
                           };
 
@@ -175,7 +173,8 @@ const AgentList = ({ userData }) => {
                              
                                 <td>{element.user_id}</td>
                                 <td>{element.email}</td>
-                                <td>{element.status}</td>
+                                <td>{element.currency}</td>
+                                <td>Admin</td>
                                 <td>
                                   <div className="d-flex">
                                     <Link className="edit-link btn btn-primary shadow btn-xs sharp me-1 "

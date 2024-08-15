@@ -36,7 +36,7 @@ const LeftSidebar = () => {
                   ariaExpanded="false"
                 >
                   <i className="material-icons">trending_up</i>
-                  <span className="nav-text">Country Agent Create </span>
+                  <span className="nav-text">Admin Create </span>
                 </Link>
               </li>
               
@@ -54,13 +54,13 @@ const LeftSidebar = () => {
               */}
 
               <li>
-                <Link to="/agent-bal-list" className="" ariaExpanded="false">
+                <Link to="/agent-balance-report" className="" ariaExpanded="false">
                   <i class="material-icons">description</i>
-                  <span class="nav-text">Country Agent Balance Transfer</span>
+                  <span class="nav-text">Balance Transfer</span>
                 </Link>
               </li>
 
-              <li>
+              {/* <li>
                 <Link
                   to="/agent-balance-report"
                   className=""
@@ -69,7 +69,7 @@ const LeftSidebar = () => {
                   <i class="material-icons">description</i>
                   <span class="nav-text">Country Agent Balance Tr. Report</span>
                 </Link>
-              </li>
+              </li> */}
 
               <li>
                 <Link to="/user-index" className="" ariaExpanded="false">

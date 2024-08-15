@@ -106,11 +106,11 @@ const AgentCreate = () => {
           <div class=" col-lg-12">
             <div class="card">
               <div class="card-header">
-                <h4 class="card-title">Country Agent Create</h4>
+                <h4 class="card-title">Admin  Create</h4>
 
                 <Link to="/agent-index">
                   <button type="button" className="btn btn-success float-right">
-                    Country Agent List{" "}
+                  Admin List{" "}
                   </button> 
                 </Link>
               </div>
@@ -119,7 +119,7 @@ const AgentCreate = () => {
                   <form>
 
                     <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Country Agent Name</label>
+                      <label class="col-sm-3 col-form-label"> Name</label>
                       <div class="col-sm-9">
                         <input
                           type="text"
@@ -133,7 +133,7 @@ const AgentCreate = () => {
                     </div>
                     
                     <div class="mb-3 row">
-                      <label class="col-sm-3 col-form-label">Country Agent Email</label>
+                      <label class="col-sm-3 col-form-label">Email</label>
                       <div class="col-sm-9">
                         <input
                           type="email"

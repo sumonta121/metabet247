@@ -111,7 +111,7 @@ const AgentBalanceReport = () => {
       cursor: default;
     }
   `;
-
+ 
   return (
     <>
       <Navbar />
@@ -127,14 +127,14 @@ const AgentBalanceReport = () => {
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="card-title"> Agent Balance Transfer Report </h4>
+                <h4 className="card-title"> Transfer Report </h4>
 
-                {/* <Link to="/agent-bal-tr">
+                 <Link to="/agent-bal-tr">
                   <button type="button" className="btn btn-success float-right">
-                    Balance Transfer{" "}
+                    Balance Transfer
                   </button>
                 </Link>
-                 */}
+                 
               </div>
 
               <div className="card-body">
