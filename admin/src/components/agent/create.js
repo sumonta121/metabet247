@@ -107,7 +107,6 @@ const AgentCreate = () => {
             <div class="card">
               <div class="card-header">
                 <h4 class="card-title">Admin  Create</h4>
-
                 <Link to="/agent-index">
                   <button type="button" className="btn btn-success float-right">
                   Admin List{" "}
@@ -125,7 +124,7 @@ const AgentCreate = () => {
                           type="text"
                           name="handle"
                           class="form-control"
-                          placeholder="Name"
+                          placeholder="First  Name"
                           onChange={setdata}
                           value={inpval.handle}
                         />

@@ -7,15 +7,91 @@ const Bet = require("../../models/Bet");
 const SlotGames = require("../../models/SlotegratorGames");
 const mongoose = require("mongoose");
 const Countries = require("../../models/Countries");
+const AgentBLTR = require("../../models/AgentBLTR");
 
 
+
+router.get("/adminData", async (req, res) => {
+  try {
+
+    const [transferedBalance] = await AgentBLTR.aggregate([
+      { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
+    ]);
+
+      // Aggregate total balance and count for Admins
+    const [totalAdminBalance] = await User.aggregate([
+      { $match: { role_as: 2 } },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$currency" },
+          totalCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Aggregate total balance and count for Supers
+    const [totalSuperBalance] = await User.aggregate([
+      { $match: { role_as: 2.1 } },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$currency" },
+          totalCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Aggregate total balance and count for Masters
+    const [totalUserBalance] = await User.aggregate([
+      { $match: { role_as: 3 } },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$currency" },
+          totalCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Aggregate total balance and count for Masters
+    const [totalMasterBalance] = await User.aggregate([
+      { $match: { role_as: 4 } },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$currency" },
+          totalCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Prepare response data
+    const alldata = {
+      transfered_balance: transferedBalance?.totalAmount || 0,
+      total_admin_balance: totalAdminBalance?.totalAmount || 0,
+      total_admin_count: totalAdminBalance?.totalCount || 0,
+      total_super_balance: totalSuperBalance?.totalAmount || 0,
+      total_super_count: totalSuperBalance?.totalCount || 0,
+      total_master_balance: totalMasterBalance?.totalAmount || 0,
+      total_master_count: totalMasterBalance?.totalCount || 0,
+      total_User_balance: totalUserBalance?.totalAmount || 0,
+      total_User_count: totalUserBalance?.totalCount || 0,
+    };
+    
+
+    return  res.json(alldata);
+  } catch (error) {
+    console.error("Error fetching admin data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 
 
 
 
 router.get("/create_country", async(req, res) => {
-
   try {
     const countriesData = [
       {name: 'Afghanistan', code: 'AF'}, 

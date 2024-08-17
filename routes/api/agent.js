@@ -160,9 +160,10 @@ router.get("/getdataUser", (req, res) => {
 });
 
 // paginate user
-
+ 
 router.get("/paginatedgetdataUser", async (req, res) => {
-  const allUser = await User.find({ role_as: 3, sender_id : req.query.user_id });
+  
+  const allUser = await User.find({ role_as: 3, sender_id : req.query.user_id }).sort({ _id: -1 });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
 
@@ -204,35 +205,92 @@ router.get("/getdataAgent", (req, res) => {
   
 });
 
-// ##### Paginate ##### // get agent paginatedUsers
+
 router.get("/paginatedAgent", async (req, res) => {
+  const { page = 1, limit = 10, search = "", status } = req.query;
+  const regex = new RegExp(search, "i"); // case-insensitive search
 
-  const allUser = await User.find({ role_as: 2 });
-  const page = parseInt(req.query.page)
-  const limit = parseInt(req.query.limit)
+  const allUser = await User.find({ role_as: 2, account_status: status, $or: [
+    { first_name: regex },
+    { last_name: regex },
+    { handle: regex },
+    { user_id: regex }
+  ] }).sort({ _id: -1 });
 
-  const startIndex = (page - 1) * limit
-  const lastIndex = (page) * limit
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
 
-  const results = {}
-  results.totalUser=allUser.length;
-  results.pageCount=Math.ceil(allUser.length/limit);
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
 
   if (lastIndex < allUser.length) {
-    results.next = {
-      page: page + 1,
-    }
+    results.next = { page: page + 1 };
   }
   if (startIndex > 0) {
-    results.prev = {
-      page: page - 1,
-    }
+    results.prev = { page: page - 1 };
   }
   results.result = allUser.slice(startIndex, lastIndex);
-  res.json(results)
-  
+  res.json(results);
 });
 
+
+router.get("/paginatedSuperAgent", async (req, res) => {
+  const { page = 1, limit = 10, search = "", status } = req.query;
+  const regex = new RegExp(search, "i"); // case-insensitive search
+
+  const allUser = await User.find({ role_as: 2.1, account_status: status, $or: [
+    { first_name: regex },
+    { last_name: regex },
+    { handle: regex },
+    { user_id: regex }
+  ] }).sort({ _id: -1 });
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = { page: page + 1 };
+  }
+  if (startIndex > 0) {
+    results.prev = { page: page - 1 };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+
+
+router.get("/paginatedMasterAgent", async (req, res) => {
+  const { page = 1, limit = 10, search = "", status } = req.query;
+  const regex = new RegExp(search, "i"); // case-insensitive search
+
+  const allUser = await User.find({ role_as: 4, account_status: status, $or: [
+    { first_name: regex },
+    { last_name: regex },
+    { handle: regex },
+    { user_id: regex }
+  ] }).sort({ _id: -1 });
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = { page: page + 1 };
+  }
+  if (startIndex > 0) {
+    results.prev = { page: page - 1 };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
 
 
 // ##### Paginate ##### // get agent paginatedUsers
@@ -369,6 +427,7 @@ router.post("/agent_create", (req, res) => {
           const newAgent = new User({
             user_id: new_user_id,
             handle: req.body.handle,
+            first_name: req.body.handle,
             email: req.body.email,
             password: req.body.password,
             tpin: req.body.password,
@@ -417,6 +476,14 @@ router.get("/editagent/:user_id").get(function (req, res) {
   User.findOne({ user_id: user_id }).then((user) => res.json(user));
 });
 
+
+//  edit agent
+router.get("/getAgent/:id").get(function (req, res) {
+  const user_id = req.params.id;  
+  User.findOne({ _id: user_id }).then((user) => res.json(user));
+});
+
+
 // update  agent
 router.post("/updateAgent/:_id", (req, res) => {
   const { errors, isValid } = validateAgentInput(req.body);
@@ -430,29 +497,33 @@ router.post("/updateAgent/:_id", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const mobile = req.body.mobile;
+  const account_status = req.body.account_status;
   const ref_percentage = req.body.ref_percentage;
   const deposit_percentage = req.body.deposit_percentage;
 
-  bcrypt.genSalt(10, (err, salt) => {
-    bcrypt.hash(password, salt, (err, hash) => {
-      if (err) throw err;
-      const password = hash;
+  User.updateOne(
+    { _id: rowId },
+    {
+      handle: handle,
+      email: email,
+      //password: password,
+      mobile: mobile,
+      account_status: account_status,
+      ref_percentage: ref_percentage,
+      deposit_percentage: deposit_percentage,
+    }
+  )
+    .then((user) => res.json(user))
+    .catch((err) => console.log(err));
 
-      User.updateOne(
-        { _id: rowId },
-        {
-          handle: handle,
-          email: email,
-          password: password,
-          mobile: mobile,
-          ref_percentage: ref_percentage,
-          deposit_percentage: deposit_percentage,
-        }
-      )
-        .then((user) => res.json(user))
-        .catch((err) => console.log(err));
-    });
-  });
+  // bcrypt.genSalt(10, (err, salt) => {
+  //   bcrypt.hash(password, salt, (err, hash) => {
+  //     if (err) throw err;
+  //     const password = hash;
+
+      
+  //   });
+  // });
 });
 
 

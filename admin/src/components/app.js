@@ -40,6 +40,16 @@ import AgentBalTransfer from './agent_bl_tr/transfer.js';
 import AgentCreate from './agent/create';
 import AgentEdit from './agent/edit';
 import AgentList from './agent/list';
+import InactiveAgent from './agent/inactiveAgent';
+
+import SuperAgent from './superAgent/superAgent';
+import InactiveSuperAgent from './superAgent/inactiveSuperAgent';
+import Editsuperagent from './superAgent/editsuperagent';
+
+import MasterAgent from './masterAgent/masterAgent';
+import InactivemasterAgent from './masterAgent/inactivemasterAgent';
+import Editmasteragent from './masterAgent/editmasteragent';
+
 
 import AffiliateCreate from './affiliate/create';
 import AffiliateEdit from './affiliate/edit';
@@ -93,12 +103,23 @@ const App = () => (
         <ProtectedRoute exact path="/admin" component={HomePage } />
         <ProtectedRoute exact path="/agent-bal-list" component={AgentBalList } />
         <ProtectedRoute exact path="/agent-bal-tr" component={AgentBalTransfer } />
-
       
         <ProtectedRoute exact path="/agent-index" component={AgentList } />
+        <ProtectedRoute exact path="/inactive-agent" component={InactiveAgent } />
         <ProtectedRoute exact path="/agent-create" component={AgentCreate } />
         <ProtectedRoute exact path="/editagent/:_id" component={AgentEdit } /> 
-        
+
+              
+        <ProtectedRoute exact path="/super-agent" component={SuperAgent} />
+        <ProtectedRoute exact path="/inactive-super-agent" component={InactiveSuperAgent } />
+        <ProtectedRoute exact path="/edit-super-agent/:_id" component={Editsuperagent } /> 
+
+       
+        <ProtectedRoute exact path="/master-agent" component={MasterAgent} />
+        <ProtectedRoute exact path="/inactive-master-agent" component={InactivemasterAgent } />
+        <ProtectedRoute exact path="/edit-master-agent/:_id" component={Editmasteragent } /> 
+
+
         <ProtectedRoute exact path="/affiliate-index" component={AffiliateList } />
         <ProtectedRoute exact path="/affiliate-create" component={AffiliateCreate } />
         <ProtectedRoute exact path="/editAffiliate/:_id" component={AffiliateEdit } />

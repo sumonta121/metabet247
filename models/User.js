@@ -85,7 +85,7 @@ const UserSchema = new Schema(
     role_as: {
       type: Number,
       default: 3,
-      ref: "1 = Admin, 2 = Country Agent, 2.1 = Master Agent, 3 = User, 4 = Agent",
+      ref: "(1 = Admin, 2 = Country Agent, 2.1 = Master Agent, 3 = User, 4 = Agent) (1 =Master Admin, 2 = Admin, 2.1 = Super agent, 4 = master agent)",
     },
 
     mobile: {

@@ -24,10 +24,10 @@ module.exports = function validateAgentInput(data) {
       errors.email = "Email must be formatted correctly";
     }
     if (Validator.isEmpty(data.password)) {
-      errors.password = "Password cannot be empty";
+      //errors.password = "Password cannot be empty";
     }
     if (!Validator.isLength(data.password, { min: 6, max: 30 })) {
-      errors.password = "Password must between 6 and 30 chars";
+      //errors.password = "Password must between 6 and 30 chars";
     }
     if (Validator.isEmpty(data.mobile)) {
       errors.mobile = "mobile cannot be empty";

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import jwt_decode from "jwt-decode";
 import axios from 'axios';
+import apiConfig from '../../apiConfig';
 
 const DashContent =  () => {
 
@@ -9,10 +10,7 @@ const DashContent =  () => {
   const decodedToken = jwt_decode(token);
   const userInfo = decodedToken;
   const userID =  userInfo.user_id;
-  // console.log("Id: " + userID);
 
-
-  // set data
 
   const [inpval, setINP] = useState({
     agentEmail: userInfo.email,
@@ -29,30 +27,37 @@ const DashContent =  () => {
     });
   };
 
-
-  // fetch
-
   const [data, setDataAxios] = useState(null);
 
-  useEffect(() => {
-    
-    const fetchData = async () => {
-      
-      try {
-     
-        const response = await axios.get(`/api/users/shows/${userID}`);
-        // const response = await axios.get(`/api/users/shows/6`);
-        setDataAxios(response.data);
-        // console.log(userID);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${apiConfig.baseURL}/api/users/shows/${userID}`);
+      setDataAxios(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
+  const [AdminData, setAdminData] = useState(null);
+  const fetchAdminData = async () => {
+    try {
+      const response = await axios.get(`${apiConfig.baseURL}/api/admin/adminData`);
+      console.log(response);
+      setAdminData(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {   
     fetchData();
+    fetchAdminData();
   }, []);
 
   if (!data) {
+    return <div>Loading...</div>;
+  }
+  if (!AdminData) {
     return <div>Loading...</div>;
   }
 
@@ -83,34 +88,33 @@ const DashContent =  () => {
                         <h3> {data[0].currency} </h3>
                       </div>
                     </div>
-                  </div>
-				  
-				  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Transfer Balance </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  
+                 </div>
 				  
                 <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">
                       <div class="card-body p-0">
-                        <h4 class="card-title">Balance In Agent (Current)</h4>
-                        <h3>0.00</h3>
+                        <h4 class="card-title">Transfered Balance </h4>
+                        <h3> { AdminData.transfered_balance } TK</h3>
                       </div>
                     </div>
-                  </div>
-				  
+                </div>
+				    
 				  
                 <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">
                       <div class="card-body p-0">
-                        <h4 class="card-title">Balance In M.Agent (Current) </h4>
-                        <h3>0.00</h3>
+                        <h4 class="card-title"> Admin Balance</h4>
+                        <h3> { AdminData.total_admin_balance } TK</h3>
+                      </div>
+                    </div>
+                  </div>
+				   
+				  
+                <div class="col-xl-3  col-lg-6 col-sm-6">
+                      <div class="widget-stat card">
+                      <div class="card-body p-0">
+                        <h4 class="card-title">Super Agent Balance</h4>
+                        <h3> { AdminData.total_super_balance } TK</h3>
                       </div>
                     </div>
                   </div>
@@ -118,36 +122,36 @@ const DashContent =  () => {
                 <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">
                       <div class="card-body p-0">
-                        <h4 class="card-title">Balance In C.Agent (Current)</h4>
-                        <h3>0.00</h3>
+                        <h4 class="card-title">Master Agent Balance</h4>
+                        <h3> { AdminData.total_master_balance } TK</h3>
                       </div>
                     </div>
                   </div>
-				    <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
+				     
+                <div class="col-xl-3  col-lg-6 col-sm-6">
+                    <div class="widget-stat card">
                       <div class="card-body p-0">
-                        <h4 class="card-title">Balance In User (Current) </h4>
-                        <h3>0.00</h3>
+                        <h4 class="card-title">User Balance</h4>
+                        <h3> { AdminData.total_User_balance } TK</h3>
                       </div>
-                    </div>
-                  </div>
-				  
-				  
+                   </div>
+                </div>
              
+           
                 <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Total Users </h4>
-                        <h3>0.00</h3>
-                      </div>
+                    <div class="widget-stat card">
+                    <div class="card-body p-0">
+                      <h4 class="card-title">Total Admin </h4>
+                      <h3> { AdminData.total_admin_count }</h3>
                     </div>
                   </div>
+                </div>
 				  	  
                 <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">
                       <div class="card-body p-0">
-                        <h4 class="card-title">Total Agents </h4>
-                        <h3>0.00</h3>
+                        <h4 class="card-title">Total Super Agents </h4>
+                        <h3> { AdminData.total_super_count }</h3>
                       </div>
                     </div>
                   </div>
@@ -156,16 +160,15 @@ const DashContent =  () => {
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">Total Master Agents </h4>
-                        <h3>0.00</h3>
+                        <h3> { AdminData.total_master_count }</h3>
                       </div>
                     </div>
                   </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
+                  <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">
                       <div class="card-body p-0">
-                        <h4 class="card-title">Total Country Agents </h4>
-                        <h3>0.00</h3>
+                        <h4 class="card-title">Total Users </h4>
+                        <h3> { AdminData.total_User_count }</h3>
                       </div>
                     </div>
                   </div>

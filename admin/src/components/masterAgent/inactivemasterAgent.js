@@ -16,9 +16,10 @@ const AgentList = ({ userData }) => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [limit, setLimit] = useState(10);
-  const [status, setstatus] = useState(1);
+  const [status, setstatus] = useState(2);
   const [pageCount, setPageCount] = useState(1);
   const currentPage = useRef(1);
+
 
   useEffect(() => {
     getPaginatedUsers();
@@ -26,9 +27,9 @@ const AgentList = ({ userData }) => {
 
   const getPaginatedUsers = () => {
     const search = searchQuery ? `&search=${searchQuery}` : "";
-    const stutus = 1;
+    const stutus = 2;
     fetch(
-      `${apiConfig.baseURL}/api/agent/paginatedAgent?page=${currentPage.current}&limit=${limit}&status=${status}${search}`,
+      `${apiConfig.baseURL}/api/agent/paginatedmasterAgent?page=${currentPage.current}&limit=${limit}&status=${status}${search}`,
       {
         method: "GET",
       }
@@ -103,13 +104,9 @@ const AgentList = ({ userData }) => {
             <div className="card">
            
              <div className="pt-100 mt-100 card-header d-flex flex-wrap align-items-center justify-content-between">
-                <h4 className="card-title mb-0">Admin List</h4>
+                <h4 className="card-title mb-0">Master Agent List</h4>
                 <div className="d-flex align-items-center">
-                  <Link to="/inactive-agent">
-                    <button type="button" className="btn btn-danger">
-                      Inactive 
-                    </button>
-                  </Link>
+                
                   <input
                     type="text"
                     placeholder="Search by Name or ID"
@@ -119,11 +116,11 @@ const AgentList = ({ userData }) => {
                     style={{ maxWidth: "300px" }}
                   />
                   
-                  <Link to="/agent-create">
-                    <button type="button" className="btn btn-success">
-                      Create 
+                  <Link to="/master-agent">
+                    <button type="button" className="btn btn-primary">
+                      Active 
                     </button>
-                  </Link> 
+                  </Link>
                   
                 </div>
               </div>
@@ -131,11 +128,10 @@ const AgentList = ({ userData }) => {
               <div className="card-body">
                 <div className="table-responsive">
                   <div>
-               
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>Admin ID</th>
+                          <th>Master ID</th>
                           <th>Name</th>
                           <th>Balance</th>
                           <th>Status</th>
@@ -161,7 +157,7 @@ const AgentList = ({ userData }) => {
                           return (
                             <tr key={id}>
                               <td>{element.user_id}</td>
-                              <td>{element.first_name} ({element.handle})</td>
+                              <td>{element.first_name} ({element.handle}) </td>
                               <td>{element.currency}</td>
                               <td>
                                 <button
@@ -179,11 +175,10 @@ const AgentList = ({ userData }) => {
                                 </button>
                               </td>
 
-
                               <td>
                                 <div className="d-flex">
                                   <Link className="edit-link btn btn-primary shadow btn-xs sharp me-1"
-                                    to={`/editagent/${element._id}`}
+                                    to={`/edit-master-agent/${element._id}`}
                                   >
                                     <i className="fa fa-pencil"> </i>
                                   </Link>

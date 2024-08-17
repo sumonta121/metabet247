@@ -109,10 +109,8 @@ const UserList = () => {
   };
 
 
-  // css
   const MyPaginate = styled(ReactPaginate).attrs({
-    // You can redefine classes here, if you want.
-    activeClassName: "active", // default to "selected"
+    activeClassName: "active",
   })`
     margin-bottom: 2rem;
     display: flex;
@@ -120,13 +118,16 @@ const UserList = () => {
     justify-content: center;
     list-style-type: none;
     padding: 0 2rem;
-
+  
     li a {
       border-radius: 7px;
       padding: 0.1rem 1rem;
       border: gray 1px solid;
       cursor: pointer;
       margin: 0 5px;
+    }
+    .page-link{
+      background:#26B19B;
     }
     li.previous a,
     li.next a,
@@ -141,6 +142,7 @@ const UserList = () => {
     }
     li.disabled a {
       color: grey;
+      background-color: #26B19B !important;
     }
     li.disable,
     li.disabled a {
@@ -180,13 +182,12 @@ const UserList = () => {
                         <tr>
                           {/* <th>SL</th> */}
                           <th>User ID</th>
-                          <th>First Name</th>
-                          <th>Last Name</th>
+                          <th> Name</th>
+                          <th>Balance</th>
                           <th>Email</th>
                           <th>Mobile</th>
-                          <th>Wtsp No</th>
                           <th>refferer</th>
-                          <th>Balance</th>
+                          <th>Promo Code</th>
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -215,13 +216,13 @@ const UserList = () => {
                                   {id + 1}
                                 </th> */}
                                 <td>{element.user_id}</td>
-                                <td>{element.first_name}</td>
-                                <td>{element.last_name}</td>
-                                <td>{element.mobile}</td>
-                                <td>{element.personam_mobile}</td>
-                                <td>{element.refferer}</td>
+                                <td>{element.first_name} {element.last_name}</td>
                                 <td>{element.currency}</td>
                                 <td>{element.email}</td>
+                                <td>{element.mobile}</td>
+                                <td>{element.refferer}</td>
+                            
+                                <td>{element.agent_id}</td>
                                 <td>
                                   <div className="d-flex">
                                 

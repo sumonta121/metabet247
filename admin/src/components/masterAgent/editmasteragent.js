@@ -87,7 +87,7 @@ const AgentEdit = ({ match }) => {
       
       if (res.status === 200) {
         alert("Updated Successfully");
-        history.push("/agent-index");
+        history.push("/master-agent");
       } else {
         alert(`Error: ${data.message || "Something went wrong!"}`);
       }
@@ -108,7 +108,7 @@ const AgentEdit = ({ match }) => {
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="card-title">Admin Update </h4>
+                <h4 className="card-title">Master Agent Update </h4>
               </div>
 
               <div className="card-body">

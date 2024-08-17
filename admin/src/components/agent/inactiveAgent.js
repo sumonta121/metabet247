@@ -16,7 +16,7 @@ const AgentList = ({ userData }) => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [limit, setLimit] = useState(10);
-  const [status, setstatus] = useState(1);
+  const [status, setstatus] = useState(2);
   const [pageCount, setPageCount] = useState(1);
   const currentPage = useRef(1);
 
@@ -26,7 +26,7 @@ const AgentList = ({ userData }) => {
 
   const getPaginatedUsers = () => {
     const search = searchQuery ? `&search=${searchQuery}` : "";
-    const stutus = 1;
+    const status = 2;
     fetch(
       `${apiConfig.baseURL}/api/agent/paginatedAgent?page=${currentPage.current}&limit=${limit}&status=${status}${search}`,
       {
@@ -105,9 +105,9 @@ const AgentList = ({ userData }) => {
              <div className="pt-100 mt-100 card-header d-flex flex-wrap align-items-center justify-content-between">
                 <h4 className="card-title mb-0">Admin List</h4>
                 <div className="d-flex align-items-center">
-                  <Link to="/inactive-agent">
-                    <button type="button" className="btn btn-danger">
-                      Inactive 
+                  <Link to="/agent-index">
+                    <button type="button" className="btn btn-primary">
+                      Active 
                     </button>
                   </Link>
                   <input

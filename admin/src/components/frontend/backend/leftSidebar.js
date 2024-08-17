@@ -29,17 +29,7 @@ const LeftSidebar = () => {
                 </Link>
               </li>
 
-              <li>
-                <Link
-                  to="/agent-index"
-                  // className="has-arrow "
-                  ariaExpanded="false"
-                >
-                  <i className="material-icons">trending_up</i>
-                  <span className="nav-text">Admin Create </span>
-                </Link>
-              </li>
-              
+         
               {/* 
               <li>
                 <Link
@@ -72,6 +62,39 @@ const LeftSidebar = () => {
               </li> */}
 
               <li>
+                <Link
+                  to="/agent-create"
+                  // className="has-arrow "
+                  ariaExpanded="false"
+                >
+                  <i className="material-icons">trending_up</i>
+                  <span className="nav-text">Admin Create </span>
+                </Link>
+              </li>
+              
+
+              <li>
+                <Link to="/agent-index" className="" ariaExpanded="false">
+                  <i class="material-icons">description</i>
+                  <span class="nav-text">Admin List</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/super-agent" className="" ariaExpanded="false">
+                  <i class="material-icons">description</i>
+                  <span class="nav-text">Super Agent List</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/master-agent" className="" ariaExpanded="false">
+                  <i class="material-icons">description</i>
+                  <span class="nav-text">Master Agent List</span>
+                </Link>
+              </li>
+               
+              <li>
                 <Link to="/user-index" className="" ariaExpanded="false">
                   <i class="material-icons">description</i>
                   <span class="nav-text">User List</span>
@@ -79,13 +102,6 @@ const LeftSidebar = () => {
               </li>
 
 
-
-
-
-
-
-
-                          
               <li>
               <Link to="#" ariaExpanded="false" >
                 <i className="material-icons">trending_up</i>
