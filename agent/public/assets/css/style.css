@@ -1,4 +1,58 @@
+/*
+    Table of Contents
 
+    Name                 : SaWebSoft
+    Author               : SaWebSoft
+    Author Portfolio     : #
+    
+
+
+    Table of Sass Contents
+
+    1. Abstracts
+        _bs-custom
+        _inheritance
+        _maps
+        _mixin
+        _variable
+
+    2. bootstrap 
+        -Here goes all official bootstrap scss files
+
+    3. Global/Base
+        _color
+        _custom-grid
+        _fonts
+        _helper
+        _reset
+
+    4. layout
+        +footer
+        +header
+        +rtl
+        +sidebar
+        +tables
+        +theme
+        +version-dark
+
+    5. Conponents
+        +app
+        +charts
+        +forms
+        +map
+        +uc
+        +ui
+        +widget
+
+    6. Page
+        _index-1
+        _page-error
+        _page-register
+        _page-signin
+        _page-user-lock
+        _page-user-lock
+
+*/
 @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&amp;display=swap");
 @import url("https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800");
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
@@ -7791,20 +7845,20 @@ h1, .h1, .h1, h2, .h2, .h2, h3, .h3, .h3, h4, .h4, .h4, h5, .h5, .h5, h6, .h6, .
   white-space: nowrap; }
 
 .content-body .container {
-  margin-top: 2.5rem; }
+  margin-top: 0px; }
 
 .content-body .container-fluid, .content-body .container-sm, .content-body .container-md, .content-body .container-lg, .content-body .container-xl, .content-body .container-xxl {
-  padding-top: 1.875rem;
+  padding-top: 0px; 
   padding-right: 1.875rem;
   padding-left: 1.875rem; }
   @media only screen and (max-width: 47.9375rem) {
     .content-body .container-fluid, .content-body .container-sm, .content-body .container-md, .content-body .container-lg, .content-body .container-xl, .content-body .container-xxl {
-      padding-top: 1.25rem;
+      padding-top:  0px; 
       padding-right: 1.25rem;
       padding-left: 1.25rem; } }
   @media only screen and (max-width: 35.9375rem) {
     .content-body .container-fluid, .content-body .container-sm, .content-body .container-md, .content-body .container-lg, .content-body .container-xl, .content-body .container-xxl {
-      padding-top: 0.9375rem;
+      padding-top:  0px; 
       padding-right: 0.9375rem;
       padding-left: 0.9375rem; } }
 
@@ -8862,13 +8916,13 @@ svg.pulse-svg {
   width: 100%; }
 
 [data-header-position="fixed"] .content-body {
-  padding-top: 5rem; }
+  padding-top:  0px;  }
   @media only screen and (max-width: 87.5rem) {
     [data-header-position="fixed"] .content-body {
-      padding-top: 5.5rem; } }
+      padding-top:  0px; } }
   @media only screen and (max-width: 74.9375rem) {
     [data-header-position="fixed"] .content-body {
-      padding-top: 5rem; } }
+      padding-top:  0px; } }
 
 [data-header-position="fixed"] .deznav {
   margin-top: 0; }
@@ -11479,7 +11533,7 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
   margin-left: 18.563rem;
   z-index: 0;
   transition: all .2s ease;
-  padding-right: 5.425rem; }
+  padding-right: 0px; }
   @media only screen and (max-width: 87.5rem) {
     .content-body {
       margin-left: 17rem; } }
@@ -12498,12 +12552,12 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
     [data-sidebar-style="mini"] .deznav .header-profile2 {
       margin: 0 0.5rem; }
   [data-sidebar-style="mini"] .content-body {
-    margin-left: 6.5rem; }
+    margin-left: 0px; }
   [data-sidebar-style="mini"][data-header-position="fixed"] .content-body {
-    padding-top: 5rem; } }
+    padding-top:  0px;  } }
   @media only screen and (min-width: 48rem) and (max-width: 63.9375rem) {
     [data-sidebar-style="mini"][data-header-position="fixed"] .content-body {
-      padding-top: 5rem; } }
+      padding-top:  0px;  } }
 
 @media only screen and (min-width: 48rem) {
   [data-sidebar-style="mini"][data-layout="vertical"] .deznav {
@@ -33839,7 +33893,7 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
 
 /*# sourceMappingURL=style.css.map */
 
-
+/* Custom css */
 .header-content nav.navbar.navbar-expand {
   background-color: transparent;
 }
@@ -33867,17 +33921,17 @@ ul.mm-collapse.mm-show li a {
   font-size: 11px;
 }
 
-
-/* Agent  */
-
 .card-header.border-0.pb-0 {
-    padding: 0px;
+  padding: 0px;
 }
 
 .card {
-    padding: 20px;
+  padding: 20px;
 }
 
+form.form-container-login ul {
+    display: flex;
+}
 
 /* sidebar icon */
 
@@ -33889,6 +33943,8 @@ a.sidebar-right-trigger.wave-effect.wave-effect-x {
     display: none;
 }
 
-.paydropdown .paydown {
-  margin: 0px 0 0 18px !important;
+/* Promo code form */
+
+select.col-sm-3.paydown {
+    margin: 0 0px 0 15px;
 }

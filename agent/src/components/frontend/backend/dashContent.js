@@ -20,80 +20,22 @@ const DashContent = () => {
     return storedValue ? parseInt(storedValue, 10) : 17842;
   });
 
-  const [verifiedUsers, setVerifiedUsers] = useState(() => {
-    const storedValue = localStorage.getItem("verifiedUsers");
-    return storedValue ? parseInt(storedValue, 10) : 12354;
-  });
-
-  const [livePlayers, setLivePlayers] = useState(() => {
-    const storedValue = localStorage.getItem("livePlayers");
-    return storedValue ? parseInt(storedValue, 10) : 4738;
-  });
-
-  const [playersWon, setPlayersWon] = useState(() => {
-    const storedValue = localStorage.getItem("playersWon");
-    return storedValue ? parseInt(storedValue, 10) : 1309;
-  });
-
-  const [liveBoardStatus, setLiveBoardStatus] = useState(() => {
-    const storedValue = localStorage.getItem("liveBoardStatus");
-    return storedValue ? parseInt(storedValue, 10) : 2983;
-  });
-
   const [inpval, setINP] = useState({
     agentEmail: userInfo.email,
   });
 
   const [data, setDataAxios] = useState(null);
-  const [AgentComm, setAgentComm] = useState(null);
+
   const [agentdata, setAgentData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Effects
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setTotalUsers((prev) => {
-        const newValue = prev + Math.floor(Math.random() * 20);
-        localStorage.setItem("totalUsers", newValue.toString());
-        return newValue;
-      });
-
-      setVerifiedUsers((prev) => {
-        const newValue = prev + Math.floor(Math.random() * 5);
-        localStorage.setItem("verifiedUsers", newValue.toString());
-        return newValue;
-      });
-
-      setLivePlayers((prev) => {
-        const newValue = prev + Math.floor(Math.random() * 2);
-        localStorage.setItem("livePlayers", newValue.toString());
-        return newValue;
-      });
-
-      setPlayersWon((prev) => {
-        const newValue = prev + Math.floor(Math.random() * 1);
-        localStorage.setItem("playersWon", newValue.toString());
-        return newValue;
-      });
-
-      setLiveBoardStatus((prev) => {
-        const newValue = prev + Math.floor(Math.random() * 1);
-        localStorage.setItem("liveBoardStatus", newValue.toString());
-        return newValue;
-      });
-
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log('binance user ', userID);
 
-        const response = await axios.get(`/api/agent/agent_balance_check/${userID}`);
+        const response = await axios.get(`${apiConfig.baseURL}/api/agent/agent_balance_check/${userID}`);
         console.log(response.data); // Log the response data
         // Handle the response data as needed
       } catch (error) {
@@ -103,34 +45,43 @@ const DashContent = () => {
     };
 
     fetchData();
-  }, [userID]);
+	}, [userID]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`/api/users/shows/${userID}`);
-        setDataAxios(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+	useEffect(() => {
+		const fetchData = async () => {
+		try {
+			const response = await axios.get(`${apiConfig.baseURL}/api/users/shows/${userID}`);
+			setDataAxios(response.data);
+		} catch (error) {
+			console.error('Error fetching data:', error);
+		}
+		};
 
-    fetchData();
-  }, [userID]);
+		fetchData();
+		fetchAdminData();
+	}, [userID]);
 
-  useEffect(() => {
-    const fetchDataCom = async () => {
-      try {
-        const response = await axios.get(`/api/agent/agentCommission/${userID}`);
-        const formattedBalance = parseFloat(response.data).toFixed(2);
-        setAgentComm(formattedBalance);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+	const [agentDashboardData, setAgentDashboardData] = useState({
+		received_from_admin: 0,
+		total_Transfer_Agents: 0,
+		total_Downline_Balance: 0,
+		total_Downline_Count: 0
+	  });
 
-    fetchDataCom();
-  }, [userID]);
+
+
+  const fetchAdminData = async () => {
+    try {
+
+	  const response = await axios.get(`${apiConfig.baseURL}/api/agent/agentData/${userID}`);
+      console.log(response.data);
+      setAgentDashboardData(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+
 
   useEffect(() => {
     const getAllUser = async () => {
@@ -166,16 +117,16 @@ const DashContent = () => {
   const createAgent = (() => {
     if (user_role === 2) {
       return (
-        <Link to="/subreseller-index" className="btn btn-success">
-          <i className="fas fa-download"></i>
-          <span className="nav-text"> Create Master Agent </span>
+        <Link to="/subreseller-create" className="btn btn-success">
+          <i className="fas fa-add"></i>
+          <span className="nav-text"> Create Super Agent </span>
         </Link>
       );
     } else if (user_role === 2.1) {
       return (
         <Link to="/affiliate-index" className="btn btn-success">
-          <i className="fas fa-download"></i>
-          <span className="nav-text"> Create Agent </span>
+          <i className="fas fa-add"></i>
+          <span className="nav-text">Create Master Agent</span>
         </Link>
       );
     }
@@ -237,8 +188,6 @@ const DashContent = () => {
   }
 
 
- 
-
   return (
     <>
       <div className="content-body" style={{paddingTop:'0px'}}>
@@ -267,212 +216,82 @@ const DashContent = () => {
 									<h3>Balance: { parseFloat(data[0].currency).toFixed(2) } TK</h3>
 									<h4>User ID :  { data[0].user_id } </h4>
 									<Link to="/user-bal-tr" className="btn btn-primary"><i className="fas fa-paper-plane" ></i> Send  </Link>
-									&nbsp;
-								
-
-									{refferelLingk}
-									
+									&nbsp;							
+									{ createAgent }		
+									{ refferelLingk }
 								</div>
 								<div className="coin-img">
-								
 								</div>
 							</div>
 						</div>
 					</div>
-					
-					
-            
-				<div className="col-xl-3 col-lg-6 col-sm-6">
-					<div className="card card-box bg-warning">
-						<div className="card-header border-0 pb-0">
-							<div className="chart-num-days">
-								<p>Current Balance</p>
-							</div>
-							</div>
-						<div className="card-body p-0 custome-tooltip">
-						<h2 className="count-num text-white">   {  parseFloat(data[0].currency).toFixed(2)  } TK</h2>
-						</div>  
+	
+				<div class="col-xl-3  col-lg-6 col-sm-6">
+					<div class="widget-stat card">
+						<div class="card-body p-0">
+							<h4 class="card-title">Current Balance</h4>
+							<h3>  {  parseFloat(data[0].currency).toFixed(2)  } TK </h3>
+						</div>
 					</div>
 				</div>
-				
-            	<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-warning">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>Total Add Fund</p>
-										</div>
-									  </div>
-									<div className="card-body p-0 custome-tooltip">
-						  			<h2 className="count-num text-white">  0.00 TK</h2>
-									</div>  
-								</div>
-							</div>
-
+		
 					<div className="col-xl-3 col-lg-6 col-sm-6">
-						<div className="card card-box bg-warning">
-							<div className="card-header border-0 pb-0">
-								<div className="chart-num-days">
-									<p>Sales Balance</p>
-								</div>
-								</div>
-							<div className="card-body p-0 custome-tooltip">
-							<h2 className="count-num text-white">  0.00 TK</h2>
-							</div>  
+					<div className="widget-stat card">
+						<div className="card-body p-0">
+						<h4 className="card-title">Total Received Balance</h4>
+						<h3>{agentDashboardData ? `${agentDashboardData.received_from_admin} TK` : 'Loading...'}</h3>
 						</div>
 					</div>
+					</div>
 
-						{/* <div className="col-xl-3 col-lg-6 col-sm-6">
-							<div className="card card-box bg-warning">
-								<div className="card-header border-0 pb-0">
-									<div className="chart-num-days">
-										<p>Comission Balance</p>
-									</div>
-									</div>
-								<div className="card-body p-0 custome-tooltip">
-								<h2 className="count-num text-white">   {AgentComm} TK</h2>
-								</div>  
-							</div>
-						</div> */}
+					<div className="col-xl-3 col-lg-6 col-sm-6">
+					<div className="widget-stat card">
+						<div className="card-body p-0">
+						<h4 className="card-title">Sales Balance</h4>
+						<h3>{agentDashboardData ? `${agentDashboardData.total_Transfer_Agents} TK` : 'Loading...'}</h3>
+						</div>
+					</div>
+					</div>
 
-            	<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-warning">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>My Team </p>
-										</div>
-									  </div>
-									<div className="card-body p-0 custome-tooltip">
-						  			<h2 className="count-num text-white"> 0</h2>
-									</div>  
-								</div>
-							</div>
-   
-            	<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-warning">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>
-												
-												Total Users
-											</p>
-											<h2 className="count-num text-white">{totalUsers}</h2>
-										</div>
-									   <img src="https://cdn-icons-png.flaticon.com/512/681/681494.png" style={{maxHeight:'35px' }} />
-									</div>
-									<div className="card-body p-0 custome-tooltip">
-										<div id="widgetChart3" className="chart-primary"></div>
-									</div>
-								</div>
-							</div>
+					<div className="col-xl-3 col-lg-6 col-sm-6">
+					<div className="widget-stat card">
+						<div className="card-body p-0">
+						<h4 className="card-title">Total Downline Balance</h4>
+						<h3>{agentDashboardData ? `${agentDashboardData.total_Downline_Balance} TK` : 'Loading...'}</h3>
+						</div>
+					</div>
+					</div>
 
-							<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-secondary">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>
-												
-											Verified Users
-											</p>
-											<h2 className="count-num text-white">{verifiedUsers}</h2>
-										</div>
-										<img src="https://cdn-icons-png.flaticon.com/512/9977/9977358.png" style={{maxHeight:'35px' }} />
-									
-									</div>
-									<div className="card-body p-0 custome-tooltip">
-										<div id="widgetChart1" className="chart-primary"></div>
-									</div>
-								</div>
-							</div>
-        		         	<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-green">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>
-												
-										  		Live Players
-											</p>
-											<h2 className="count-num text-white">{livePlayers}</h2>
-										</div>
-                  					  <img src="https://cdn-icons-png.flaticon.com/512/5822/5822065.png" style={{maxHeight:'35px' }} />
-               
-									</div>
-									<div className="card-body p-0 custome-tooltip">
-										<div id="widgetChart2" className="chart-green"></div>
-									</div>
-								</div>
-							</div>
-							<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-pink">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>
-												
-												 Players Won
-											</p>
-											<h2 className="count-num text-white"> {playersWon} </h2>
-										</div>
-                   					  <img src="https://cdn-icons-png.flaticon.com/512/4020/4020839.png" style={{maxHeight:'35px' }} />
-									</div>
-									<div className="card-body p-0 custome-tooltip">
-										<div id="widgetChart4" className="chart-primary"></div>
-									</div>
-								</div>
-							</div>
-							<div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-primary">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-											<p>
-												
-										  		Live Boards
-											</p>
-											<h2 className="count-num text-white">{ liveBoardStatus }</h2>
-										</div>
-                    <img src="https://cdn-icons-png.flaticon.com/512/2061/2061105.png" style={{maxHeight:'35px' }} />
-									</div>
-									<div className="card-body p-0 custome-tooltip">
-										<div id="widgetChart2" className="chart-primary"></div>
-									</div>
-								</div>
-							</div>
-              
-                           {/* <div className="col-xl-3 col-lg-6 col-sm-6">
-								<div className="card card-box bg-primary">
-									<div className="card-header border-0 pb-0">
-										<div className="chart-num-days">
-                      <Link to="/cashin" className="btn btn-success"><i className="fas fa-download" ></i> 	Cashin From Users  </Link>									
-										</div>
-									</div>
-									<div className="card-body p-0 custome-tooltip">
-										<div id="widgetChart2" className="chart-primary"></div>
-									</div>
-								</div>
-							</div>
-    */}
-           
-           			   <div className="col-xl-3 col-lg-6 col-sm-6" >
-							<div className="card card-box bg-primary">
-							<div className="card-header border-0 pb-0">
-								<div className="chart-num-days">
-								{ createAgent }					
-								</div>
-							</div>
-							<div className="card-body p-0 custome-tooltip">
-								<div id="widgetChart2" className="chart-primary"></div>
-							</div>
-							</div>
-						</div> 
+		
+				{/* <div class="col-xl-3  col-lg-6 col-sm-6">
+					<div class="widget-stat card">
+						<div class="card-body p-0">
+							<h4 class="card-title"> Super Agent Balance</h4>
+							<h3>  { agentDashboardData.total_Downline_Balance } TK </h3>
+						</div>
+					</div>
+				</div> */}
 
-					<form>
-						<input
-							type="hidden"
-							className="form-control"
-							name="agentEmail"
-							onChange={setdata}
-							value={userInfo.email}
-							placeholder="Email"
-						/>
-					</form>
+				<div class="col-xl-3  col-lg-6 col-sm-6">
+					<div class="widget-stat card">
+						<div class="card-body p-0">
+							<h4 class="card-title">Total Downline  Agent</h4>
+							<h3>{agentDashboardData.total_Downline_Count ? agentDashboardData.total_Downline_Count : 'Loading...'}</h3>
+							
+						</div>
+					</div>
+				</div>
+
+				<form>
+					<input
+						type="hidden"
+						className="form-control"
+						name="agentEmail"
+						onChange={setdata}
+						value={userInfo.email}
+						placeholder="Email"
+					/>
+				</form>
 
               </div>
 

@@ -38,6 +38,19 @@ export default class leftSidebar extends Component {
           <span class="nav-text"> Create Master Agent </span>
         </Link>         
         );
+      }else if(user_role === 4) {
+        return (
+         <>
+            <Link to="/pending-balance-request" className="" ariaExpanded="false">
+              <i class="material-icons">grid_view</i>
+              <span class="nav-text"> Pending Deposit Request </span>
+            </Link>
+            <Link to="/pending-withdraw-request" className="" ariaExpanded="false">
+              <i class="material-icons">grid_view</i>
+              <span class="nav-text"> Pending withdraw Request</span>
+            </Link>       
+          </>
+        );
       }
     })();
 
@@ -71,7 +84,7 @@ export default class leftSidebar extends Component {
       } 
     })();
 
-    
+
 
     return (
       <>
@@ -112,19 +125,8 @@ export default class leftSidebar extends Component {
                      <span class="nav-text"> Deposit Received Report</span>
                     </Link>
               </li>
-
-              <li>
-                 <Link to="/pending-balance-request" className="" ariaExpanded="false">
-                       <i class="material-icons">credit_card</i>
-                      <span class="nav-text">Pending Deposit Request </span>
-                    </Link>
-              </li>
-              <li>
-                 <Link to="/pending-withdraw-request" className="" ariaExpanded="false">
-                       <i class="material-icons">credit_card</i>
-                      <span class="nav-text">Pending withdraw Request </span>
-                    </Link>
-              </li>
+ 
+          
 
               {/* <li>
                  <Link to="/balance-withdraw-history" className="" ariaExpanded="false">

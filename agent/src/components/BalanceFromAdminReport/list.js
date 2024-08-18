@@ -135,13 +135,13 @@ const MyPaginate = styled(ReactPaginate).attrs({
             <div className="card">
               <div className="card-header">
                 <h4 className="card-title">
-                  {" "}
-                 Add Balance Report{" "}
+                  
+                 Balance Received Report
                 </h4>
 
                 {/* <Link to="/agent-bal-tr">
                   <button type="button" className="btn btn-success float-right">
-                    Balance Transfer{" "}
+                    Balance Transfer
                   </button>
                 </Link>
                  */}

@@ -41,9 +41,12 @@ import PasswordManage from './ProfileManage/PasswordManage.js';
 import TpinManage from './ProfileManage/TpinManage.js';
 import GameSync from './ProfileManage/GameSync.js';
 
+
 import SubResellerCreate from './SubReseller/create';
 import SubResellerEdit from './SubReseller/edit';
 import SubResellerList from './SubReseller/list';
+import inactiveSuperAgent from './SubReseller/inactiveSuperAgent';
+
 
 import AffiliateCreate from './affiliate/create';
 import AffiliateEdit from './affiliate/edit';
@@ -97,6 +100,7 @@ const App = () => (
 
         <ProtectedRoute exact path="/subreseller-create" component={SubResellerCreate } />
         <ProtectedRoute exact path="/subreseller-index" component={SubResellerList } />
+        <ProtectedRoute exact path="/inactive-super-agent" component={inactiveSuperAgent } />
         <ProtectedRoute exact path="/editsubreseller/:usAutoId" component={SubResellerEdit } /> 
 
         <ProtectedRoute exact path="/balance-deposit" component={BalanceDeposit } />

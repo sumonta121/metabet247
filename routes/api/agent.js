@@ -476,17 +476,25 @@ router.post("/agent_create", (req, res) => {
   });
 });
 
-//  edit agent
-router.get("/editagent/:user_id").get(function (req, res) {
+// Edit agent route
+router.get("/editagent/:user_id", function (req, res) {
   const user_id = req.params.user_id;
-
-  console.log('details ' + req.params);
-
   
-  User.findOne({ user_id: user_id }).then((user) => res.json(user));
+  console.log('User ID:', user_id);
+  
+  User.findOne({ user_id: user_id })
+    .then((user) => {
+      if (user) {
+        res.json(user);
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    })
+    .catch((err) => {
+      console.error('Error fetching user:', err);
+      res.status(500).json({ message: "Server error" });
+    });
 });
-
-
 
 
 //  edit agent
@@ -496,46 +504,57 @@ router.get("/getAgent/:id").get(function (req, res) {
 });
 
 
-// update  agent
-router.post("/updateAgent/:_id", (req, res) => {
+// Update agent route
+router.post("/updateAgent/:_id", async (req, res) => {
   const { errors, isValid } = validateAgentInput(req.body);
+
+  // Validate input
   if (!isValid) {
     return res.status(401).json(errors);
   }
+
   const rowId = req.params._id;
-  // console.log("Id: " + rowId);
-  // handle, email, password, mobile,  ref_percentage, deposit_percentage
-  const handle = req.body.handle;
-  const email = req.body.email;
-  const password = req.body.password;
-  const mobile = req.body.mobile;
-  const account_status = req.body.account_status;
-  const ref_percentage = req.body.ref_percentage;
-  const deposit_percentage = req.body.deposit_percentage;
 
-  User.updateOne(
-    { _id: rowId },
-    {
-      handle: handle,
-      email: email,
-      //password: password,
-      mobile: mobile,
-      account_status: account_status,
-      ref_percentage: ref_percentage,
-      deposit_percentage: deposit_percentage,
+  // Destructure fields from request body
+  const {
+    handle,
+    email,
+    password,
+    mobile,
+    account_status,
+    ref_percentage,
+    deposit_percentage,
+  } = req.body;
+
+  try {
+    let updateFields = {
+      handle,
+      email,
+      mobile,
+      account_status,
+      ref_percentage,
+      deposit_percentage,
+    };
+
+    // If password is provided, hash it before updating
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      updateFields.password = hashedPassword;
     }
-  )
-    .then((user) => res.json(user))
-    .catch((err) => console.log(err));
 
-  // bcrypt.genSalt(10, (err, salt) => {
-  //   bcrypt.hash(password, salt, (err, hash) => {
-  //     if (err) throw err;
-  //     const password = hash;
+    // Update the agent
+    const updatedUser = await User.updateOne({ user_id: rowId }, { $set: updateFields });
 
-      
-  //   });
-  // });
+    if (updatedUser.nModified === 0) {
+      return res.status(404).json({ message: "User not found or no changes made" });
+    }
+
+    res.json({ message: "User updated successfully", user: updatedUser });
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 
@@ -891,39 +910,89 @@ router.get("/getSubReseller", (req, res) => {
   
 });
 
-// ##### Paginate ##### // get agent paginatedUsers
+
+
+// ##### Paginate and Search ##### // get agent paginatedUsers
 router.get("/paginatedSubReseller", async (req, res) => {
-  
-  const referrerid  = req.query.referrerid;
+  const { referrerid, page = 1, limit = 10, search = "", status = "" } = req.query;
 
-  //const allUser = await User.find({  refferer: referrerid  });
-  const allUser = await User.find({  refferer: referrerid , status: 'Super Agent'  });
+  const regex = new RegExp(search, "i");
 
-  const page = parseInt(req.query.page)
-  const limit = parseInt(req.query.limit)
+  const allUser = await User.find({
+    refferer: referrerid,
+    account_status: status,
+    status: 'Super Agent',
+    $or: [
+      { first_name: regex },
+      { last_name: regex },
+      { handle: regex },
+      { user_id: regex }
+    ]
+  });
 
-  const startIndex = (page - 1) * limit
-  const lastIndex = (page) * limit
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
 
-  const results = {}
-  results.totalUser=allUser.length;
-  results.pageCount=Math.ceil(allUser.length/limit);
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
 
   if (lastIndex < allUser.length) {
     results.next = {
-      page: page + 1,
-    }
+      page: parseInt(page) + 1,
+    };
   }
 
   if (startIndex > 0) {
     results.prev = {
-      page: page - 1,
-    }
+      page: parseInt(page) - 1,
+    };
   }
+
   results.result = allUser.slice(startIndex, lastIndex);
   return res.status(200).json(results);
-  
 });
+
+
+
+router.get("/agentData/:user_id", async (req, res) => {
+  try {
+    const userId = req.params.user_id;
+
+    const [receivedFromAdmin] = await AgentBLTR.aggregate([
+      { $match: { user_id: userId } }, 
+      { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
+    ]);
+
+    const [TransferToAgents] = await UserBLTR.aggregate([
+      { $match: { sender_id: userId } }, 
+      { $group: { _id: null, totalAmount: { $sum: "$currency" } } }
+    ]);
+
+    const [TotalDownlineBalance] = await User.aggregate([
+      { $match: { refferer: userId } }, 
+      { $group: { _id: null, totalAmount: { $sum: "$currency" } } }
+    ]);
+    const totalDownlineCount = await User.countDocuments({ refferer: userId });
+    // Log the response data
+
+
+    // Prepare response data
+    const alldata = {
+      received_from_admin: receivedFromAdmin?.totalAmount || 0,
+      total_Transfer_Agents: TransferToAgents?.totalAmount || 0,
+      total_Downline_Balance: TotalDownlineBalance?.totalAmount || 0,
+      total_Downline_Count: totalDownlineCount || 0
+    };
+
+    return res.json(alldata);
+  } catch (error) {
+    console.error("Error fetching admin data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 
 // Agent Balance Report
 router.get("/AgentBalanceReport", (req, res) => {

@@ -1,293 +1,226 @@
-// import React, { Component, useState, useEffect } from "react";
-import React, { Component, useEffect, useState } from "react";
-import { Link  } from "react-router-dom/cjs/react-router-dom.min";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useHistory } from "react-router-dom";
 import Navbar from "../frontend/backend/navbar.js";
 import Footer from "../frontend/backend/footer.js";
 import Chatbox from "../frontend/backend/chatbox.js";
 import HeaderRight from "../frontend/backend/header_right.js";
 import LeftSidebar from "../frontend/backend/leftSidebar.js";
 import axios from "axios";
-import  { Redirect, useHistory  } from 'react-router-dom'
-import jwt_decode from "jwt-decode";
-
 import ReactPaginate from "react-paginate";
-import { useRef } from "react";
 import styled from "styled-components";
 import apiConfig from '../apiConfig';
+import jwt_decode from "jwt-decode";
 
 const SubResellerList = () => {
-  let history = useHistory();
-  // getdataSubReseller
-  
-//setting state paginate
-const [data, setData] = useState([]);
-const [limit, setLimit] = useState(10);
-const [pageCount, setPageCount] = useState(1);
-const [userid, setUserId] = useState(null);
+  const history = useHistory();
+  const [data, setData] = useState([]);
+  const [limit, setLimit] = useState(10);
+  const [pageCount, setPageCount] = useState(1);
+  const [userid, setUserId] = useState(null);
+  const [status, setstatus] = useState(1);
+  const [searchTerm, setSearchTerm] = useState(""); // Search state
+  const currentPage = useRef();
 
-const currentPage = useRef();
+  useEffect(() => {
+    currentPage.current = 1;
+    const token = localStorage.getItem("jwtToken");
+    const decodedToken = jwt_decode(token);
+    const userInfo = decodedToken;
 
-useEffect(() => {
-  currentPage.current = 1;
-  const token = localStorage.getItem("jwtToken");
-  const decodedToken = jwt_decode(token);
-  const userInfo = decodedToken;
+    setUserId(userInfo.user_id);
+    getPaginatedUsers();
+  }, [searchTerm]); // Add searchTerm to the dependencies
 
-  setUserId(userInfo.user_id);
-  getPaginatedUsers();
-}, []);
+  const handlePageClick = (e) => {
+    currentPage.current = e.selected + 1;
+    getPaginatedUsers();
+  };
 
-//fetching all table data
-const getAllUser = () => {
+  const changeLimit = () => {
+    currentPage.current = 1;
+    getPaginatedUsers();
+  };
 
+  const getPaginatedUsers = () => {
+    const token = localStorage.getItem("jwtToken");
+    const decodedToken = jwt_decode(token);
+    const userInfo = decodedToken;
+    const referrerid = userInfo.user_id;
+    const status = 1;
 
+    fetch(
+      `${apiConfig.baseURL}/api/agent/paginatedSubReseller?page=${currentPage.current}&limit=${limit}&status=${status}&referrerid=${referrerid}&search=${searchTerm}`,
+      { method: "GET" }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setPageCount(data.pageCount);
+        const sortedData = data.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setData(sortedData);
+      });
+  };
 
-  // const token = localStorage.getItem("jwtToken");
-  // const decodedToken = jwt_decode(token);
-  // const userInfo = decodedToken;
-  // const userid =  userInfo.user_id;
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
-
-  fetch(`${apiConfig.baseURL}/api/agent/getSubReseller`, {
-    method: "GET",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      
-
-     const sortedData = data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setData(sortedData);
-      // setData(data.data);
-    });
-};
-
-//pagination
-function handlePageClick(e) {
-
-  currentPage.current = e.selected + 1;
-  getPaginatedUsers();
-}
-function changeLimit() {
-  currentPage.current = 1;
-  getPaginatedUsers();
-}
-
-function getPaginatedUsers() {
-
-  const token = localStorage.getItem("jwtToken");
-  const decodedToken = jwt_decode(token);
-  const userInfo = decodedToken;
-  const referrerid = userInfo.user_id;
-  
-  fetch(
-    `${apiConfig.baseURL}/api/agent/paginatedSubReseller?page=${currentPage.current}&limit=${limit}&referrerid=${referrerid}`,
-    {
-      method: "GET",
+  const handleBlockUnblock = async (userId, action) => {
+    const isConfirmed = window.confirm("Are you sure you want to Block / Unbloc the user?");
+    if (!isConfirmed) {
+      return;
     }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-     
-      setPageCount(data.pageCount);
+    
+    try {
+      const response = await axios.put(`${apiConfig.baseURL}/api/agent/${action}/${userId}`);
+      if (response.status === 200) {
+        getPaginatedUsers();
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during blocking/unblocking:', error);
+    }
+  };
 
-     const sortedData = data.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setData(sortedData);
-      // setData(data.result);
+  const MyPaginate = styled(ReactPaginate).attrs({
+    activeClassName: "active",
+  })`
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    list-style-type: none;
+    padding: 0 2rem;
 
-    });
-}
-
-// css
-const MyPaginate = styled(ReactPaginate).attrs({
-  // You can redefine classes here, if you want.
-  activeClassName: "active", // default to "selected"
-})`
-  margin-bottom: 2rem;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  list-style-type: none;
-  padding: 0 2rem;
-
-  li a {
-    border-radius: 7px;
-    padding: 0.1rem 1rem;
-    border: gray 1px solid;
-    cursor: pointer;
-    margin: 0 5px;
-  }
-  li.previous a,
-  li.next a,
-  li.break a {
-    border-color: transparent;
-  }
-  li.active a {
-    background-color: #0366d6;
-    border-color: transparent;
-    color: white;
-    min-width: 32px;
-  }
-  li.disabled a {
-    color: grey;
-    background:#2F1D5E !important;
-  }
-  li.disable,
-  li.disabled a {
-    cursor: default;
-  }
-`;
-
+    li a {
+      border-radius: 7px;
+      padding: 0.1rem 1rem;
+      border: gray 1px solid;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+    li.previous a,
+    li.next a,
+    li.break a {
+      border-color: transparent;
+    }
+    li.active a {
+      background-color: #0366d6;
+      border-color: transparent;
+      color: white;
+      min-width: 32px;
+    }
+    li.disabled a {
+      color: grey;
+      background: #2f1d5e !important;
+    }
+    li.disable,
+    li.disabled a {
+      cursor: default;
+    }
+  `;
 
   return (
     <>
       <Navbar />
-
       <Chatbox />
-
       <HeaderRight />
-
       <LeftSidebar />
 
-      <div class="content-body">
-        <div class="container-fluid">
+      <div className="content-body">
+        <div className="container-fluid">
           <div className="col-lg-12">
             <div className="card">
-              <div className="card-header">
-                <h4 className="card-title">Super Agent List</h4>
 
-                <Link to="/subreseller-create">
+              <div className="card-header d-flex flex-wrap align-items-center justify-content-between">
+                <h4 className="card-title">Super Agent Active List </h4>
+                <div className="d-flex align-items-center">
+                 
+                  <Link to="/inactive-super-agent">
+                    <button type="button" className="btn btn-danger">
+                      Inactive 
+                    </button>
+                  </Link>
+                  <input
+                    type="text"
+                    placeholder="Search by Name or ID"
+                    className="form-control me-2"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    style={{ maxWidth: "300px" }}
+                  />
+                  <Link to="/subreseller-create">
                   <button type="button" className="btn btn-success float-right">
-                    Create Super Agent
+                    Create 
                   </button>
                 </Link>
+                  
+                </div>
               </div>
 
               <div className="card-body">
                 <div className="table-responsive">
-                  <div className="">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th> Super Agent ID</th>
-                          <th>Name</th>
-                          <th>Mobile</th>
-                          <th>Balance</th>
-                          {/* <th>Status</th> */}
-                          <th>Action</th>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Super Agent ID</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.map((element, id) => (
+                        <tr key={id}>
+                          <td>{element.user_id}</td>
+                          <td>{element.first_name} ({element.handle})</td>
+                          <td>{element.mobile}</td>
+                          <td>{element.currency}</td>
+                          <td>{element.status}</td>
+                          <td>
+                            <div className="d-flex">
+                        
+                              <button
+                                className={`btn btn-${element.account_status === '2' ? 'danger' : 'success'} shadow btn-xs sharp`}
+                                onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'block' : 'block')}
+                              >
+                                {element.account_status === '2' ? <i className="fa fa-times"></i> : <i className="fa fa-check"></i>}
+                              </button>
+
+                              <Link
+                                className="edit-link btn btn-primary shadow btn-xs sharp me-1"
+                                to={`/editsubreseller/${element.user_id}`}
+                              >
+                                <i className="fa fa-pencil"></i>
+                              </Link>
+                          
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {data.map((element, id) => {
+                      ))}
+                    </tbody>
+                  </table>
 
-                            // delete
-
-                            const handleDelete = async () => {
-                              
-                              try {
-                                const response = await axios.delete(`/api/agent/deleteAgent/${element._id}`); 
-                               
-
-                                if (response.status === 200) {
-                                  alert("Delete Successfully");
-                                  // window.location.replace('/agent-index');
-                                  history.push("/agent");
-                                }
-
-                              } catch (error) {
-                                console.error(error); // Optional: Handle error
-                              }
-                            };
-
-                          return (
-                            <>
-                              <tr>
-                                {/* <th scope="row" key={id} item={element}>
-                                  {id + 1}
-                                </th> */}
-                                <td>{element.user_id}</td>
-                                <td>{element.first_name} {element.last_name}</td>
-                                <td>{element.mobile}</td>
-                                <td>{element.currency}</td>
-                                {/* <td>{element.status}</td> */}
-                                <td>
-                                  <div className="d-flex">
-                                    {/* <a
-                                      href="#"
-                                      className="btn btn-primary shadow btn-xs sharp me-1"
-                                    >
-                                      <i className="fa fa-pencil"></i>
-                                    </a>
-
-                                    <Link
-                                      onClick={this.deleteStudent}
-                                      to="#"
-                                      className="btn btn-danger shadow btn-xs sharp"
-                                    >
-                                      <i className="fa fa-trash"></i>
-                                    </Link> */}
-
-                                    <Link
-                                        className="edit-link btn btn-primary shadow btn-xs sharp me-1 "
-                                        to={`/editsubreseller/${element.user_id}`} 
-                                        // to={`edit-agent/11`} 
-                                      >
-                                        <i className="fa fa-pencil">  </i>
-                                      </Link>
-
-                                      {/* <button onClick={handleDelete} className="btn btn-danger shadow btn-xs sharp">
-                                        <i className="fa fa-trash"></i>
-                                      </button> */}
-                                      
-
-                                      {/* <Link
-                                        onClick={handleDelete}
-                                        // onClick={() => this.deleteEmployee(element._id)}
-                                        to={element._id}
-                                        className="btn btn-danger shadow btn-xs sharp"
-                                      >
-                                        <i className="fa fa-trash"></i>
-                                      </Link> */}
-
-                                      
-
-                                  </div>
-                                </td>
-                              </tr>
-                            </>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-
-                     {/*  paginate */}
-
-                     <MyPaginate
-                      breakLabel="..."
-                      nextLabel="next >"
-                      onPageChange={handlePageClick}
-                      pageRangeDisplayed={5}
-                      pageCount={pageCount}
-                      previousLabel="< previous"
-                      renderOnZeroPageCount={null}
-                      marginPagesDisplayed={2}
-                      containerClassName="pagination justify-content-center"
-                      pageClassName="page-item"
-                      pageLinkClassName="page-link"
-                      previousClassName="page-item"
-                      previousLinkClassName="page-link"
-                      nextClassName="page-item"
-                      nextLinkClassName="page-link"
-                      activeClassName="active"
-                      forcePage={currentPage.current - 1}
-                    />
-
-                    {/* Page Sorting  */}
-
-                    {/* <input placeholder="Limit" onChange={(e) => setLimit(e.target.value)}
-                    />
-                    <button onClick={changeLimit}>Set Limit</button> */}
-                    
-                  </div>
+                  <MyPaginate
+                    breakLabel="..."
+                    nextLabel="next >"
+                    onPageChange={handlePageClick}
+                    pageRangeDisplayed={5}
+                    pageCount={pageCount}
+                    previousLabel="< previous"
+                    renderOnZeroPageCount={null}
+                    marginPagesDisplayed={2}
+                    containerClassName="pagination justify-content-center"
+                    pageClassName="page-item"
+                    pageLinkClassName="page-link"
+                    previousClassName="page-item"
+                    previousLinkClassName="page-link"
+                    nextClassName="page-item"
+                    nextLinkClassName="page-link"
+                    activeClassName="active"
+                    forcePage={currentPage.current - 1}
+                  />
                 </div>
               </div>
             </div>

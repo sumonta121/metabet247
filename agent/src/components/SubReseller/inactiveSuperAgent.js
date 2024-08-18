@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useHistory } from "react-router-dom";
 import Navbar from "../frontend/backend/navbar.js";
 import Footer from "../frontend/backend/footer.js";
@@ -9,47 +9,67 @@ import axios from "axios";
 import ReactPaginate from "react-paginate";
 import styled from "styled-components";
 import apiConfig from '../apiConfig';
+import jwt_decode from "jwt-decode";
 
-const UserList = () => {
-  let history = useHistory();
-
+const Inactive = () => {
+  const history = useHistory();
   const [data, setData] = useState([]);
   const [limit, setLimit] = useState(10);
   const [pageCount, setPageCount] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const currentPage = useRef(1);
-  const [status, setstatus] = useState(1);
+  const [userid, setUserId] = useState(null);
+  const [status, setstatus] = useState(2);
+  const [searchTerm, setSearchTerm] = useState(""); // Search state
+  const currentPage = useRef();
 
   useEffect(() => {
-    getPaginatedUsers();
-  }, [searchQuery, limit]);
+    currentPage.current = 1;
+    const token = localStorage.getItem("jwtToken");
+    const decodedToken = jwt_decode(token);
+    const userInfo = decodedToken;
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    setUserId(userInfo.user_id);
+    getPaginatedUsers();
+  }, [searchTerm]); // Add searchTerm to the dependencies
+
+  const handlePageClick = (e) => {
+    currentPage.current = e.selected + 1;
+    getPaginatedUsers();
+  };
+
+  const changeLimit = () => {
+    currentPage.current = 1;
+    getPaginatedUsers();
   };
 
   const getPaginatedUsers = () => {
-    const search = searchQuery ? `&search=${searchQuery}` : "";
-    const status = 1;
+    const token = localStorage.getItem("jwtToken");
+    const decodedToken = jwt_decode(token);
+    const userInfo = decodedToken;
+    const referrerid = userInfo.user_id;
+    const status = 2;
+
     fetch(
-      `${apiConfig.baseURL}/api/agent/paginatedgetdataUser?page=${currentPage.current}&limit=${limit}&status=${status}${search}`,
-      {
-        method: "GET",
-      }
+      `${apiConfig.baseURL}/api/agent/paginatedSubReseller?page=${currentPage.current}&limit=${limit}&status=${status}&referrerid=${referrerid}&search=${searchTerm}`,
+      { method: "GET" }
     )
       .then((res) => res.json())
       .then((data) => {
         setPageCount(data.pageCount);
-        setData(data.result);
+        const sortedData = data.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setData(sortedData);
       });
   };
 
-  function handlePageClick(e) {
-    currentPage.current = e.selected + 1;
-    getPaginatedUsers();
-  }
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   const handleBlockUnblock = async (userId, action) => {
+    const isConfirmed = window.confirm("Are you sure you want to Block / Unbloc the user?");
+    if (!isConfirmed) {
+      return;
+    }
+    
     try {
       const response = await axios.put(`${apiConfig.baseURL}/api/agent/${action}/${userId}`);
       if (response.status === 200) {
@@ -70,7 +90,7 @@ const UserList = () => {
     justify-content: center;
     list-style-type: none;
     padding: 0 2rem;
-  
+
     li a {
       border-radius: 7px;
       padding: 0.1rem 1rem;
@@ -78,16 +98,24 @@ const UserList = () => {
       cursor: pointer;
       margin: 0 5px;
     }
-    .page-link{
-      background:#26B19B;
+    li.previous a,
+    li.next a,
+    li.break a {
+      border-color: transparent;
     }
     li.active a {
       background-color: #0366d6;
+      border-color: transparent;
       color: white;
+      min-width: 32px;
     }
     li.disabled a {
       color: grey;
-      background-color: #26B19B !important;
+      background: #2f1d5e !important;
+    }
+    li.disable,
+    li.disabled a {
+      cursor: default;
     }
   `;
 
@@ -102,23 +130,29 @@ const UserList = () => {
         <div className="container-fluid">
           <div className="col-lg-12">
             <div className="card">
+
               <div className="card-header d-flex flex-wrap align-items-center justify-content-between">
-                <h4 className="card-title">User List</h4>
+                <h4 className="card-title">Super Agent Inactive List </h4>
                 <div className="d-flex align-items-center">
+                 
+                  <Link to="/subreseller-index">
+                    <button type="button" className="btn btn-primary">
+                      Active 
+                    </button>
+                  </Link>
                   <input
                     type="text"
                     placeholder="Search by Name or ID"
                     className="form-control me-2"
-                    value={searchQuery}
+                    value={searchTerm}
                     onChange={handleSearchChange}
                     style={{ maxWidth: "300px" }}
                   />
-
-                  <Link to="/inactive-user">
-                    <button type="button" className="btn btn-danger">
-                      Inactive 
-                    </button>
-                  </Link>
+                  <Link to="/subreseller-create">
+                  <button type="button" className="btn btn-success float-right">
+                    Create 
+                  </button>
+                </Link>
                   
                 </div>
               </div>
@@ -128,13 +162,11 @@ const UserList = () => {
                   <table className="table">
                     <thead>
                       <tr>
-                        <th>User ID</th>
+                        <th>Super Agent ID</th>
                         <th>Name</th>
-                        <th>Balance</th>
-                        <th>Email</th>
                         <th>Mobile</th>
-                        <th>Referrer</th>
-                        <th>Promo Code</th>
+                        <th>Balance</th>
+                        <th>Status</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -142,26 +174,27 @@ const UserList = () => {
                       {data.map((element, id) => (
                         <tr key={id}>
                           <td>{element.user_id}</td>
-                          <td>{element.first_name} {element.last_name}</td>
-                          <td>{element.currency}</td>
-                          <td>{element.email}</td>
+                          <td>{element.first_name} ({element.handle})</td>
                           <td>{element.mobile}</td>
-                          <td>{element.refferer}</td>
-                          <td>{element.agent_id}</td>
+                          <td>{element.currency}</td>
+                          <td>{element.status}</td>
                           <td>
                             <div className="d-flex">
+                        
                               <button
                                 className={`btn btn-${element.account_status === '2' ? 'danger' : 'success'} shadow btn-xs sharp`}
-                                onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'unblock' : 'block')}
+                                onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'block' : 'block')}
                               >
                                 {element.account_status === '2' ? <i className="fa fa-times"></i> : <i className="fa fa-check"></i>}
                               </button>
+
                               <Link
                                 className="edit-link btn btn-primary shadow btn-xs sharp me-1"
-                                to={`edit-user/${element._id}`}
+                                to={`/editsubreseller/${element.user_id}`}
                               >
-                                <i className="fa fa-pencil"> </i>
+                                <i className="fa fa-pencil"></i>
                               </Link>
+                          
                             </div>
                           </td>
                         </tr>
@@ -176,6 +209,7 @@ const UserList = () => {
                     pageRangeDisplayed={5}
                     pageCount={pageCount}
                     previousLabel="< previous"
+                    renderOnZeroPageCount={null}
                     marginPagesDisplayed={2}
                     containerClassName="pagination justify-content-center"
                     pageClassName="page-item"
@@ -199,4 +233,4 @@ const UserList = () => {
   );
 };
 
-export default UserList;
+export default Inactive;
