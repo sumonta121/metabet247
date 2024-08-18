@@ -162,10 +162,18 @@ router.get("/getdataUser", (req, res) => {
 // paginate user
  
 router.get("/paginatedgetdataUser", async (req, res) => {
-  
-  const allUser = await User.find({ role_as: 3, sender_id : req.query.user_id }).sort({ _id: -1 });
-  const page = parseInt(req.query.page);
-  const limit = parseInt(req.query.limit);
+
+  const { page  = 1, limit = 10, search = "", status } = req.query;
+  const regex   = new RegExp(search, "i"); 
+
+  console.log( req.query);
+
+  const allUser = await User.find({ role_as: 3, account_status: status, $or: [
+                      { first_name: regex },
+                      { last_name: regex },
+                      { handle: regex },
+                      { user_id: regex }
+                    ] }).sort({ _id: -1 });  
 
   const startIndex = (page - 1) * limit;
   const lastIndex = page * limit;
@@ -184,9 +192,11 @@ router.get("/paginatedgetdataUser", async (req, res) => {
       page: page - 1,
     };
   }
+
   results.result = allUser.slice(startIndex, lastIndex);
-  return  res.json(results);
+  return res.json(results);
 });
+
 
 // get agent index read
 router.get("/getdataAgent", (req, res) => {
@@ -475,6 +485,8 @@ router.get("/editagent/:user_id").get(function (req, res) {
   
   User.findOne({ user_id: user_id }).then((user) => res.json(user));
 });
+
+
 
 
 //  edit agent

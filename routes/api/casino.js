@@ -19,8 +19,6 @@ macaddress.one(function(err, mac) {
 
 router.get('/providerlist', async (req, res) => {
 
-
-
   try {
       const uniqueProviders = await Gamelist.aggregate([
       {
@@ -402,6 +400,59 @@ router.post('/bettingHistory', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Something went.' });
   }
+});
+
+ 
+
+router.get("/casinoList", async (req, res) => {
+  const { page = 1, limit = 30, search = "", status } = req.query;
+  const regex = new RegExp(search, "i"); // Case-insensitive search
+
+  const searchQuery = {
+    $or: [
+      { uuid: regex },
+      { name: regex },
+      { type: regex },
+      { provider: regex },
+    ],
+  };
+
+
+  if (status) {
+    //searchQuery.status = status;
+  }
+
+  // Fetch data based on search query and pagination
+  const allUser = await Gamelist.find(searchQuery).sort({ _id: -1 });
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+    };
+  }
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+
+  results.result = allUser.slice(startIndex, lastIndex);
+  return res.json(results);
+});
+
+
+//  edit agent
+router.get("/casinoGameEdit/:uuid").get(function (req, res) {
+  const uuid = req.params.uuid;
+  console.log('details ' + req.params); 
+  Gamelist.findOne({ uuid: uuid }).then((user) => res.json(user));
 });
 
 

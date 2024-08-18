@@ -55,8 +55,13 @@ import AffiliateCreate from './affiliate/create';
 import AffiliateEdit from './affiliate/edit';
 import AffiliateList from './affiliate/list';
 
-import UserList from './userList/list';
+import UserList from './userList/UserList';
+import InactiveUserList from './userList/Inactivelist';
 import AgentBalanceReport from './AgentBalanceReport/list';
+
+import casinoList from './CasinoList/List';
+import casinoGameEdit from './CasinoList/casinoGameEdit';
+//import InactiveCasino from './userList/InactiveCasino';
 
 import WithdrawPending from './withdraw/pending';
 import WithdrawPaid from './withdraw/paid';
@@ -125,9 +130,15 @@ const App = () => (
         <ProtectedRoute exact path="/editAffiliate/:_id" component={AffiliateEdit } />
 
         <ProtectedRoute exact path="/user-index" component={UserList } />
+        <ProtectedRoute exact path="/inactive-user" component={InactiveUserList} />
+
+        <ProtectedRoute exact path="/casino-list" component={casinoList} />
+        <ProtectedRoute exact path="/casino-game-edit/:_id" component={casinoGameEdit } /> 
+
+
         <ProtectedRoute exact path="/edit-user/:id" component={EditUser } />
         <ProtectedRoute exact path="/agent-balance-report" component={AgentBalanceReport } />
-
+ 
         <ProtectedRoute exact path="/withdraw-pending" component={WithdrawPending } />
         <ProtectedRoute exact path="/withdraw-paid" component={WithdrawPaid } />
         <ProtectedRoute exact path="/withdraw-rejected" component={WithdrawRejected } />

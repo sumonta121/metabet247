@@ -94,7 +94,7 @@ export default class leftSidebar extends Component {
               <li>
                 <Link to="/user-balance-report" className="" ariaExpanded="false">
                   <i class="material-icons">credit_card</i>
-                  <span class="nav-text">Send Money</span>
+                  <span class="nav-text">Balance Transfer</span>
                 </Link>
               </li>
       

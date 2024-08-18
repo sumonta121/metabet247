@@ -26,7 +26,7 @@ const AgentList = ({ userData }) => {
 
   const getPaginatedUsers = () => {
     const search = searchQuery ? `&search=${searchQuery}` : "";
-    const stutus = 1;
+    const status = 1;
     fetch(
       `${apiConfig.baseURL}/api/agent/paginatedMasterAgent?page=${currentPage.current}&limit=${limit}&status=${status}${search}`,
       {

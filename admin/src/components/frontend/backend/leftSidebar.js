@@ -94,14 +94,21 @@ const LeftSidebar = () => {
                 </Link>
               </li>
                
+              
               <li>
                 <Link to="/user-index" className="" ariaExpanded="false">
                   <i class="material-icons">description</i>
                   <span class="nav-text">User List</span>
                 </Link>
               </li>
-
-
+              
+              <li>
+                <Link to="/casino-list" className="" ariaExpanded="false">
+                  <i class="material-icons">description</i>
+                  <span class="nav-text">Casino Games List</span>
+                </Link>
+              </li>
+  
               <li>
               <Link to="#" ariaExpanded="false" >
                 <i className="material-icons">trending_up</i>

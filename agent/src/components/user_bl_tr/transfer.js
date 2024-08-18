@@ -145,7 +145,7 @@ const Transfer = () => {
 
               <Link to="/user-balance-report">
                 <button type="button" className="btn btn-success float-right">
-                 Report{" "}
+                 Report
                 </button>
               </Link>
             </div>
