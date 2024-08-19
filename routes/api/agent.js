@@ -1947,51 +1947,52 @@ router.post("/agent_balance_deposit", async (req, res) => {
 
 
   router.get("/agent_balance_check/:userId", async(req, res) => {
-      const user_id = req.params.userId;
+      return res.status(200).json('please try again...');
+      // const user_id = req.params.userId;
 
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // Calculate the date 24 hours ago
+      // const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // Calculate the date 24 hours ago
 
-      const order_details = await Binancepayment.find({ 
-        user_id: user_id, 
-        status: 0,
-        createdAt: { $gte: twentyFourHoursAgo } // Filter records with updated_at greater than or equal to twentyFourHoursAgo
-      });
+      // const order_details = await Binancepayment.find({ 
+      //   user_id: user_id, 
+      //   status: 0,
+      //   createdAt: { $gte: twentyFourHoursAgo } // Filter records with updated_at greater than or equal to twentyFourHoursAgo
+      // });
 
       
-      for (const order of order_details) {      
-          const order_id = order.uuid;
+      // for (const order of order_details) {      
+      //     const order_id = order.uuid;
   
-          const externalApiResponse = await axios.get(`https://capitalrevenue.uk.com/binance-deposit-status/${order_id}`);
-          const relevantData = externalApiResponse.data[0];     
-            if (relevantData.status === "SUCCESS" && relevantData.data.status === "PAID") {
+      //     const externalApiResponse = await axios.get(`https://capitalrevenue.uk.com/binance-deposit-status/${order_id}`);
+      //     const relevantData = externalApiResponse.data[0];     
+      //       if (relevantData.status === "SUCCESS" && relevantData.data.status === "PAID") {
             
-              const order_details = await Binancepayment.findOne({ uuid: order_id, status: 0 });
-              const deposit_amount = order_details.amount;
+      //         const order_details = await Binancepayment.findOne({ uuid: order_id, status: 0 });
+      //         const deposit_amount = order_details.amount;
          
-            await Binancepayment.findOneAndUpdate(
-              { _id: order_details._id }, // Assuming _id is the primary key
-              { $set: { status: 1, updated_at: new Date() } },
-              { new: true }
-            );
+      //       await Binancepayment.findOneAndUpdate(
+      //         { _id: order_details._id }, // Assuming _id is the primary key
+      //         { $set: { status: 1, updated_at: new Date() } },
+      //         { new: true }
+      //       );
             
-            // 5% commission bonus
-            const bonus_amount      = (deposit_amount * 5 /100);            
-            const with_bonus_amount = deposit_amount + bonus_amount; 
+      //       // 5% commission bonus
+      //       const bonus_amount      = (deposit_amount * 5 /100);            
+      //       const with_bonus_amount = deposit_amount + bonus_amount; 
 
-            await User.findOneAndUpdate(
-                { user_id: user_id }, 
-                { $inc: { currency: with_bonus_amount } },
-                { new: true } 
-            );        
+      //       await User.findOneAndUpdate(
+      //           { user_id: user_id }, 
+      //           { $inc: { currency: with_bonus_amount } },
+      //           { new: true } 
+      //       );        
             
-            const country_agent = await User.findOne({user_id:'CA290'}).select('name user_id email currency');
-            country_agent.currency -= deposit_amount;            
-            await country_agent.save();
+      //       const country_agent = await User.findOne({user_id:'CA290'}).select('name user_id email currency');
+      //       country_agent.currency -= deposit_amount;            
+      //       await country_agent.save();
             
-          }
-      }
+      //     }
+      // }
      
-       return res.status(200).json('Balance updated success');
+      //  return res.status(200).json('Balance updated success');
   
 });
 
