@@ -18,6 +18,23 @@ router.get("/adminData", async (req, res) => {
       { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
     ]);
 
+    const [dailySales] = await AgentBLTR.aggregate([
+      {
+        $match: {
+          created_at: {
+            $gte: new Date(new Date().setHours(0, 0, 0, 0)),  // Start of the day
+            $lt: new Date(new Date().setHours(23, 59, 59, 999)) // End of the day
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" }
+        }
+      }
+    ]);
+    
       // Aggregate total balance and count for Admins
     const [totalAdminBalance] = await User.aggregate([
       { $match: { role_as: 2 } },
@@ -69,6 +86,7 @@ router.get("/adminData", async (req, res) => {
     // Prepare response data
     const alldata = {
       transfered_balance: transferedBalance?.totalAmount || 0,
+      daily_sales: dailySales?.totalAmount || 0,
       total_admin_balance: totalAdminBalance?.totalAmount || 0,
       total_admin_count: totalAdminBalance?.totalCount || 0,
       total_super_balance: totalSuperBalance?.totalAmount || 0,

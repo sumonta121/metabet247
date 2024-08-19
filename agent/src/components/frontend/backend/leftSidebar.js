@@ -11,17 +11,12 @@ export default class leftSidebar extends Component {
   }
 
   render() {
-
-    
     // Token
     const token = localStorage.getItem("jwtToken");
     const decodedToken = jwt_decode(token);
     const userInfo = decodedToken;
     const CheckStatus = userInfo.status;
     const user_role =  userInfo.role_as;
-
-
-
 
     const createAgent = (() => {
       if(user_role === 2){
@@ -66,19 +61,12 @@ export default class leftSidebar extends Component {
                   </Link>
               </li> 
               <li>
-                <a href="javascript:void(0);" className="has-arrow " ariaExpanded="false">
-                  <i className="material-icons">description</i>
-                  <span className="nav-text">List</span>
-                </a>
-                <ul ariaExpanded="false">
-                  <li>
-                    {/* <Link to="/cashin">Cash In Voucher</Link>
-                    <Link to="/cashin-history">Cash In History</Link> */}
-                    {/* <Link to="/master-agent-list">Super Agent List (Deposit)</Link> */}
-                    <Link to="/reffered-list">Reffered List </Link>
-                  </li>
-                </ul>
-              </li>
+                  <Link to="/reffered-list" className="" ariaExpanded="false">
+                    <i class="material-icons">credit_card</i>
+                    <span class="nav-text"> User List </span>
+                  </Link>
+              </li> 
+       
           </>
         );
       } 

@@ -11,7 +11,7 @@ import styled from "styled-components";
 import apiConfig from '../apiConfig';
 import jwt_decode from "jwt-decode";
 
-const RefferedList = () => {
+const Inactiveuser = () => {
   const history = useHistory();
   const [data, setData] = useState([]);
   const [limit, setLimit] = useState(10);
@@ -46,7 +46,7 @@ const RefferedList = () => {
     const decodedToken = jwt_decode(token);
     const userInfo = decodedToken;
     const user_id = userInfo.user_id;
-    const status = 1;
+    const status = 2;
    
     fetch(
       `${apiConfig.baseURL}/api/agent/reffered_list?page=${currentPage.current}&limit=${limit}&status=${status}&user_id=${user_id}&search=${searchTerm}`,
@@ -132,7 +132,7 @@ const RefferedList = () => {
             <div className="card">
 
               <div className="card-header d-flex flex-wrap align-items-center justify-content-between">
-                <h4 className="card-title">Active User  List </h4>
+                <h4 className="card-title">Inactive User  List </h4>
                  <div className="d-flex align-items-center">
 
                   <input
@@ -143,9 +143,9 @@ const RefferedList = () => {
                     onChange={handleSearchChange}
                     style={{ maxWidth: "300px" }}
                   />
-                  <Link to="/inactive-user">
-                    <button type="button" className="btn btn-danger">
-                      Inactive 
+                  <Link to="/reffered-list">
+                    <button type="button" className="btn btn-success">
+                      Active 
                     </button>
                   </Link>
                   
@@ -239,4 +239,4 @@ const RefferedList = () => {
   );
 };
 
-export default RefferedList;
+export default Inactiveuser;

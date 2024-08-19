@@ -43,17 +43,17 @@ export default class navbar extends Component {
             {/* <img src="assets/images/logo/success.png" class="logo-abbr" alt="" /> */}
 
             {/* <img
-               src={`https://i.ibb.co/YjmrvpP/1699873787636.webp`} 
+               src={`https://i.ibb.co/9yz8KsF/Maxbet.webp`} 
               class="brand-title"
               alt=""
             />
             <img
-               src={`https://i.ibb.co/YjmrvpP/1699873787636.webp`} 
+               src={`https://i.ibb.co/9yz8KsF/Maxbet.webp`} 
               class="logo-color"
               alt=""
             />
             <img
-               src={`https://i.ibb.co/YjmrvpP/1699873787636.webp`} 
+               src={`https://i.ibb.co/9yz8KsF/Maxbet.webp`} 
               class="brand-title color-title"
               alt=""
             /> */}

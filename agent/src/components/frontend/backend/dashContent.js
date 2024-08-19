@@ -65,6 +65,7 @@ const DashContent = () => {
 		received_from_admin: 0,
 		total_Transfer_Agents: 0,
 		total_Downline_Balance: 0,
+		total_agent_Downline_Count: 0,
 		total_Downline_Count: 0
 	  });
 
@@ -130,7 +131,7 @@ const DashContent = () => {
         </Link>
       );
     }
-    return null; // Default return if no condition is met
+      return null; 
   })();
 
 
@@ -151,6 +152,57 @@ const DashContent = () => {
     return null; // Default return if no condition is met
   })();
   
+
+  const total_down_user = (() => {
+	    if (user_role === 4) {
+			return ( <>
+				<div class="col-xl-3  col-lg-6 col-sm-6">
+					<div class="widget-stat card">
+						<div class="card-body p-0">
+							<h4 class="card-title">Total User Balance   </h4>
+							<h3>{agentDashboardData ? `${agentDashboardData.Total_Agent_Downline_Balance} TK` : 'Loading...'}</h3>
+						
+						</div>
+					</div>
+				</div>
+				<div class="col-xl-3  col-lg-6 col-sm-6">
+					<div class="widget-stat card">
+						<div class="card-body p-0">
+							<h4 class="card-title">Total User</h4>
+							<h3>{agentDashboardData ? agentDashboardData.total_agent_Downline_Count :'Loading...'}</h3>
+						</div>
+					</div>
+				</div>
+				</>
+			);
+		} else {
+			return ( 
+			    <>
+					<div className="col-xl-3 col-lg-6 col-sm-6">
+						<div className="widget-stat card">
+							<div className="card-body p-0">
+							<h4 className="card-title">Total Downline Balance</h4>
+							<h3>{agentDashboardData ? `${agentDashboardData.total_Downline_Balance} TK` : 'Loading...'}</h3>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-xl-3  col-lg-6 col-sm-6">
+						<div class="widget-stat card">
+							<div class="card-body p-0">
+								<h4 class="card-title">Total Downline  Agent</h4>
+								<h3>{agentDashboardData ? agentDashboardData.total_Downline_Count :'Loading...'}</h3>
+							</div>
+						</div>
+			    	</div>
+				</>	
+			);
+		}
+	}
+   )();
+	
+
+
   const refferelLingk = (() => {
     if (user_role === 4) {
 		const refLink = `https://www.maxxbat.com/create-acount?p=${user_id}`;
@@ -160,10 +212,10 @@ const DashContent = () => {
 			});
 		};
       return (<>
-		<a href={`https://www.maxxbat.com/create-acount?p=${user_id}`} className="btn btn-success" target="_blank" rel="noopener noreferrer">
-			<i className="fas fa-plus"></i> Create User
-		</a>
-		
+			<a href={`https://www.maxxbat.com/create-acount?p=${user_id}`} className="btn btn-success" target="_blank" rel="noopener noreferrer">
+				<i className="fas fa-plus"></i> Create User
+			</a>
+			
 			<div style={{ fontWeight: '900', color: '#35C31E', paddingTop:'10px' }} className="">
 				Referral Link: 
 				<div className="d-flex align-items-center">
@@ -173,7 +225,7 @@ const DashContent = () => {
 					</button>
 				</div>
 			</div></>
-      );
+        );
     } else {
 		return (
 			<span> </span>
@@ -215,9 +267,13 @@ const DashContent = () => {
 								
 									<h3>Balance: { parseFloat(data[0].currency).toFixed(2) } TK</h3>
 									<h4>User ID :  { data[0].user_id } </h4>
-									<Link to="/user-bal-tr" className="btn btn-primary"><i className="fas fa-paper-plane" ></i> Send  </Link>
+									<Link to="/user-bal-tr" className="btn btn-primary"><i className="fas fa-paper-plane" ></i> Banking  </Link>
 									&nbsp;							
 									{ createAgent }		
+									<Link to="/new-chats" className="btn btn-info">
+										<i className="fas fa-add"></i>
+										<span className="nav-text"> New Chats </span>
+									</Link>
 									{ refferelLingk }
 								</div>
 								<div className="coin-img">
@@ -235,34 +291,26 @@ const DashContent = () => {
 					</div>
 				</div>
 		
-					<div className="col-xl-3 col-lg-6 col-sm-6">
+				<div className="col-xl-3 col-lg-6 col-sm-6">
 					<div className="widget-stat card">
 						<div className="card-body p-0">
 						<h4 className="card-title">Total Received Balance</h4>
 						<h3>{agentDashboardData ? `${agentDashboardData.received_from_admin} TK` : 'Loading...'}</h3>
 						</div>
 					</div>
-					</div>
+				</div>
 
-					<div className="col-xl-3 col-lg-6 col-sm-6">
+				<div className="col-xl-3 col-lg-6 col-sm-6">
 					<div className="widget-stat card">
 						<div className="card-body p-0">
 						<h4 className="card-title">Sales Balance</h4>
 						<h3>{agentDashboardData ? `${agentDashboardData.total_Transfer_Agents} TK` : 'Loading...'}</h3>
 						</div>
 					</div>
-					</div>
+				</div>
 
-					<div className="col-xl-3 col-lg-6 col-sm-6">
-					<div className="widget-stat card">
-						<div className="card-body p-0">
-						<h4 className="card-title">Total Downline Balance</h4>
-						<h3>{agentDashboardData ? `${agentDashboardData.total_Downline_Balance} TK` : 'Loading...'}</h3>
-						</div>
-					</div>
-					</div>
+				{ total_down_user }
 
-		
 				{/* <div class="col-xl-3  col-lg-6 col-sm-6">
 					<div class="widget-stat card">
 						<div class="card-body p-0">
@@ -271,16 +319,6 @@ const DashContent = () => {
 						</div>
 					</div>
 				</div> */}
-
-				<div class="col-xl-3  col-lg-6 col-sm-6">
-					<div class="widget-stat card">
-						<div class="card-body p-0">
-							<h4 class="card-title">Total Downline  Agent</h4>
-							<h3>{agentDashboardData.total_Downline_Count ? agentDashboardData.total_Downline_Count : 'Loading...'}</h3>
-							
-						</div>
-					</div>
-				</div>
 
 				<form>
 					<input

@@ -25,7 +25,7 @@ export default class admin_fr  extends React.Component  {
                             <div className="col-xl-12">
                                 <div className="auth-form">
 									<div className="text-center mb-3">
-										<a href="#">   <img style={{ maxHeight:'50px' }} src='https://i.ibb.co/YjmrvpP/1699873787636.webp' /></a>
+										<a href="#">   <img style={{ maxHeight:'50px' }} src='https://i.ibb.co/9yz8KsF/Maxbet.webp' /></a>
 									</div>
                                     <h4 className="text-center mb-4">  Hello Agent! Welcome to your Business    </h4>
                                     <form action="#">

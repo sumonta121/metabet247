@@ -99,6 +99,15 @@ const DashContent =  () => {
                     </div>
                 </div>
 				    
+                <div class="col-xl-3  col-lg-6 col-sm-6">
+                      <div class="widget-stat card">
+                      <div class="card-body p-0">
+                        <h4 class="card-title">Daily Sales </h4>
+                        <h3> { AdminData.daily_sales } TK</h3>
+                      </div>
+                    </div>
+                </div>
+				    
 				  
                 <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">

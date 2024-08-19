@@ -954,35 +954,48 @@ router.get("/paginatedSubReseller", async (req, res) => {
 });
 
 
-
 router.get("/agentData/:user_id", async (req, res) => {
   try {
     const userId = req.params.user_id;
 
     const [receivedFromAdmin] = await AgentBLTR.aggregate([
-      { $match: { user_id: userId } }, 
+      { $match: { user_id: userId } },
       { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
     ]);
 
     const [TransferToAgents] = await UserBLTR.aggregate([
-      { $match: { sender_id: userId } }, 
+      { $match: { sender_id: userId } },
       { $group: { _id: null, totalAmount: { $sum: "$currency" } } }
     ]);
-
+    
     const [TotalDownlineBalance] = await User.aggregate([
       { $match: { refferer: userId } }, 
       { $group: { _id: null, totalAmount: { $sum: "$currency" } } }
     ]);
-    const totalDownlineCount = await User.countDocuments({ refferer: userId });
-    // Log the response data
+
+    const [totalDownlineCount] = await User.aggregate([
+      { $match: { refferer: userId } }, 
+      { $group: { _id: null, totalCount: { $sum: 1 } } }
+    ]);
+
+    const [TotalAgentDownlineBalance] = await User.aggregate([
+      { $match: { agent_id: userId } }, 
+      { $group: { _id: null, totalAmount: { $sum: "$currency" } } }
+    ]);
 
 
-    // Prepare response data
+    const [totalAgentDownlineCount] = await User.aggregate([
+      { $match: { agent_id: userId } }, 
+      { $group: { _id: null, totalCount: { $sum: 1 } } }
+    ]);
+
     const alldata = {
       received_from_admin: receivedFromAdmin?.totalAmount || 0,
       total_Transfer_Agents: TransferToAgents?.totalAmount || 0,
       total_Downline_Balance: TotalDownlineBalance?.totalAmount || 0,
-      total_Downline_Count: totalDownlineCount || 0
+      total_Downline_Count: totalDownlineCount?.totalCount || 0,
+      Total_Agent_Downline_Balance: TotalAgentDownlineBalance?.totalCount || 0,
+      total_agent_Downline_Count: totalAgentDownlineCount?.totalCount || 0,
     };
 
     return res.json(alldata);
@@ -991,6 +1004,7 @@ router.get("/agentData/:user_id", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 
 
@@ -1548,70 +1562,80 @@ router.get("/getdataAffiliate", (req, res) => {
  
 
 
-//  paginatedAffiliate
 router.get("/paginatedAffiliate", async (req, res) => {
-
+   
+  const { page  = 1, limit = 10, search = "", status } = req.query;
+  const regex   = new RegExp(search, "i"); 
   const referrerid  = req.query.referrerid;
-  const allUser = await User.find({  refferer: referrerid , role_as: 4 });
-  //const allUser = await User.find({ role_as: 4 });
-  const page = parseInt(req.query.page)
-  const limit = parseInt(req.query.limit)
+  const allUser = await User.find({ refferer: referrerid , role_as: 4, account_status: status, $or: [
+                      { first_name: regex },
+                      { last_name: regex },
+                      { mobile: regex },
+                      { user_id: regex }
+                    ] }).sort({ _id: -1 });  
 
-  const startIndex = (page - 1) * limit
-  const lastIndex = (page) * limit
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
 
-  const results = {}
-  results.totalUser=allUser.length;
-  results.pageCount=Math.ceil(allUser.length/limit);
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
 
   if (lastIndex < allUser.length) {
     results.next = {
       page: page + 1,
-    }
+    };
   }
   if (startIndex > 0) {
     results.prev = {
       page: page - 1,
-    }
+    };
   }
+
   results.result = allUser.slice(startIndex, lastIndex);
-  res.json(results)
-  
+  return res.json(results);
 });
 
 
-//  paginatedAffiliate
+
+
+
 router.get("/reffered_list", async (req, res) => {
+   
+  const { page  = 1, limit = 10, search = "", status } = req.query;
+  const regex   = new RegExp(search, "i"); 
 
   const user_id  = req.query.user_id;
-  const allUser = await User.find({  agent_id: user_id });
 
-  const page = parseInt(req.query.page)
-  const limit = parseInt(req.query.limit)
+  const allUser = await User.find({ agent_id: user_id , account_status: status, $or: [
+                      { first_name: regex },
+                      { last_name: regex },
+                      { mobile: regex },
+                      { user_id: regex }
+                    ] }).sort({ _id: -1 });  
 
-  const startIndex = (page - 1) * limit
-  const lastIndex = (page) * limit
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
 
-  const results = {}
-  results.totalUser=allUser.length;
-  results.pageCount=Math.ceil(allUser.length/limit);
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
 
   if (lastIndex < allUser.length) {
     results.next = {
       page: page + 1,
-    }
+    };
   }
   if (startIndex > 0) {
     results.prev = {
       page: page - 1,
-    }
+    };
   }
+
   results.result = allUser.slice(startIndex, lastIndex);
-  res.json(results)
-  
+  return res.json(results);
 });
 
-//   ###  SubAffiliate ###
 
 //  SubAffiliate create
 
@@ -3291,7 +3315,7 @@ const sendWelcomeEmail = (username, password, email) => {
                           <tr>
                             <td align="center" valign="top">
                               <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
-                                <img src="https://i.ibb.co/YjmrvpP/1699873787636.webp" alt="link"  style="max-height: 60px;" />
+                                <img src="https://i.ibb.co/9yz8KsF/Maxbet.webp" alt="link"  style="max-height: 60px;" />
                               </a>
                             </td>
                           </tr>
@@ -3499,7 +3523,7 @@ const sendWelcomeEmail = (username, password, email) => {
                           <tr> 
                             <td align="center" valign="top">
                               <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
-                                <img src="https://i.ibb.co/YjmrvpP/1699873787636.webp" alt="link"  style="max-height: 60px;" />
+                                <img src="https://i.ibb.co/9yz8KsF/Maxbet.webp" alt="link"  style="max-height: 60px;" />
                               </a>
                             </td>
                           </tr>

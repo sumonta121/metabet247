@@ -9,17 +9,17 @@ export default class navbar extends Component {
           <Link to="/affiliate" class="brand-logo">
           
             <img
-              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
+              src="https://i.ibb.co/9yz8KsF/Maxbet.webp"
               class="brand-title"
               alt=""
             />
             <img
-              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
+              src="https://i.ibb.co/9yz8KsF/Maxbet.webp"
               class="logo-color"
               alt=""
             />
             <img
-              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
+              src="https://i.ibb.co/9yz8KsF/Maxbet.webp"
               class="brand-title color-title"
               alt=""
             />

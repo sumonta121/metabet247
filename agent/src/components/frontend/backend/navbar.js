@@ -20,7 +20,7 @@ export default class Navbar extends Component {
         <div className="nav-header">
           <Link to="/agent" className="brand-logo">
             <img
-              src="https://i.ibb.co/YjmrvpP/1699873787636.webp"
+              src="https://i.ibb.co/9yz8KsF/Maxbet.webp"
               className="brand-title"
               alt=""
             />

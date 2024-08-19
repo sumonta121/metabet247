@@ -41,17 +41,17 @@ import PasswordManage from './ProfileManage/PasswordManage.js';
 import TpinManage from './ProfileManage/TpinManage.js';
 import GameSync from './ProfileManage/GameSync.js';
 
-
 import SubResellerCreate from './SubReseller/create';
 import SubResellerEdit from './SubReseller/edit';
 import SubResellerList from './SubReseller/list';
 import inactiveSuperAgent from './SubReseller/inactiveSuperAgent';
 
-
 import AffiliateCreate from './affiliate/create';
 import AffiliateEdit from './affiliate/edit';
 import AffiliateList from './affiliate/list';
+import InactiveAffiliate from './affiliate/InactiveAffiliate';
 import RefferedList from './affiliate/refferedList';
+import Inactiveuser from './affiliate/inactiveuser';
 import BalanceDeposit from './deposit/balanceDeposit';
 import AgentDepositList from './deposit/AgentDepositList';
 import chats from './chats/ChatsHistory';
@@ -106,7 +106,11 @@ const App = () => (
         <ProtectedRoute exact path="/balance-deposit" component={BalanceDeposit } />
         <ProtectedRoute exact path="/agent-deposit-list" component={AgentDepositList } />
         <ProtectedRoute exact path="/affiliate-index" component={AffiliateList } />
+        <ProtectedRoute exact path="/inactive-affiliate" component={InactiveAffiliate} />
+
+
         <ProtectedRoute exact path="/reffered-list" component={RefferedList } />
+        <ProtectedRoute exact path="/inactive-user" component={Inactiveuser } />
         <ProtectedRoute exact path="/affiliate-create" component={AffiliateCreate } />
         <ProtectedRoute exact path="/editAffiliate/:_id" component={AffiliateEdit } />
 

@@ -133,8 +133,7 @@ const SubResellerList = () => {
 
               <div className="card-header d-flex flex-wrap align-items-center justify-content-between">
                 <h4 className="card-title">Super Agent Active List </h4>
-                <div className="d-flex align-items-center">
-                 
+                 <div className="d-flex align-items-center">
                   <Link to="/inactive-super-agent">
                     <button type="button" className="btn btn-danger">
                       Inactive 

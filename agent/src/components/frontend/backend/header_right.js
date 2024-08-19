@@ -51,11 +51,11 @@ const HeaderRight = () => {
                     <span className="input-group-text">
                       <a href="javascript:void(0)"></a>
                     </span>
-                    <input
+                    {/* <input
                       type="text"
                       className="form-control"
                       placeholder="Search here..."
-                    />
+                    /> */}
                   </div>
                   &nbsp; &nbsp; &nbsp;
                   <div>

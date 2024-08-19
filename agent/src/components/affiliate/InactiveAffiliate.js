@@ -11,7 +11,7 @@ import styled from "styled-components";
 import apiConfig from '../apiConfig';
 import jwt_decode from "jwt-decode";
 
-const RefferedList = () => {
+const SuperAgentList = () => {
   const history = useHistory();
   const [data, setData] = useState([]);
   const [limit, setLimit] = useState(10);
@@ -45,11 +45,11 @@ const RefferedList = () => {
     const token = localStorage.getItem("jwtToken");
     const decodedToken = jwt_decode(token);
     const userInfo = decodedToken;
-    const user_id = userInfo.user_id;
-    const status = 1;
-   
+    const referrerid = userInfo.user_id;
+    const status = 2;
+
     fetch(
-      `${apiConfig.baseURL}/api/agent/reffered_list?page=${currentPage.current}&limit=${limit}&status=${status}&user_id=${user_id}&search=${searchTerm}`,
+      `${apiConfig.baseURL}/api/agent/paginatedAffiliate?page=${currentPage.current}&limit=${limit}&status=${status}&referrerid=${referrerid}&search=${searchTerm}`,
       { method: "GET" }
     )
       .then((res) => res.json())
@@ -132,9 +132,13 @@ const RefferedList = () => {
             <div className="card">
 
               <div className="card-header d-flex flex-wrap align-items-center justify-content-between">
-                <h4 className="card-title">Active User  List </h4>
+                <h4 className="card-title">Inactive Master Agent List</h4>
                  <div className="d-flex align-items-center">
-
+                 <Link to="/affiliate-index">
+                    <button type="button" className="btn btn-success">
+                      Active 
+                    </button>
+                  </Link>
                   <input
                     type="text"
                     placeholder="Search by Name or ID"
@@ -143,12 +147,7 @@ const RefferedList = () => {
                     onChange={handleSearchChange}
                     style={{ maxWidth: "300px" }}
                   />
-                  <Link to="/inactive-user">
-                    <button type="button" className="btn btn-danger">
-                      Inactive 
-                    </button>
-                  </Link>
-                  
+                 
                 </div>
               </div>
 
@@ -156,53 +155,40 @@ const RefferedList = () => {
                 <div className="table-responsive">
                   <table className="table">
                     <thead>
-                        <tr>
-                          <th>User ID</th>
-                          <th>Mobile Number</th>
-                          <th> Balance</th>
-                          <th>Action</th>
-                        </tr>
+                      <tr>
+                        <th>Super Agent ID</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Balance</th>
+                        <th>Action</th>
+                      </tr>
                     </thead>
                     <tbody>
                       {data.map((element, id) => (
                         <tr key={id}>
                           <td>{element.user_id}</td>
+                          <td>{element.first_name} ({element.handle})</td>
                           <td>{element.mobile}</td>
                           <td>{element.currency}</td>
                           <td>
-                            <button
-                              className={`btn btn-${element.account_status === '2' ? 'danger' : 'success'} shadow btn-xs sharp`}
-                              onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'block' : 'block')}
-                            >
-                              {element.account_status === '2' ? (
-                                <>
-                                  <i className="fa fa-times"></i> &nbsp;  
-                                </>
-                              ) : (
-                                <>
-                                <i className="fa  fa-check"></i>  &nbsp; 
-                                </>
-                              )}
-                            </button>
-                          </td>
-
-                          {/* <td>{element.status}</td> */}
-                          {/* <td>
                             <div className="d-flex">
                               <Link
-                                className="edit-link btn btn-primary shadow btn-xs sharp me-1"
+                                className="edit-link btn btn-primary shadow btn-xs sharp me-1 "
                                 to={`/editAffiliate/${element._id}`}
                                 // to={`edit-agent/11`}
-                              ><i className="fa fa-pencil"> </i>
-                              </Link>
-                              <button
-                                onClick={handleDelete}
-                                className="btn btn-danger shadow btn-xs sharp"
                               >
-                                <i className="fa fa-trash"></i>
+                                <i className="fa fa-pencil"> </i>
+                              </Link>
+
+                              <button
+                                className={`btn btn-${element.account_status === '2' ? 'danger' : 'success'} shadow btn-xs sharp`}
+                                onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'block' : 'block')}
+                              >
+                                {element.account_status === '2' ? <i className="fa fa-times"></i> : <i className="fa fa-check"></i>}
                               </button>
+
                             </div>
-                          </td> */}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -239,4 +225,4 @@ const RefferedList = () => {
   );
 };
 
-export default RefferedList;
+export default SuperAgentList;

@@ -1798,7 +1798,7 @@ const sendWelcomeEmail = (username, password, email) => {
                           <tr>
                             <td align="center" valign="top">
                               <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
-                                <img src="https://i.ibb.co/YjmrvpP/1699873787636.webp" alt="link"  style="max-height: 60px;" />
+                                <img src="https://i.ibb.co/9yz8KsF/Maxbet.webp" alt="link"  style="max-height: 60px;" />
                               </a>
                             </td>
                           </tr>
@@ -2006,7 +2006,7 @@ const sendWelcomeEmail = (username, password, email) => {
                           <tr> 
                             <td align="center" valign="top">
                               <a style="text-decoration: none; display: inline-block;" href="https://maxxbat.com/">
-                                <img src="https://i.ibb.co/YjmrvpP/1699873787636.webp" alt="link"  style="max-height: 60px;" />
+                                <img src="https://i.ibb.co/9yz8KsF/Maxbet.webp" alt="link"  style="max-height: 60px;" />
                               </a>
                             </td>
                           </tr>

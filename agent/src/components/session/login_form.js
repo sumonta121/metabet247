@@ -74,7 +74,7 @@ class LoginForm extends React.Component {
           <form className="form-container-login" onSubmit={this.handleSubmit}>
             <div className="form-container-login-2">
               <h1 className="login-header">
-                <img style={{ maxHeight: '70px' }} src='https://i.ibb.co/YjmrvpP/1699873787636.webp' alt="Logo" />
+                <img style={{ maxHeight: '70px' }} src='https://i.ibb.co/9yz8KsF/Maxbet.webp' alt="Logo" />
               </h1>
               <div>Email</div>
               <input
