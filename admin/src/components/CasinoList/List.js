@@ -49,7 +49,6 @@ const List = () => {
     getPaginatedUsers();
   }
 
-
   const handleBlockUnblock = async (rowId, action) => {
     try {
       const response = await axios.put(`${apiConfig.baseURL}/api/casino/${action}/${rowId}`);
