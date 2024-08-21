@@ -10,7 +10,7 @@ import ReactPaginate from "react-paginate";
 import styled from "styled-components";
 import apiConfig from '../apiConfig';
 
-const List = () => {
+const InactiveCasinoList = () => {
   let history = useHistory();
 
   const [data, setData] = useState([]);
@@ -30,7 +30,7 @@ const List = () => {
 
   const getPaginatedUsers = () => {
     const search = searchQuery ? `&search=${searchQuery}` : "";
-    const status = 1;
+    const status = 2;
     fetch(
       `${apiConfig.baseURL}/api/casino/casinoList?page=${currentPage.current}&limit=${limit}&status=${status}${search}`,
       {
@@ -105,14 +105,13 @@ const List = () => {
           <div className="col-lg-12">
             <div className="card">
               <div className="card-header d-flex flex-wrap align-items-center justify-content-between">
-                <h4 className="card-title">Casino List</h4>
+                <h4 className="card-title">Inactive Casino List</h4>
                 <div className="d-flex align-items-center">
                   <Link to="#">
                     <button type="button" className="btn btn-primary">
                        Sync 
                     </button>
                   </Link>
-
                   <input
                     type="text"
                     placeholder="Search by Name or ID"
@@ -122,12 +121,12 @@ const List = () => {
                     style={{ maxWidth: "300px" }}
                   />
 
-                  <Link to="/inactive-casino">
-                    <button type="button" className="btn btn-danger">
-                      Inactive 
+                  <Link to="/casino-list">
+                    <button type="button" className="btn btn-success">
+                      Active 
                     </button>
                   </Link>
-
+                  
                 </div>
               </div>
 
@@ -215,4 +214,4 @@ const List = () => {
   );
 };
 
-export default List;
+export default InactiveCasinoList;

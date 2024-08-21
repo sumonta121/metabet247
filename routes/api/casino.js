@@ -378,8 +378,7 @@ router.post('/create', (req, res) => {
         
       })
     } else {
-      //If it's not, respond with an error + message
-      // return res.status(422).json({msg:`${user.handle} bet ${req.body.amount - user.currency} too much`})
+   
     return res.status(422).json({"msg": "Not enough funds." })
     }
   })
@@ -402,10 +401,8 @@ router.post('/bettingHistory', async (req, res) => {
   }
 });
 
- 
-
 router.get("/casinoList", async (req, res) => {
-  const { page = 1, limit = 30, search = "", status } = req.query;
+  const { page = 1, limit = 10, search = "", status } = req.query; // Changed limit to 50
   const regex = new RegExp(search, "i"); // Case-insensitive search
 
   const searchQuery = {
@@ -418,8 +415,9 @@ router.get("/casinoList", async (req, res) => {
   };
 
 
+
   if (status) {
-    //searchQuery.status = status;
+    searchQuery.status = status;
   }
 
   // Fetch data based on search query and pagination
@@ -448,12 +446,76 @@ router.get("/casinoList", async (req, res) => {
 });
 
 
-//  edit agent
-router.get("/casinoGameEdit/:uuid").get(function (req, res) {
-  const uuid = req.params.uuid;
-  console.log('details ' + req.params); 
-  Gamelist.findOne({ uuid: uuid }).then((user) => res.json(user));
+//  casinoGameInfo
+
+// Get Casino Game Info by ID
+router.get('/casinoGameInfo/:id', async (req, res) => {
+  try {
+      const game = await Gamelist.findById(req.params.id);
+      if (!game) return res.status(404).json({ message: "Game not found" });
+      res.json(game);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+  }
 });
+
+// Update Casino Game by ID
+router.put('/casinoGameUpdate/:id', async (req, res) => {
+  try {
+      const { name, provider } = req.body;
+
+      const updatedGame = await Gamelist.findByIdAndUpdate(
+          req.params.id,
+          { name },
+          { new: true }
+      );
+
+      if (!updatedGame) return res.status(404).json({ message: "Game not found" });
+
+      res.json({ message: "Game updated successfully", game: updatedGame });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+
+router.put('/block/:rowId', async (req, res) => {
+  try {
+    const { action, rowId } = req.params;
+    const game = await Gamelist.findOne({ _id: rowId });
+    console.log(game);
+    if (!game) {
+      return res.status(404).json({ message: 'Game not found' });
+    }
+
+
+    if(game.status == 1){
+      const update = { status: 2 }; 
+      const updatedUser = await Gamelist.findByIdAndUpdate(rowId, update, { new: true }); 
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'Game not found' });
+      }
+      return res.status(200).json({ message: 'Game Inactive successfully' });
+    } else if(game.status == 2){
+      const update = { status: 1 }; 
+      const updatedUser = await Gamelist.findByIdAndUpdate(rowId, update, { new: true }); 
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'Game not found' });
+      }
+       return res.status(200).json({ message: 'User Active successfully' });
+    }
+ 
+    return res.status(200).json({ message: `Game ${updatedStatus === 1 ? 'activated' : 'deactivated'} successfully` });
+  } catch (error) {
+    console.error('Error blocking/unblocking game:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
 
 
 module.exports = router; 

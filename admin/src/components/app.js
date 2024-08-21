@@ -61,7 +61,7 @@ import AgentBalanceReport from './AgentBalanceReport/list';
 
 import casinoList from './CasinoList/List';
 import casinoGameEdit from './CasinoList/casinoGameEdit';
-//import InactiveCasino from './userList/InactiveCasino';
+import InactiveCasinoList from './CasinoList/InactiveCasinoList';
 
 import WithdrawPending from './withdraw/pending';
 import WithdrawPaid from './withdraw/paid';
@@ -133,6 +133,7 @@ const App = () => (
         <ProtectedRoute exact path="/inactive-user" component={InactiveUserList} />
 
         <ProtectedRoute exact path="/casino-list" component={casinoList} />
+        <ProtectedRoute exact path="/inactive-casino" component={InactiveCasinoList} />
         <ProtectedRoute exact path="/casino-game-edit/:_id" component={casinoGameEdit } /> 
 
 
