@@ -23,6 +23,7 @@ const CasinoGameEdit = ({ match }) => {
     const [user, setUser] = useState({
         name: "",
         provider: "",
+        type: "",
     });
 
     const [password, setPassword] = useState("");
@@ -102,6 +103,13 @@ const CasinoGameEdit = ({ match }) => {
                      <label>Provider:</label>
                       <div class="col-sm-12">
                         <input class="form-control" type="text" name="provider" value={user.provider} onChange={handleChange} />  
+                      </div>
+                </div>
+
+                <div class="mb-3 row" >
+                     <label>type:</label>
+                      <div class="col-sm-12">
+                        <input class="form-control" type="text" name="type" value={user.type} onChange={handleChange} />  
                       </div>
                 </div>
 

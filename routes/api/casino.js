@@ -463,11 +463,11 @@ router.get('/casinoGameInfo/:id', async (req, res) => {
 // Update Casino Game by ID
 router.put('/casinoGameUpdate/:id', async (req, res) => {
   try {
-      const { name, provider } = req.body;
+      const { name, provider, type } = req.body;
 
       const updatedGame = await Gamelist.findByIdAndUpdate(
           req.params.id,
-          { name },
+          { name, type }, // Ensure provider is updated
           { new: true }
       );
 
