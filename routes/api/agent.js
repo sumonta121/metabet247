@@ -2536,7 +2536,7 @@ router.post("/balance_send_to_superagent", async (req, res) => {
   try {
     const { user_id, amount, agent_id, s_key } = req.body;
 
-    if (amount < 0) {
+    if (isNaN(amount)) {
       return res.status(422).json("Amount is incorrect");
     }
 
@@ -2552,7 +2552,25 @@ router.post("/balance_send_to_superagent", async (req, res) => {
       return res.status(422).json("User not found");
     }
 
-
+    if(receiver_details.role_as == 3 ){
+      if(receiver_details.agent_id != agent_id ){
+        return res.status(422).json("You don't know this user.");
+      }
+    }
+   
+    if(receiver_details.role_as == 2.1 ){
+      if(receiver_details.refferer != agent_id ){
+        return res.status(422).json("You don't know this user.");
+      }
+    }
+   
+    if(receiver_details.role_as == 4 ){
+      if(receiver_details.refferer != agent_id ){
+        return res.status(422).json("You don't know this user.");
+      }
+    }
+   
+    
     if(sender_details.role_as == 2){
       if(receiver_details.role_as != 2.1){
         return res.status(422).json("You have entered wrong USER ID. Please check again");
@@ -2565,13 +2583,11 @@ router.post("/balance_send_to_superagent", async (req, res) => {
       }
     }
 
-
     if(sender_details.role_as == 4){
       if(receiver_details.role_as != 3){
         return res.status(422).json("You have entered wrong USER ID. Please check again");
       }
     }
-
 
     const agentCurrency = Number(sender_details.currency);
     const transferAmount = Number(amount);
