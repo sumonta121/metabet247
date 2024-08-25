@@ -103,7 +103,7 @@ class LoginForm extends React.Component {
                 Forgot your password?
               </div>
               <div className="warning-text">
-                MAXX BAT
+                MAX BET
               </div>
             </div>
           </form>

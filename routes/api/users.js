@@ -697,7 +697,11 @@ User.findOne({ email: email }).then((data)=>
      if (!user) {
       console.log('user not found')
       return res.status(404).json({ email: "This user does not exist" });
-    }
+     }  
+     if (user.account_status == 2) {
+      console.log('user not found')
+      return res.status(404).json({ email: "This user is not activated" });
+     }
     const userIPAddress = req.ip;
     bcrypt.compare(password, user.password).then((isMatch) => {
       if (!!isMatch) {
