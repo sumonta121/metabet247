@@ -2307,7 +2307,7 @@ router.post("/agent_wallet_update/:_id", async (req, res) => {
 //  paginatedUserBalanceReport
 router.get("/pending_balance_request", async (req, res) => {
 
-  const allUser = await Deposit.find({ agent_id : req.query.user_id });
+  const allUser = await Deposit.find({ agent_id : req.query.user_id }).sort({ _id: -1 });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
 
