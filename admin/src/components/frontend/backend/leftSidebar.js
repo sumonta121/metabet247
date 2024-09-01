@@ -103,6 +103,20 @@ const LeftSidebar = () => {
               </li>
               
               <li>
+                <Link to="/daily-deposit" className="" ariaExpanded="false">
+                  <i class="material-icons">description</i>
+                  <span class="nav-text">Daily Deposit List</span>
+                </Link>
+              </li>
+              
+              <li>
+                <Link to="/daily-withdraw" className="" ariaExpanded="false">
+                  <i class="material-icons">description</i>
+                  <span class="nav-text">Daily withdraw List</span>
+                </Link>
+              </li>
+              
+              <li>
                 <Link to="/casino-list" className="" ariaExpanded="false">
                   <i class="material-icons">description</i>
                   <span class="nav-text">Casino Games List</span>

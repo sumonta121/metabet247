@@ -2363,6 +2363,216 @@ router.get("/pending_withdraw_request", async (req, res) => {
 });
 
 
+router.get("/daily_depositt", async (req, res) => {
+  try {
+    const { page = 1, limit = 10, startDate, endDate } = req.query;
+
+    // Convert page and limit to integers
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    // Create date range query if startDate and endDate are provided
+    const dateQuery = {};
+    if (startDate) {
+      const start = new Date(startDate);
+      if (!isNaN(start.getTime())) { // Ensure the date is valid
+        dateQuery.$gte = start;
+      }
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      if (!isNaN(end.getTime())) { // Ensure the date is valid
+        dateQuery.$lte = end;
+      }
+    }
+
+    // Query to include date filtering
+    const filterQuery = Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {};
+
+    // Fetch total number of records with date filter applied
+    const allUsers = await Deposit.find(filterQuery).exec();
+
+    // Apply pagination
+    const startIndex = (pageNum - 1) * limitNum;
+    const lastIndex = pageNum * limitNum;
+
+    const results = {};
+    results.totalUsers = allUsers.length;
+    results.pageCount = Math.ceil(results.totalUsers / limitNum);
+
+    // Pagination logic
+    if (lastIndex < results.totalUsers) {
+      results.next = {
+        page: pageNum + 1,
+      };
+    }
+    if (startIndex > 0) {
+      results.prev = {
+        page: pageNum - 1,
+      };
+    }
+
+    // Fetch paginated results with date filter applied
+    const paginatedResults = await Deposit.find(filterQuery)
+      .sort({ createdAt: -1 })  // Sort by creation date
+      .skip(startIndex)
+      .limit(limitNum)
+      .exec();
+
+    results.result = paginatedResults;
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching paginated data:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+router.get("/daily_deposit", async (req, res) => {
+  try {
+    const { page = 1, limit = 10, startDate, endDate } = req.query;
+
+    // Convert page and limit to integers
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    // Create date range query if startDate and endDate are provided
+    const dateQuery = {};
+    if (startDate) {
+      const start = new Date(startDate);
+      if (!isNaN(start.getTime())) { // Ensure the date is valid
+        dateQuery.$gte = start;
+      }
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      if (!isNaN(end.getTime())) { // Ensure the date is valid
+        dateQuery.$lte = end;
+      }
+    }
+
+    // Query to include date filtering and status = 'paid'
+    const filterQuery = {
+      ...Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {},
+      status: 'paid'
+    };
+
+    
+    // Fetch total number of records with date filter applied
+    const allUsers = await Deposit.find(filterQuery).exec();
+
+    // Apply pagination
+    const startIndex = (pageNum - 1) * limitNum;
+    const lastIndex = pageNum * limitNum;
+
+    const results = {};
+    results.totalUsers = allUsers.length;
+    results.pageCount = Math.ceil(results.totalUsers / limitNum);
+
+    // Pagination logic
+    if (lastIndex < results.totalUsers) {
+      results.next = {
+        page: pageNum + 1,
+      };
+    }
+    if (startIndex > 0) {
+      results.prev = {
+        page: pageNum - 1,
+      };
+    }
+
+    // Fetch paginated results with date filter applied
+    const paginatedResults = await Deposit.find(filterQuery)
+      .sort({ createdAt: -1 })  // Sort by creation date
+      .skip(startIndex)
+      .limit(limitNum)
+      .exec();
+
+    results.result = paginatedResults;
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching paginated data:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
+
+
+router.get("/daily_withdraw", async (req, res) => {
+  try {
+    const { page = 1, limit = 10, startDate, endDate } = req.query;
+
+    // Convert page and limit to integers
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    // Create date range query if startDate and endDate are provided
+    const dateQuery = {};
+    if (startDate) {
+      const start = new Date(startDate);
+      if (!isNaN(start.getTime())) { // Ensure the date is valid
+        dateQuery.$gte = start;
+      }
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      if (!isNaN(end.getTime())) { // Ensure the date is valid
+        dateQuery.$lte = end;
+      }
+    }
+
+    // Query to include date filtering and status = 'paid'
+    const filterQuery = {
+      ...Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {},
+      status: 'Paid'
+    };
+
+    
+    // Fetch total number of records with date filter applied
+    const allUsers = await Withdraw.find(filterQuery).exec();
+
+    // Apply pagination
+    const startIndex = (pageNum - 1) * limitNum;
+    const lastIndex = pageNum * limitNum;
+
+    const results = {};
+    results.totalUsers = allUsers.length;
+    results.pageCount = Math.ceil(results.totalUsers / limitNum);
+
+    // Pagination logic
+    if (lastIndex < results.totalUsers) {
+      results.next = {
+        page: pageNum + 1,
+      };
+    }
+    if (startIndex > 0) {
+      results.prev = {
+        page: pageNum - 1,
+      };
+    }
+
+    // Fetch paginated results with date filter applied
+    const paginatedResults = await Withdraw.find(filterQuery)
+      .sort({ createdAt: -1 })  // Sort by creation date
+      .skip(startIndex)
+      .limit(limitNum)
+      .exec();
+
+    results.result = paginatedResults;
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching paginated data:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 
 router.post("/user_withdraw_update", async (req, res) => {

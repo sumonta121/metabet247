@@ -76,7 +76,7 @@ class LoginForm extends React.Component {
               <h1 className="login-header">
                 <img style={{ maxHeight: '70px' }} src='https://i.ibb.co/9yz8KsF/Maxbet.webp' alt="Logo" />
               </h1>
-              <div>Email</div>
+              <div>USER ID</div>
               <input
                 type="text"
                 className="login-form-fields"

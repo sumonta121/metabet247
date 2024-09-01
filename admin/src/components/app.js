@@ -58,6 +58,8 @@ import AffiliateList from './affiliate/list';
 import UserList from './userList/UserList';
 import InactiveUserList from './userList/Inactivelist';
 import AgentBalanceReport from './AgentBalanceReport/list';
+import DailyDeposit from './Daily_deposit/list';
+import DailyWithdraw from './Daily_Withdraw/list';
 
 import casinoList from './CasinoList/List';
 import casinoGameEdit from './CasinoList/casinoGameEdit';
@@ -139,6 +141,9 @@ const App = () => (
 
         <ProtectedRoute exact path="/edit-user/:id" component={EditUser } />
         <ProtectedRoute exact path="/agent-balance-report" component={AgentBalanceReport } />
+        
+        <ProtectedRoute exact path="/daily-deposit" component={DailyDeposit } />
+        <ProtectedRoute exact path="/daily-withdraw" component={DailyWithdraw } />
  
         <ProtectedRoute exact path="/withdraw-pending" component={WithdrawPending } />
         <ProtectedRoute exact path="/withdraw-paid" component={WithdrawPaid } />

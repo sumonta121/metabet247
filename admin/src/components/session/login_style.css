@@ -1,0 +1,218 @@
+
+  .login_body {    
+    background-color: #103628; 
+    display: flex;
+    justify-content: center;   
+    padding-top: 100px; 
+  }
+ 
+  .btn-primary {
+    background-color: #006441;
+    border: 1px solid #006441;
+  }
+  
+  .btn-primary:hover{
+    background-color: #045237;
+    border: 1px solid #045237;
+  }
+  .btn-primary:active{
+    background-color: #01925f;
+    border: 1px solid #01925f;
+  }
+
+  .btn-primary:focus {
+    color: #fff;
+    background-color: #045237;
+    border-color: #045237;
+    box-shadow: 0 0 0 0.25rem rgb(16 12 18 / 75%);
+}
+
+.btn-primary.disabled, .btn-primary:disabled {
+  color: #fff;
+  background-color: #01291b;
+  border-color: #01291b;
+}
+
+
+  @media screen and (max-width: 575px){
+    .nav .nav-item {
+        padding: 0px 0px 0px 35px;
+    }
+  }
+  
+  .login-fornm{    
+    position: relative; 
+    background-color: #174434;
+    border: 2px solid #174434;
+    margin-inline: 1.5rem;
+    row-gap: 1.25rem;
+    backdrop-filter: blur(20px);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0px 0px 8px 4px rgba(0,0,0,0.39);
+    -webkit-box-shadow: 0px 0px 8px 4px rgba(0,0,0,0.39);
+    -moz-box-shadow: 0px 0px 8px 4px rgba(0,0,0,0.39);
+  }
+  
+  .login-fornm p{
+    color:white;
+    font-size: 12px;    
+  }
+  
+  .login-fornm h3{
+    color:white;
+    
+  }
+  
+  .form-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(23, 88, 61, 0.1);
+    padding: 20px;
+    width: 300px;
+  }
+  
+  .input-container {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #103628;
+    border-radius: 5px;
+    background: #103628;
+    color: white;
+  }
+  
+  .input-field-dropdown {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #103628;
+    border-radius: 5px;
+    background: #103628;
+    color: white;
+    font-size: 12px;
+  }
+  
+  .input-field-dropdown:focus {
+    color: #fff;
+    background-color: #103628;
+    border-color: #103628;
+    box-shadow: 0 0 0 0.25rem rgb(16 12 18 / 75%);
+  }
+
+  .input-label {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);   
+    padding: 0 5px;
+    font-size: 12px;
+    color: #999;
+    pointer-events: none;
+    transition: top 0.3s, font-size 0.3s, color 0.3s;
+  }
+  
+  .input-field:focus + .input-label,
+  .has-content + .input-label {
+    top: 8px;
+    right: 0px;
+    font-size: 10px;
+    color: white;   
+    
+  }
+  
+  .input-field:focus-visible {
+    border-color: #484849; 
+    outline: none; 
+  }
+  
+  .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    color: var(--bs-nav-pills-link-active-color);
+    background-color: #103628;
+    border-bottom: 1px solid white;
+  }
+  
+  .nav-pills .nav-link {
+     border-radius: 0px; 
+  }
+  
+  .nav-link {
+   color: #747b87;
+  }
+  
+
+  /*     modal */
+
+  /* Styles for the modal overlay */
+
+  .modal-custom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #103628;
+    z-index: 1000;
+  }
+  
+  .modal-custom , .warning {
+    font-size: 12px;
+  } 
+
+  .modal-custom , .footnote {
+    font-size: 11px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+  .modal-custom-content {
+    background-color: #103628;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+  }
+  
+  .login-details {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #103628;
+  }
+  
+  .modal-custom-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-custom-actions button,
+  .modal-custom-actions a {
+    padding: 5px 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #103628;
+    color: white;
+    text-decoration: none;
+  }
+  
+  .modal-custom-actions button:hover,
+  .modal-custom-actions a:hover {
+    background-color: #103628;
+    font-size: 14px;
+  }
+  
+  .modal-custom-actions a {    
+    font-size: 14px;
+  }
+
