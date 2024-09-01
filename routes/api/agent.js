@@ -2433,11 +2433,11 @@ router.get("/daily_depositt", async (req, res) => {
 
 router.get("/daily_deposit", async (req, res) => {
   try {
-    const { page = 1, limit = 10, startDate, endDate } = req.query;
+    const { page = 1, limit = 30, startDate, endDate } = req.query;
 
     // Convert page and limit to integers
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
+    const pageNum = parseInt(page, 30);
+    const limitNum = parseInt(limit, 30);
 
     // Create date range query if startDate and endDate are provided
     const dateQuery = {};
@@ -2506,11 +2506,11 @@ router.get("/daily_deposit", async (req, res) => {
 
 router.get("/daily_withdraw", async (req, res) => {
   try {
-    const { page = 1, limit = 10, startDate, endDate } = req.query;
+    const { page = 1, limit = 30, startDate, endDate } = req.query;
 
     // Convert page and limit to integers
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
+    const pageNum = parseInt(page, 30);
+    const limitNum = parseInt(limit, 30);
 
     // Create date range query if startDate and endDate are provided
     const dateQuery = {};
