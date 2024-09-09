@@ -558,6 +558,60 @@ router.post("/updateAgent/:_id", async (req, res) => {
 });
 
 
+
+// Update agent route
+router.post("/updateCountryAdmin/:_id", async (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+
+  // Validate input
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  const rowId = req.params._id;
+  // Destructure fields from request body
+  const {
+    handle,
+    email,
+    password,
+    mobile,
+    account_status,
+    ref_percentage,
+    deposit_percentage,
+  } = req.body;
+
+  try {
+    let updateFields = {
+      handle,
+      email,
+      mobile,
+      account_status,
+      ref_percentage,
+      deposit_percentage,
+    };
+
+    // If password is provided, hash it before updating
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      updateFields.password = hashedPassword;
+    }
+
+    // Update the agent
+    const updatedUser = await User.updateOne({ _id: rowId }, { $set: updateFields });
+
+    if (updatedUser.nModified === 0) {
+      return res.status(404).json({ message: "User not found or no changes made" });
+    }
+
+    res.json({ message: "User updated successfully", user: updatedUser });
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 router.get("/getUserById/:id", async (req, res) => {
   try {
     const rowId = req.params.id;
@@ -582,14 +636,12 @@ router.get("/getUserById/:id", async (req, res) => {
 });
 
 
-
-// Update user by ID
 router.put("/updateUser/:id", async (req, res) => {
   const userId = req.params.id;
 
   try {
-    // Check if the provided ID is a valid ObjectId
-    if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+    // Validate ObjectId format using Mongoose's built-in method
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid user ID format" });
     }
 
@@ -601,24 +653,28 @@ router.put("/updateUser/:id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update all fields except password
+    // Update all fields except password and tppassword
     Object.keys(req.body).forEach((field) => {
-      if (field !== "password") {
+      if (field !== "password" && field !== "tppassword") {
         user[field] = req.body[field];
       }
     });
 
-    // Check if the password is provided in the request body
+    // Hash passwords if provided in the request body
     if (req.body.password) {
-      // Hash the new password before updating
       const hashedNewPassword = await bcrypt.hash(req.body.password, 10);
       user.password = hashedNewPassword;
+    }
+
+    if (req.body.tppassword) {
+      const hashedNewTPPassword = await bcrypt.hash(req.body.tppassword, 10);
+      user.tpin = hashedNewTPPassword;
     }
 
     // Save the updated user
     const updatedUser = await user.save();
 
-    res.status(200).json({ message: "User updated successfully" });
+    res.status(200).json({ message: "User updated successfully", updatedUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

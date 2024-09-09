@@ -20,7 +20,7 @@ const AgentEdit = ({ match }) => {
   const [inpval, setINP] = useState({
     handle: "",
     email: "",
-    //password: "",
+    password: "",
     mobile: "",
     ref_percentage: "",
     deposit_percentage: "",
@@ -64,10 +64,10 @@ const AgentEdit = ({ match }) => {
   // Handle form submission
   const addinpdata = async (e) => {
     e.preventDefault();
-    const { handle, email, mobile,  account_status, ref_percentage, deposit_percentage } = inpval;
+    const { handle, email, mobile,  account_status, ref_percentage, password, deposit_percentage } = inpval;
     
     try {
-      const res = await fetch(`${apiConfig.baseURL}/api/agent/updateAgent/${Id}`, {
+      const res = await fetch(`${apiConfig.baseURL}/api/agent/updateCountryAdmin/${Id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,7 +75,7 @@ const AgentEdit = ({ match }) => {
         body: JSON.stringify({
           handle,
           email,
-       //   password,
+          password,
           account_status,
           mobile,
           ref_percentage,
@@ -141,20 +141,20 @@ const AgentEdit = ({ match }) => {
                         />
                       </div>
                     </div>
-{/* 
+ 
                     <div className="mb-3 row">
                       <label className="col-sm-3 col-form-label">Password</label>
                       <div className="col-sm-9">
                         <input
-                          type="hidden"
+                          type="text"
                           name="password"
                           className="form-control"
                           placeholder="Password"
                           onChange={setdata}
-                          value={inpval.password}
+                          
                         />
                       </div>
-                    </div> */}
+                    </div> 
                     
                     <div className="mb-3 row">
                       <label className="col-sm-3 col-form-label">Mobile</label>

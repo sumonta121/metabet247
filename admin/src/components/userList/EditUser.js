@@ -32,10 +32,17 @@ const EditUser = () => {
     currency: "",
   });
   const [password, setPassword] = useState("");
+  const [tppassword, settppassword] = useState("");
   const [loading, setLoading] = useState(true);
+
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
   };
+
+  const handleTPPasswordChange = (e) => {
+    settppassword(e.target.value);
+  };
+
 
   useEffect(() => {
     axios.get(`${apiConfig.baseURL}/api/agent/getUserById/${id}`)
@@ -62,7 +69,8 @@ const EditUser = () => {
     try {
         const response = await axios.put(`${apiConfig.baseURL}/api/agent/updateUser/${id}`, {
             ...user,
-            password: password || undefined, // Include password only if provided
+            password: password || undefined,
+            tppassword: tppassword || undefined,
           });
 
       if (response.status === 200) {
@@ -99,9 +107,6 @@ const EditUser = () => {
             <p>Loading...</p>
           ) : (
             <form  onSubmit={handleSubmit}>
-               
-              
-               
 
                 <div class="mb-3 row" >
                      <label>User ID:</label>
@@ -203,6 +208,19 @@ const EditUser = () => {
                     name="password"
                     value={password}
                     onChange={handlePasswordChange}
+                    />
+                    </div>
+                </div>
+                
+                <div class="mb-3 row" >
+                    <label>TP Password:</label>
+                    <div class="col-sm-9">
+                    <input
+                    class="form-control"
+                    type="text"
+                    name="tppassword"
+                    value={tppassword}
+                    onChange={handleTPPasswordChange}
                     />
                     </div>
                 </div>
