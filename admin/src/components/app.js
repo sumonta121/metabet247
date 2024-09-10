@@ -56,6 +56,8 @@ import AffiliateEdit from './affiliate/edit';
 import AffiliateList from './affiliate/list';
 
 import UserList from './userList/UserList';
+import DownlineList from './userList/DownlineList';
+
 import InactiveUserList from './userList/Inactivelist';
 import AgentBalanceReport from './AgentBalanceReport/list';
 import DailyDeposit from './Daily_deposit/list';
@@ -132,6 +134,9 @@ const App = () => (
         <ProtectedRoute exact path="/editAffiliate/:_id" component={AffiliateEdit } />
 
         <ProtectedRoute exact path="/user-index" component={UserList } />
+        <ProtectedRoute exact path="/down-list/:userid" component={DownlineList } />
+        <ProtectedRoute exact path="/downview/:userid" component={DownlineList } /> 
+        
         <ProtectedRoute exact path="/inactive-user" component={InactiveUserList} />
 
         <ProtectedRoute exact path="/casino-list" component={casinoList} />

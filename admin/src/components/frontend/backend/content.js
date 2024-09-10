@@ -85,7 +85,7 @@ const DashContent =  () => {
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">Current Balance</h4>
-                        <h3> {data[0].currency} </h3>
+                        <h3> {data[0].currency.toFixed(2) } </h3>
                       </div>
                     </div>
                  </div>
@@ -94,7 +94,7 @@ const DashContent =  () => {
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">Transfered Balance </h4>
-                        <h3> { AdminData.transfered_balance } TK</h3>
+                        <h3> { AdminData.transfered_balance.toFixed(2) } TK</h3>
                       </div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@ const DashContent =  () => {
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">Daily Sales </h4>
-                        <h3> { AdminData.daily_sales } TK</h3>
+                        <h3> { AdminData.daily_sales.toFixed(2) } TK</h3>
                       </div>
                     </div>
                 </div>
@@ -113,7 +113,7 @@ const DashContent =  () => {
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title"> Admin Balance</h4>
-                        <h3> { AdminData.total_admin_balance } TK</h3>
+                        <h3> { AdminData.total_admin_balance.toFixed(2) } TK</h3>
                       </div>
                     </div>
                   </div>
@@ -123,7 +123,7 @@ const DashContent =  () => {
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">Super Agent Balance</h4>
-                        <h3> { AdminData.total_super_balance } TK</h3>
+                        <h3> { AdminData.total_super_balance.toFixed(2) } TK</h3>
                       </div>
                     </div>
                   </div>
@@ -132,7 +132,7 @@ const DashContent =  () => {
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">Master Agent Balance</h4>
-                        <h3> { AdminData.total_master_balance } TK</h3>
+                        <h3> { AdminData.total_master_balance.toFixed(2) } TK</h3>
                       </div>
                     </div>
                   </div>
@@ -141,7 +141,7 @@ const DashContent =  () => {
                     <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">User Balance</h4>
-                        <h3> { AdminData.total_User_balance } TK</h3>
+                        <h3> { AdminData.total_User_balance.toFixed(2) } TK</h3>
                       </div>
                    </div>
                 </div>
@@ -182,109 +182,37 @@ const DashContent =  () => {
                     </div>
                   </div>
 				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
+                  <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">
                       <div class="card-body p-0">
-                        <h4 class="card-title">Total Winning Balance</h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Total Lost Balance</h4>
-                        <h3>0.00</h3>
+                        <h4 class="card-title">Total Profit / Lost Balance</h4>
+                        <h3> { (AdminData.total_deposits  - AdminData.total_withdrawals).toFixed(2) } TK</h3>
                       </div>
                     </div>
                   </div> 
+
+                <div class="col-xl-3  col-lg-6 col-sm-6">
+                      <div class="widget-stat card">
+                      <div class="card-body p-0">
+                        <h4 class="card-title">Total Deposit Balance</h4>
+                        <h3> { AdminData.total_deposits.toFixed(2) } TK</h3>
+                      </div>
+                    </div>
+                  </div>
+				  	  
+                <div class="col-xl-3  col-lg-6 col-sm-6">
+                      <div class="widget-stat card">
+                      <div class="card-body p-0">
+                        <h4 class="card-title">Total Withdraw Balance</h4>
+                        <h3> { AdminData.total_withdrawals.toFixed(2) } TK</h3>
+                      </div>
+                    </div>
+                  </div>
+				  	  
                   <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Total (W) Paid Balance</h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Total Verified Users) </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Total Registered Users </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
                       <div class="widget-stat card">
                       <div class="card-body p-0">
                         <h4 class="card-title">Total Deactivated Users </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Total Recharged Users </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Total Guest Users </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                  <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Running Table Game(Live)</h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  
-				  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Running Slot Game (Live) </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Running Board Game (Live) </h4>
-                        <h3>0.00</h3>
-                      </div>
-                    </div>
-                  </div>
-				  	  
-                <div class="col-xl-3  col-lg-6 col-sm-6">
-                      <div class="widget-stat card">
-                      <div class="card-body p-0">
-                        <h4 class="card-title">Running Bet (Live) </h4>
                         <h3>0.00</h3>
                       </div>
                     </div>

@@ -122,66 +122,21 @@ const LeftSidebar = () => {
                   <span class="nav-text">Casino Games List</span>
                 </Link>
               </li>
-  
+        
               <li>
-              <Link to="#" ariaExpanded="false" >
-                <i className="material-icons">trending_up</i>
-                <span className="nav-text">Send Money </span>
-              </Link>
+                <Link to="/down-list/null" className="" ariaExpanded="false">
+                  <i class="material-icons">description</i>
+                  <span class="nav-text">Downline List</span>
+                </Link>
               </li>
               
               <li>
-              <Link to="#" ariaExpanded="false" >
-                <i className="material-icons">trending_up</i>
-                <span className="nav-text">Create Force (Create Agent, CA,MA ) </span>
-              </Link>
-              </li>
-              
-              
-              <li>
-              <Link to="#" ariaExpanded="false" >
-                <i className="material-icons">trending_up</i>
-                <span className="nav-text">Force Manager ( edit delete) </span>
-              </Link>
-              </li>
-              
-
-              
-              <li>
-              <Link to="#" ariaExpanded="false" >
-                <i className="material-icons">trending_up</i>
-                <span className="nav-text">Statement (user / agent / ma / ca in out) </span>
-              </Link>
-              </li>
-              
-              <li>
-              <Link to="#" ariaExpanded="false" >
-                <i className="material-icons">trending_up</i>
-                <span className="nav-text">Master Admin Report (Financial Report) </span>
-              </Link>
-              </li>
-              
-              
-              <li>
-              <Link to="#" ariaExpanded="false" >
-                <i className="material-icons">trending_up</i>
-                <span className="nav-text">Pending Withdrawal </span>
-              </Link>
-              </li>
-              
-              <li>
-              <Link to="#" ariaExpanded="false" >
+              <Link to="/aa" ariaExpanded="false" >
                 <i className="material-icons">trending_up</i>
                 <span className="nav-text">Notice Panel(Multiple users ma ca agent) </span>
               </Link>
               </li>
-              
-              <li>
-              <Link to="#" ariaExpanded="false" >
-                <i className="material-icons">trending_up</i>
-                <span className="nav-text">Slide Manage </span>
-              </Link>
-              </li>
+       
               
               <li>
               <Link to="#" ariaExpanded="false" >
@@ -198,190 +153,6 @@ const LeftSidebar = () => {
               </li>
               
 
-
-
-
-
-
-
-
-
-
-
-
-              <li>
-                <a
-                  href="javascript:void(0);"
-                  className="has-arrow "
-                  ariaExpanded="false"
-                >
-                  <i className="material-icons">trending_up</i>
-                  <span className="nav-text">Withdraw </span>
-                </a>
-
-                <ul ariaExpanded="false">
-                  <li>
-                    <Link to="/withdraw-pending">Pending</Link>
-                  </li>
-
-                  <li>
-                    <Link to="/withdraw-paid">Paid</Link>
-                  </li>
-
-                  <li>
-                    <Link to="/withdraw-rejected">Rejected</Link>
-                  </li>
-
-                  <li>
-                    <Link to="/withdraw-block">Block</Link>
-                  </li>
-                </ul>
-              </li>
-
-              <li>
-                <a
-                  href="javascript:void(0);"
-                  className="has-arrow "
-                  ariaExpanded="false"
-                >
-                  <i className="material-icons">trending_up</i>
-                  <span className="nav-text">P2p Manage </span>
-                </a>
-
-                <ul ariaExpanded="false">
-                  <li>
-                    <a
-                      href="javascript:void(0);"
-                      className="has-arrow "
-                      ariaExpanded="false"
-                    >
-                      <i className="material-icons">trending_up</i>
-                      <span className="nav-text">Pending Order </span>
-                    </a>
-
-                    <ul ariaExpanded="false">
-                      <li>
-                        <a href="javascript:void(0);">Pending</a>
-                      </li>
-
-                      <li>
-                        <a href="javascript:void(0);">Paid</a>
-                      </li>
-
-                      <li>
-                        <a href="javascript:void(0);">Rejected</a>
-                      </li>
-
-                      <li>
-                        <a href="javascript:void(0);">Block</a>
-                      </li>
-                    </ul>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);">Payment Gateway Setup </a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);">P2p Report</a>
-                  </li>
-                </ul>
-              </li>
-
-              <li>
-                <a
-                  href="javascript:void(0);"
-                  className="has-arrow "
-                  ariaExpanded="false"
-                >
-                  <i className="material-icons">trending_up</i>
-                  <span className="nav-text">Game </span>
-                </a>
-
-                <ul ariaExpanded="false">
-                  <li>
-                    <a href="javascript:void(0);">Live Casino</a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);">E-sports</a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);">Sports</a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);">Quick Bet</a>
-                  </li>
-                </ul>
-              </li>
-
-              <li>
-                <a href="javascript:void(0);" className="" ariaExpanded="false">
-                  <i class="material-icons">description</i>
-                  <span class="nav-text">Game Setup (Decimal, Fraction)</span>
-                </a>
-              </li>
-
-              <li>
-                <a href="javascript:void(0);" className="" ariaExpanded="false">
-                  <i class="material-icons">description</i>
-                  <span class="nav-text">Translator</span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="javascript:void(0);"
-                  className="has-arrow "
-                  ariaExpanded="false"
-                >
-                  <i className="material-icons">trending_up</i>
-                  <span className="nav-text">Report </span>
-                </a>
-
-                <ul ariaExpanded="false">
-                  <li>
-                    <a href="javascript:void(0);">Current Bet</a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);">Stack Bet</a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);">Pending Bet </a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);"> Realise Bet </a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);"> Blocked Bet </a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);"> Win Bet </a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);"> Lost Bet </a>
-                  </li>
-
-                  <li>
-                    <a href="javascript:void(0);"> Referral Income </a>
-                  </li>
-                </ul>
-              </li>
-
-              <li>
-                <a href="javascript:void(0);" className="" ariaExpanded="false">
-                  <i class="material-icons">description</i>
-                  <span class="nav-text">Audit Report</span>
-                </a>
-              </li>
 
               <li>
                 <a href="javascript:void(0);" className="" ariaExpanded="false">
@@ -407,7 +178,7 @@ const LeftSidebar = () => {
                       className="has-arrow "
                       ariaExpanded="false"
                     >
-                      Basic Info{" "}
+                      Basic Info
                     </a>
 
                     <ul ariaExpanded="false">

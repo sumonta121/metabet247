@@ -8,34 +8,39 @@ const SlotGames = require("../../models/SlotegratorGames");
 const mongoose = require("mongoose");
 const Countries = require("../../models/Countries");
 const AgentBLTR = require("../../models/AgentBLTR");
-
+const Deposit = require("../../models/Deposit");
+const Withdraw = require("../../models/Withdraw");
 
 
 router.get("/adminData", async (req, res) => {
   try {
+   const now = new Date();
+    
+   const startOfDayBDT = new Date(new Date().setHours(0, 0, 0, 0)); 
+   const endOfDayBDT = new Date(new Date().setHours(23, 59, 59, 999)); 
+
+   // 2. Daily sales (only those within the current BDT day)
+   const [dailySales] = await AgentBLTR.aggregate([
+     {
+       $match: {
+         createdAt: {
+           $gte: startOfDayBDT,  
+           $lt: endOfDayBDT      
+         }
+       }
+     },
+     {
+       $group: {
+         _id: null,
+         totalAmount: { $sum: "$amount" }
+       }
+     }
+   ]);
 
     const [transferedBalance] = await AgentBLTR.aggregate([
       { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
     ]);
 
-    const [dailySales] = await AgentBLTR.aggregate([
-      {
-        $match: {
-          created_at: {
-            $gte: new Date(new Date().setHours(0, 0, 0, 0)),  // Start of the day
-            $lt: new Date(new Date().setHours(23, 59, 59, 999)) // End of the day
-          }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: "$amount" }
-        }
-      }
-    ]);
-    
-      // Aggregate total balance and count for Admins
     const [totalAdminBalance] = await User.aggregate([
       { $match: { role_as: 2 } },
       {
@@ -47,7 +52,6 @@ router.get("/adminData", async (req, res) => {
       }
     ]);
 
-    // Aggregate total balance and count for Supers
     const [totalSuperBalance] = await User.aggregate([
       { $match: { role_as: 2.1 } },
       {
@@ -59,7 +63,6 @@ router.get("/adminData", async (req, res) => {
       }
     ]);
 
-    // Aggregate total balance and count for Masters
     const [totalUserBalance] = await User.aggregate([
       { $match: { role_as: 3 } },
       {
@@ -71,7 +74,6 @@ router.get("/adminData", async (req, res) => {
       }
     ]);
 
-    // Aggregate total balance and count for Masters
     const [totalMasterBalance] = await User.aggregate([
       { $match: { role_as: 4 } },
       {
@@ -82,8 +84,35 @@ router.get("/adminData", async (req, res) => {
         }
       }
     ]);
+  
+      const [totalDeposits] = await Deposit.aggregate([
+        {
+          $match: { 
+            status: 'paid'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: { $toDouble: "$send_amount" } }  
+          }
+        }
+      ]);
+     
+      const [totalWithdrawals] = await Withdraw.aggregate([
+        {
+          $match: { 
+            status: 'Paid'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: { $toDouble: "$withdraw_amount" } } 
+          }
+        }
+      ]);
 
-    // Prepare response data
     const alldata = {
       transfered_balance: transferedBalance?.totalAmount || 0,
       daily_sales: dailySales?.totalAmount || 0,
@@ -95,10 +124,12 @@ router.get("/adminData", async (req, res) => {
       total_master_count: totalMasterBalance?.totalCount || 0,
       total_User_balance: totalUserBalance?.totalAmount || 0,
       total_User_count: totalUserBalance?.totalCount || 0,
+      total_withdrawals: totalWithdrawals?.totalAmount || 0,
+      total_deposits: totalDeposits?.totalAmount || 0,
     };
-    
 
     return  res.json(alldata);
+
   } catch (error) {
     console.error("Error fetching admin data:", error);
     res.status(500).json({ message: "Internal Server Error" });
