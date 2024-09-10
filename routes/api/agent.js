@@ -520,6 +520,7 @@ router.post("/updateAgent/:_id", async (req, res) => {
     handle,
     email,
     password,
+    tpassword,
     mobile,
     account_status,
     ref_percentage,
@@ -541,6 +542,13 @@ router.post("/updateAgent/:_id", async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
       updateFields.password = hashedPassword;
+    }  
+    
+    // If password is provided, hash it before updating
+    if (tpassword) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedtPassword = await bcrypt.hash(tpassword, salt);
+      updateFields.tpin = hashedtPassword;
     }
 
     // Update the agent
@@ -551,6 +559,129 @@ router.post("/updateAgent/:_id", async (req, res) => {
     }
 
     res.json({ message: "User updated successfully", user: updatedUser });
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Update agent route
+router.post("/updateSuperAgent/:_id", async (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+
+  // Validate input
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  const rowId = req.params._id;
+
+  // Destructure fields from request body
+  const {
+    handle,
+    email,
+    password,
+    tpassword,
+    mobile,
+    account_status,
+    ref_percentage,
+    deposit_percentage,
+  } = req.body;
+
+  try {
+    let updateFields = {
+      handle,
+      email,
+      mobile,
+      account_status,
+      ref_percentage,
+      deposit_percentage,
+    };
+
+    // If password is provided, hash it before updating
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      updateFields.password = hashedPassword;
+    }  
+    
+    // If password is provided, hash it before updating
+    if (tpassword) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedtPassword = await bcrypt.hash(tpassword, salt);
+      updateFields.tpin = hashedtPassword;
+    }
+
+    // Update the agent
+    const updatedUser = await User.updateOne({ _id: rowId }, { $set: updateFields });
+
+    if (updatedUser.nModified === 0) {
+      return res.status(404).json({ message: "Agent not found or no changes made" });
+    }
+
+    res.json({ message: "Agent updated successfully", user: updatedUser });
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// Update agent route
+router.post("/updateMasterAgent/:_id", async (req, res) => {
+  const { errors, isValid } = validateAgentInput(req.body);
+
+  // Validate input
+  if (!isValid) {
+    return res.status(401).json(errors);
+  }
+
+  const rowId = req.params._id;
+
+  // Destructure fields from request body
+  const {
+    handle,
+    email,
+    password,
+    tpassword,
+    mobile,
+    account_status,
+    ref_percentage,
+    deposit_percentage,
+  } = req.body;
+
+  try {
+    let updateFields = {
+      handle,
+      email,
+      mobile,
+      account_status,
+      ref_percentage,
+      deposit_percentage,
+    };
+
+    // If password is provided, hash it before updating
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      updateFields.password = hashedPassword;
+    }  
+    
+    // If password is provided, hash it before updating
+    if (tpassword) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedtPassword = await bcrypt.hash(tpassword, salt);
+      updateFields.tpin = hashedtPassword;
+    }
+
+    // Update the agent
+    const updatedUser = await User.updateOne({ _id: rowId }, { $set: updateFields });
+
+    if (updatedUser.nModified === 0) {
+      return res.status(404).json({ message: "Agent not found or no changes made" });
+    }
+
+    res.json({ message: "Agent updated successfully", user: updatedUser });
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(500).json({ message: "Server error" });
@@ -574,6 +705,7 @@ router.post("/updateCountryAdmin/:_id", async (req, res) => {
     handle,
     email,
     password,
+    tpassword,
     mobile,
     account_status,
     ref_percentage,
@@ -595,6 +727,13 @@ router.post("/updateCountryAdmin/:_id", async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
       updateFields.password = hashedPassword;
+    }
+    
+    // If password is provided, hash it before updating
+    if (tpassword) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedTPassword = await bcrypt.hash(tpassword, salt);
+      updateFields.tpin = hashedTPassword;
     }
 
     // Update the agent

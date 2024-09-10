@@ -21,6 +21,7 @@ const AgentEdit = ({ match }) => {
     handle: "",
     email: "",
     password: "",
+    tpassword: "",
     mobile: "",
     ref_percentage: "",
     deposit_percentage: "",
@@ -64,7 +65,7 @@ const AgentEdit = ({ match }) => {
   // Handle form submission
   const addinpdata = async (e) => {
     e.preventDefault();
-    const { handle, email, mobile,  account_status, ref_percentage, password, deposit_percentage } = inpval;
+    const { handle, email, mobile,  account_status, ref_percentage, password, tpassword, deposit_percentage } = inpval;
     
     try {
       const res = await fetch(`${apiConfig.baseURL}/api/agent/updateCountryAdmin/${Id}`, {
@@ -76,6 +77,7 @@ const AgentEdit = ({ match }) => {
           handle,
           email,
           password,
+          tpassword,
           account_status,
           mobile,
           ref_percentage,
@@ -151,7 +153,19 @@ const AgentEdit = ({ match }) => {
                           className="form-control"
                           placeholder="Password"
                           onChange={setdata}
-                          
+                        />
+                      </div>
+                    </div> 
+
+                    <div className="mb-3 row">
+                      <label className="col-sm-3 col-form-label">TPassword</label>
+                      <div className="col-sm-9">
+                        <input
+                          type="text"
+                          name="tpassword"
+                          className="form-control"
+                          placeholder="Enter transaction Password"
+                          onChange={setdata}
                         />
                       </div>
                     </div> 
