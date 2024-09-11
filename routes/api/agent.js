@@ -2985,6 +2985,8 @@ router.post("/balance_send_to_superagent", async (req, res) => {
   try {
     const { user_id, amount, agent_id, s_key } = req.body;
 
+    return res.status(422).json("Balance transfer is disabled. Please try again later");
+
     if (isNaN(amount)) {
       return res.status(422).json("Amount is incorrect");
     }

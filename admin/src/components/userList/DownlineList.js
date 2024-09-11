@@ -154,11 +154,9 @@ const DowntList = ({ match }) => {
                               </td>
                               <td>
                                 <div className="d-flex">
-
                                    <Link target="_blank" className="edit-link btn btn-info shadow btn-xs sharp me-1" to={`/down-list/${element.user_id}`}>
                                     <i className="fa fa-user fa-2x"> </i>
                                   </Link> 
-                                  
                                 </div>
                               </td>
                             </tr>
