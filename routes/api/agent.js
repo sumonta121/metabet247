@@ -2984,9 +2984,7 @@ router.post("/user_transfer_update", async (req, res) => {
 router.post("/balance_send_to_superagent", async (req, res) => {
   try {
     const { user_id, amount, agent_id, s_key } = req.body;
-
-    return res.status(422).json("Balance transfer is disabled. Please try again later");
-
+    
     if (isNaN(amount)) {
       return res.status(422).json("Amount is incorrect");
     }
@@ -3039,6 +3037,14 @@ router.post("/balance_send_to_superagent", async (req, res) => {
         return res.status(422).json("You have entered wrong USER ID. Please check again");
       }
     }
+
+
+    const transferAmountCheck = Number(amount);
+
+    if (0 > transferAmountCheck) {
+      return res.status(422).json("Amount is wrong");
+    }
+
 
     const agentCurrency = Number(sender_details.currency);
     const transferAmount = Number(amount);
