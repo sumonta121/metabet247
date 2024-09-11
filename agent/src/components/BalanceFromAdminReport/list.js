@@ -7,7 +7,7 @@ import Chatbox from "../frontend/backend/chatbox.js";
 import HeaderRight from "../frontend/backend/header_right.js";
 import LeftSidebar from "../frontend/backend/leftSidebar.js";
 import jwt_decode from "jwt-decode";
-
+import axios from 'axios';
 import ReactPaginate from "react-paginate";
 import { useRef } from "react";
 import styled from "styled-components";
@@ -59,24 +59,29 @@ function changeLimit() {
   getPaginatedUsers();
 }
 
-function getPaginatedUsers() {
-  fetch(
-    `/api/agent/paginatedBlFromAdmin/${user_id}?page=${currentPage.current}&limit=${limit}`,
-    {
-      method: "GET",
-    }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      console.log(data, "userData");
-      setPageCount(data.pageCount);
+const getPaginatedUsers = async () => {
+  try {
+    const response = await axios.get(
+      `/api/agent/paginatedBlFromAdmin/${user_id}`,
+      {
+        params: {
+          page: currentPage.current,
+          limit: limit,
+        },
+      }
+    );
+    setPageCount(response.data.pageCount);
+    const sortedData = response.data.result.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    setData(sortedData);
+  } catch (error) {
+    console.error("Error fetching paginated user data:", error);
+  }
+};
 
-     const sortedData = data.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setData(sortedData);
-      // setData(data.result);
 
-    });
-}
+
 
 // css
 const MyPaginate = styled(ReactPaginate).attrs({

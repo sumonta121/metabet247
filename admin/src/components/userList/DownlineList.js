@@ -157,6 +157,10 @@ const DowntList = ({ match }) => {
                                    <Link target="_blank" className="edit-link btn btn-info shadow btn-xs sharp me-1" to={`/down-list/${element.user_id}`}>
                                     <i className="fa fa-user fa-2x"> </i>
                                   </Link> 
+
+                                  <Link to={`/edit-super-agent/${element._id}`} className="edit-link btn btn-warning shadow btn-xs sharp me-1"> <i className="fa fa-pen fa-2x"> </i>
+                                  </Link>
+
                                 </div>
                               </td>
                             </tr>

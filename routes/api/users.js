@@ -725,7 +725,7 @@ User.findOne({ email: email }).then((data)=>
           payload,
           process.env.JWT_SECRET,
           {
-            expiresIn: 604800,
+            expiresIn: 60,
           }, (err, token) => {                  
             res.json({
               sucess: true,

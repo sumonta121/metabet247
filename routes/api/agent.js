@@ -23,7 +23,7 @@ const AgentWithdraw = require("../../models/AgentWithdraw");
 var elasticemail = require('elasticemail');
 const axios = require('axios');
 const crypto = require('crypto');
-
+const authenticateJWT = require('./authenticateJWT');
 
 //// ================================ From Admin dashboard =========================== //////
 
@@ -161,7 +161,7 @@ router.get("/getdataUser", (req, res) => {
 
 // paginate user
  
-router.get("/paginatedgetdataUser", async (req, res) => {
+router.get("/paginatedgetdataUser",  async (req, res) => {
 
   const { page  = 1, limit = 10, search = "", status } = req.query;
   const regex   = new RegExp(search, "i"); 
@@ -216,7 +216,7 @@ router.get("/getdataAgent", (req, res) => {
 });
 
 
-router.get("/paginatedAgent", async (req, res) => {
+router.get("/paginatedAgent",  async (req, res) => {
   const { page = 1, limit = 10, search = "", status } = req.query;
   const regex = new RegExp(search, "i"); // case-insensitive search
 
@@ -245,7 +245,7 @@ router.get("/paginatedAgent", async (req, res) => {
 });
 
 
-router.get("/downLineView", async (req, res) => {
+router.get("/downLineView",  async (req, res) => {
   const { page = 1, limit = 10, search = "", down_userid } = req.query;
   
   let allUser = [];
@@ -289,7 +289,7 @@ router.get("/downLineView", async (req, res) => {
 });
 
 
-router.get("/paginatedSuperAgent", async (req, res) => {
+router.get("/paginatedSuperAgent",  async (req, res) => {
   const { page = 1, limit = 10, search = "", status } = req.query;
   const regex = new RegExp(search, "i"); // case-insensitive search
 
@@ -318,7 +318,7 @@ router.get("/paginatedSuperAgent", async (req, res) => {
 });
 
 
-router.get("/paginatedMasterAgent", async (req, res) => {
+router.get("/paginatedMasterAgent",  async (req, res) => {
   const { page = 1, limit = 10, search = "", status } = req.query;
   const regex = new RegExp(search, "i"); // case-insensitive search
 
@@ -348,7 +348,7 @@ router.get("/paginatedMasterAgent", async (req, res) => {
 
 
 // ##### Paginate ##### // get agent paginatedUsers
-router.get("/master-and-agent", async (req, res) => {
+router.get("/master-and-agent",  async (req, res) => {
 
   const allUser = await User.find({ role_as: { $in: [2.1, 4] } });
   const page = parseInt(req.query.page)
@@ -379,7 +379,7 @@ router.get("/master-and-agent", async (req, res) => {
 
 
 // paginate user jwt data
-// router.post("/userData", async (req, res) => {
+// router.post("/userData",  async (req, res) => {
 //   const { token } = req.body;
 //   try {
 //     const user = jwt.verify(token, JWT_SECRET, (err, res) => {
@@ -549,7 +549,7 @@ router.get("/getAgent/:id").get(function (req, res) {
 
 
 // Update agent route
-router.post("/updateAgent/:_id", async (req, res) => {
+router.post("/updateAgent/:_id",  async (req, res) => {
   const { errors, isValid } = validateAgentInput(req.body);
 
   // Validate input
@@ -610,7 +610,7 @@ router.post("/updateAgent/:_id", async (req, res) => {
 });
 
 // Update agent route
-router.post("/updateSuperAgent/:_id", async (req, res) => {
+router.post("/updateSuperAgent/:_id",  async (req, res) => {
   const { errors, isValid } = validateAgentInput(req.body);
 
   // Validate input
@@ -672,7 +672,7 @@ router.post("/updateSuperAgent/:_id", async (req, res) => {
 
 
 // Update agent route
-router.post("/updateMasterAgent/:_id", async (req, res) => {
+router.post("/updateMasterAgent/:_id",  async (req, res) => {
   const { errors, isValid } = validateAgentInput(req.body);
 
   // Validate input
@@ -735,7 +735,7 @@ router.post("/updateMasterAgent/:_id", async (req, res) => {
 
 
 // Update agent route
-router.post("/updateCountryAdmin/:_id", async (req, res) => {
+router.post("/updateCountryAdmin/:_id",  async (req, res) => {
   const { errors, isValid } = validateAgentInput(req.body);
 
   // Validate input
@@ -795,7 +795,7 @@ router.post("/updateCountryAdmin/:_id", async (req, res) => {
 });
 
 
-router.get("/getUserById/:id", async (req, res) => {
+router.get("/getUserById/:id",  async (req, res) => {
   try {
     const rowId = req.params.id;
 
@@ -819,7 +819,7 @@ router.get("/getUserById/:id", async (req, res) => {
 });
 
 
-router.put("/updateUser/:id", async (req, res) => {
+router.put("/updateUser/:id",  async (req, res) => {
   const userId = req.params.id;
 
   try {
@@ -866,7 +866,7 @@ router.put("/updateUser/:id", async (req, res) => {
 
 
 // Delete agent
-router.delete("/deleteAgent/:id", async (req, res) => {
+router.delete("/deleteAgent/:id",  async (req, res) => {
   try {
     const rowId = req.params.id;
 
@@ -1152,7 +1152,7 @@ router.get("/getSubReseller", (req, res) => {
 
 
 // ##### Paginate and Search ##### // get agent paginatedUsers
-router.get("/paginatedSubReseller", async (req, res) => {
+router.get("/paginatedSubReseller",  async (req, res) => {
   const { referrerid, page = 1, limit = 10, search = "", status = "" } = req.query;
 
   const regex = new RegExp(search, "i");
@@ -1193,7 +1193,7 @@ router.get("/paginatedSubReseller", async (req, res) => {
 });
 
 
-router.get("/agentData/:user_id", async (req, res) => {
+router.get("/agentData/:user_id",  async (req, res) => {
   try {
     const userId = req.params.user_id;
 
@@ -1265,7 +1265,7 @@ router.get("/AgentBalanceReport", (req, res) => {
     });
 });
 
-router.get("/paginatedAgentBalReport", async (req, res) => {
+router.get("/paginatedAgentBalReport",  async (req, res) => {
   try {
     const { page = 1, limit = 10, startDate, endDate } = req.query;
 
@@ -1335,7 +1335,7 @@ router.get("/paginatedAgentBalReport", async (req, res) => {
     
 
 //  paginatedAgentBalReport
-router.get("/paginatedAgentBalReport_back", async (req, res) => {
+router.get("/paginatedAgentBalReport_back",  async (req, res) => {
   const allUser = await AgentBLTR.find();
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -1380,7 +1380,7 @@ router.get("/withdrawPending", (req, res) => {
 });
 
 // paginate withdrawPending
-router.get("/paginatedwithdrawPending", async (req, res) => {
+router.get("/paginatedwithdrawPending",  async (req, res) => {
   const allUser = await AgentWithdraw.find({ status_type: 0 });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -1423,7 +1423,7 @@ router.get("/withdrawPaid", (req, res) => {
 });
 
 // paginate  withdrawPaid
-router.get("/paginatedwithdrawPaid", async (req, res) => {
+router.get("/paginatedwithdrawPaid",  async (req, res) => {
   const allUser = await AgentWithdraw.find({ status_type: 1 });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -1467,7 +1467,7 @@ router.get("/withdrawRejected", (req, res) => {
 
 // paginate withdrawRejected
 
-router.get("/paginatedwithdrawRejected", async (req, res) => {
+router.get("/paginatedwithdrawRejected",  async (req, res) => {
   const allUser = await AgentWithdraw.find({ status_type: 2 });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -1511,7 +1511,7 @@ router.get("/withdrawBlock", (req, res) => {
 });
 
 // paginate withdrawBlock
-router.get("/paginatedwithdrawBlock", async (req, res) => {
+router.get("/paginatedwithdrawBlock",  async (req, res) => {
   const allUser = await AgentWithdraw.find({ status_type: 3 });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -1539,7 +1539,7 @@ router.get("/paginatedwithdrawBlock", async (req, res) => {
 
 //Action approve withdraw  Pending  paid
 
-router.delete("/withdrawPaid/:id", async (req, res) => {
+router.delete("/withdrawPaid/:id",  async (req, res) => {
   try {
     const rowId = req.params.id;
 
@@ -1563,7 +1563,7 @@ router.delete("/withdrawPaid/:id", async (req, res) => {
 
 // withdraw  Pending Rejected
 
-router.delete("/withdrawRejected/:id", async (req, res) => {
+router.delete("/withdrawRejected/:id",  async (req, res) => {
   try {
     const rowId = req.params.id;
 
@@ -1587,7 +1587,7 @@ router.delete("/withdrawRejected/:id", async (req, res) => {
 
 // withdraw  Pending Block
 
-router.delete("/withdrawBlock/:id", async (req, res) => {
+router.delete("/withdrawBlock/:id",  async (req, res) => {
   try {
     const rowId = req.params.id;
 
@@ -1611,7 +1611,7 @@ router.delete("/withdrawBlock/:id", async (req, res) => {
 
 // withdraw  Pending Pending
 
-router.delete("/withdrawPending/:id", async (req, res) => {
+router.delete("/withdrawPending/:id",  async (req, res) => {
   try {
     const rowId = req.params.id;
 
@@ -1762,7 +1762,7 @@ router.get("/editAffiliate/:_id").get(function (req, res) {
   User.findOne({ _id: rowId }).then((user) => res.json(user));
 });
 
-router.get("/getaffiliate/:_id", async (req, res) => {
+router.get("/getaffiliate/:_id",  async (req, res) => {
   try {
     const rowId = req.params._id;
     const user = await User.findOne({ _id: rowId });
@@ -1817,7 +1817,7 @@ router.post("/updateaffiliate/:_id", (req, res) => {
 });
 
 // Delete affiliate
-router.delete("/deleteAffiliate/:id", async (req, res) => {
+router.delete("/deleteAffiliate/:id",  async (req, res) => {
   try {
     const rowId = req.params.id;
 
@@ -1870,7 +1870,7 @@ router.get("/getdataAffiliate", (req, res) => {
  
 
 
-router.get("/paginatedAffiliate", async (req, res) => {
+router.get("/paginatedAffiliate",  async (req, res) => {
    
   const { page  = 1, limit = 10, search = "", status } = req.query;
   const regex   = new RegExp(search, "i"); 
@@ -1908,7 +1908,7 @@ router.get("/paginatedAffiliate", async (req, res) => {
 
 
 
-router.get("/reffered_list", async (req, res) => {
+router.get("/reffered_list",  async (req, res) => {
    
   const { page  = 1, limit = 10, search = "", status } = req.query;
   const regex   = new RegExp(search, "i"); 
@@ -2045,7 +2045,7 @@ router.get("/editsubreseller/:usAutoId").get(function (req, res) {
 });
 
 
-router.put('/block/:userId', async (req, res) => {
+router.put('/block/:userId',  async (req, res) => {
   try {
     const userId = req.params.userId;
 
@@ -2104,7 +2104,7 @@ router.get("/getdataSubAffiliate", (req, res) => {
   });
 });
 
-router.get("/paginatedSubAffiliate", async (req, res) => {
+router.get("/paginatedSubAffiliate",  async (req, res) => {
   const allUser = await User.find({role_as: 4, status: "SubAffiliate"});
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -2133,7 +2133,7 @@ router.get("/paginatedSubAffiliate", async (req, res) => {
 ////// ========================== From Agent dashboard ===================== /////////////
 
 
-router.post("/balance_deposit", async (req, res) => {
+router.post("/balance_deposit",  async (req, res) => {
   try {
     const newBalanceDeposit = new BalanceDeposit({
       user_id: req.body.user_id,
@@ -2153,7 +2153,7 @@ router.post("/balance_deposit", async (req, res) => {
 });
 
 
-router.post("/agent_balance_deposit", async (req, res) => {
+router.post("/agent_balance_deposit",  async (req, res) => {
 
       try {
         const { user_id, amount } = req.body;
@@ -2254,7 +2254,7 @@ router.post("/agent_balance_deposit", async (req, res) => {
 
 
 
-  router.get("/agent_balance_check/:userId", async(req, res) => {
+  router.get("/agent_balance_check/:userId",  async(req, res) => {
       return res.status(200).json('please try again...');
       // const user_id = req.params.userId;
 
@@ -2358,7 +2358,7 @@ const pendingBalanceCheck_back = async (order_id, user_id, res) => {
 
 
 //  paginatedUserBalanceReport
-router.get("/agent_deposit_report", async (req, res) => {
+router.get("/agent_deposit_report",  async (req, res) => {
 
   const allUser = await Binancepayment.find({ user_id : req.query.user_id });
   const page = parseInt(req.query.page);
@@ -2389,7 +2389,7 @@ router.get("/agent_deposit_report", async (req, res) => {
 
 
 //  paginatedUserBalanceReport
-router.get("/agentCommission/:user_id", async (req, res) => {
+router.get("/agentCommission/:user_id",  async (req, res) => {
     const result = await AgentCommission.aggregate([
       {
           $match: {
@@ -2412,7 +2412,7 @@ router.get("/agentCommission/:user_id", async (req, res) => {
 
 
 //  paginatedUserBalanceReport
-router.get("/deposited_report", async (req, res) => {
+router.get("/deposited_report",  async (req, res) => {
 
   const allUser = await BalanceDeposit.find({ deposit_type: 1, user_id : req.query.user_id });
   const page = parseInt(req.query.page);
@@ -2440,7 +2440,7 @@ router.get("/deposited_report", async (req, res) => {
 });
 
 
-router.post("/agent_wallet_create", async (req, res) => {
+router.post("/agent_wallet_create",  async (req, res) => {
   try {
 
     const newAgentWallet = new AgentWallets({
@@ -2461,7 +2461,7 @@ router.post("/agent_wallet_create", async (req, res) => {
 
 
 //  paginatedUserBalanceReport
-router.get("/agent_wallet_list", async (req, res) => {
+router.get("/agent_wallet_list",  async (req, res) => {
 
   const allUser = await AgentWallets.find({ user_id : req.query.user_id });
   const page = parseInt(req.query.page);
@@ -2490,7 +2490,7 @@ router.get("/agent_wallet_list", async (req, res) => {
 
 
 
-router.get("/agent_wallet_edit/:_id", async (req, res) => {
+router.get("/agent_wallet_edit/:_id",  async (req, res) => {
   try {
     const id = req.params._id;
     const user = await AgentWallets.findOne({ _id: id });
@@ -2506,7 +2506,7 @@ router.get("/agent_wallet_edit/:_id", async (req, res) => {
 
 
 
-router.post("/agent_wallet_update/:_id", async (req, res) => {
+router.post("/agent_wallet_update/:_id",  async (req, res) => {
   try {
     const user_id = req.params._id;
 
@@ -2544,7 +2544,7 @@ router.post("/agent_wallet_update/:_id", async (req, res) => {
 
 
 //  paginatedUserBalanceReport
-router.get("/pending_balance_request", async (req, res) => {
+router.get("/pending_balance_request",  async (req, res) => {
 
   const allUser = await Deposit.find({ agent_id : req.query.user_id }).sort({ _id: -1 });
   const page = parseInt(req.query.page);
@@ -2574,7 +2574,7 @@ router.get("/pending_balance_request", async (req, res) => {
 
 
 //  paginatedUserBalanceReport
-router.get("/pending_withdraw_request", async (req, res) => {
+router.get("/pending_withdraw_request",  async (req, res) => {
 
   const allUser = await Withdraw.find({ agent_id : req.query.user_id });
   const page = parseInt(req.query.page);
@@ -2602,7 +2602,7 @@ router.get("/pending_withdraw_request", async (req, res) => {
 });
 
 
-router.get("/daily_depositt", async (req, res) => {
+router.get("/daily_depositt",  async (req, res) => {
   try {
     const { page = 1, limit = 10, startDate, endDate } = req.query;
 
@@ -2670,7 +2670,7 @@ router.get("/daily_depositt", async (req, res) => {
 
 
 
-router.get("/daily_deposit", async (req, res) => {
+router.get("/daily_deposit",  async (req, res) => {
   try {
     const { page = 1, limit = 30, startDate, endDate } = req.query;
 
@@ -2743,7 +2743,7 @@ router.get("/daily_deposit", async (req, res) => {
 
 
 
-router.get("/daily_withdraw", async (req, res) => {
+router.get("/daily_withdraw",  async (req, res) => {
   try {
     const { page = 1, limit = 30, startDate, endDate } = req.query;
 
@@ -2814,7 +2814,7 @@ router.get("/daily_withdraw", async (req, res) => {
 
 
 
-router.post("/user_withdraw_update", async (req, res) => {
+router.post("/user_withdraw_update",  async (req, res) => {
   try {
     const depositId       = req.body.depositId;
     const withdraw_status = req.body.status;
@@ -2881,7 +2881,7 @@ router.post("/user_withdraw_update", async (req, res) => {
 
 
 
-router.post("/user_transfer_update", async (req, res) => {
+router.post("/user_transfer_update",  async (req, res) => {
   try {
     const depositId = req.body.depositId;
   
@@ -2943,7 +2943,7 @@ router.post("/user_transfer_update", async (req, res) => {
 
 
 
- router.post("/user_transfer_reject", async (req, res) => {
+ router.post("/user_transfer_reject",  async (req, res) => {
   try {
     const depositId = req.body.depositId;
     // Fetch the deposit details
@@ -2981,7 +2981,7 @@ router.post("/user_transfer_update", async (req, res) => {
 
 
 
-router.post("/balance_send_to_superagent", async (req, res) => {
+router.post("/balance_send_to_superagent",  async (req, res) => {
   try {
     const { user_id, amount, agent_id, s_key } = req.body;
     
@@ -3037,7 +3037,6 @@ router.post("/balance_send_to_superagent", async (req, res) => {
         return res.status(422).json("You have entered wrong USER ID. Please check again");
       }
     }
-
 
     const transferAmountCheck = Number(amount);
 
@@ -3218,7 +3217,7 @@ router.get("/UserBalanceReport", (req, res) => {
 });
  
 //  paginatedUserBalanceReport
-router.get("/paginatedUserBalanceReport", async (req, res) => {
+router.get("/paginatedUserBalanceReport",  async (req, res) => {
   const allUser = await UserBLTR.find({  sender_id : req.body.user_id });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -3245,7 +3244,7 @@ router.get("/paginatedUserBalanceReport", async (req, res) => {
 });
 
 //  paginatedUserBalanceReport
-router.get("/paginatedAgentBalanceTransferReport", async (req, res) => {
+router.get("/paginatedAgentBalanceTransferReport",  async (req, res) => {
   const allUser = await UserBLTR.find({  sender_id : req.query.userid });
   const page = parseInt(req.query.page);
   const limit = parseInt(req.query.limit);
@@ -3273,7 +3272,7 @@ router.get("/paginatedAgentBalanceTransferReport", async (req, res) => {
 
 
 // AgentWithdraw
-router.post("/withdraw", async (req, res) => {
+router.post("/withdraw",  async (req, res) => {
   const { errors, isValid } = validateAgentWithdraw(req.body);
 
   if (!isValid) {
@@ -3348,7 +3347,7 @@ router.post("/withdraw", async (req, res) => {
 
 
 //  paginatedUserBalanceReport
-router.get("/pending_agent_withdraw", async (req, res) => {
+router.get("/pending_agent_withdraw",  async (req, res) => {
 
   const allUser = await AgentWithdraw.find({ user_id : req.query.user_id });
   const page = parseInt(req.query.page);
@@ -3486,7 +3485,7 @@ router.get("/BlFromAdmin/:user_id", (req, res) => {
 
 // paginate 
 
-router.get("/paginatedBlFromAdmin/:user_id", async (req, res) => {
+router.get("/paginatedBlFromAdmin/:user_id",  authenticateJWT, async (req, res) => {
 
   if (req.params.user_id === "undefined") {
     return res.status(422).json({ msg: "userId is undefined" });

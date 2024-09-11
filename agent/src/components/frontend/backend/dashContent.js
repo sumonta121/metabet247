@@ -14,6 +14,18 @@ const DashContent = () => {
   const user_id = userInfo.user_id;
   const role_as = userInfo.role_as;
 
+	function isTokenExpired(token) {
+		const decodedToken = jwt_decode(token);
+		const currentTime = Date.now() / 1000; 
+		return decodedToken.exp < currentTime;
+	}
+
+	const loggedinToken = localStorage.getItem("jwtToken");
+	if (loggedinToken && isTokenExpired(loggedinToken)) {
+		localStorage.removeItem("jwtToken"); 
+		window.location.href = "/login"; 
+	}
+
   // State variables
   const [totalUsers, setTotalUsers] = useState(() => {
     const storedValue = localStorage.getItem("totalUsers");
@@ -270,10 +282,6 @@ const DashContent = () => {
 									<Link to="/user-bal-tr" className="btn btn-primary"><i className="fas fa-paper-plane" ></i> Banking  </Link>
 									&nbsp;							
 									{ createAgent }		
-									<Link to="/new-chats" className="btn btn-info">
-										<i className="fas fa-add"></i>
-										<span className="nav-text"> New Chats </span>
-									</Link>
 									{ refferelLingk }
 								</div>
 								<div className="coin-img">
@@ -281,8 +289,53 @@ const DashContent = () => {
 							</div>
 						</div>
 					</div>
-	
-				<div class="col-xl-3  col-lg-6 col-sm-6">
+
+			   {agentdata?.length > 0 ? (
+				  <div className="card-body">
+					<div className="table-responsive">
+					  <div className="">
+						<table className="table">
+							<thead>
+							<th>SL</th>
+							<th>USER ID</th>
+							<th>Connect</th>
+							</thead>
+							<tbody>
+							{agentdata?.length > 0 ? (
+								agentdata.map((item, index) => (
+									<tr className="tb1" key={item.id}>
+										<td>
+										<span className="text1">{index + 1}</span>
+										</td>
+										<td>{item.user_id}</td>
+										<td>
+										<Link to={`/chat-with/${item.user_id}`} style={{ backgroundColor: '#ff000000' }}>
+											<img
+												style={{ maxHeight: '50px' }}
+												src="https://cdn-icons-png.freepik.com/512/5962/5962463.png"
+												alt="Chat Icon"
+											/> 
+												<span style={{background:'red',padding:'7px', borderRadius:'25px'}}>{item.unreadCount}</span>
+											
+										</Link>                              
+										</td>
+									</tr>
+								))
+							) : (
+								<tr>
+							    	<td colSpan="3">Nothing...</td>
+								</tr>
+							)}
+							</tbody>
+						</table>
+					  </div>
+					</div>
+				 </div>
+				 	) : (
+						< ></>
+				)}					
+
+				 <div class="col-xl-3  col-lg-6 col-sm-6">
 					<div class="widget-stat card">
 						<div class="card-body p-0">
 							<h4 class="card-title">Current Balance</h4>
@@ -334,47 +387,7 @@ const DashContent = () => {
               </div>
 
 
-			  <div className="card-body">
-                <div className="table-responsive">
-                  <div className="">
-                      <table className="table">
-                        <thead>
-                          <th>SL</th>
-                          <th>USER ID</th>
-                          <th>Connect</th>
-                        </thead>
-                        <tbody>
-						{agentdata?.length > 0 ? (
-                            agentdata.map((item, index) => (
-								<tr className="tb1" key={item.id}>
-									<td>
-									<span className="text1">{index + 1}</span>
-									</td>
-									<td>{item.user_id}</td>
-									<td>
-									<Link to={`/chat-with/${item.user_id}`} style={{ backgroundColor: '#ff000000' }}>
-										<img
-											style={{ maxHeight: '50px' }}
-											src="https://cdn-icons-png.freepik.com/512/5962/5962463.png"
-											alt="Chat Icon"
-										/> 
-											<span style={{background:'red',padding:'7px', borderRadius:'25px'}}>{item.unreadCount}</span>
-										
-									</Link>                              
-									</td>
-								</tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="3">Nothing...</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                   
-                  </div>
-                </div>
-              </div>
+		
 
 
             </div>
