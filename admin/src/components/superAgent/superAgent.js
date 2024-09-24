@@ -131,6 +131,7 @@ const AgentList = ({ userData }) => {
                       <thead>
                         <tr>
                           <th>Super Agent ID</th>
+                          <th>Upline</th>
                           <th>Name</th>
                           <th>Balance</th>
                           <th>Status</th>
@@ -156,6 +157,7 @@ const AgentList = ({ userData }) => {
                           return (
                             <tr key={id}>
                               <td>{element.user_id}</td>
+                              <td>{element.refferer}</td>
                               <td>{element.first_name} ({element.handle}) </td>
                               <td>{element.currency}</td>
                               <td>

@@ -52,6 +52,7 @@ import AffiliateList from './affiliate/list';
 import InactiveAffiliate from './affiliate/InactiveAffiliate';
 import RefferedList from './affiliate/refferedList';
 import Inactiveuser from './affiliate/inactiveuser';
+import DownlineList from './affiliate/DownlineList';
 import BalanceDeposit from './deposit/balanceDeposit';
 import AgentDepositList from './deposit/AgentDepositList';
 import chats from './chats/ChatsHistory';
@@ -81,6 +82,7 @@ const App = () => (
 
         <ProtectedRoute exact path="/withdraw" component={Withdraw } />
         <ProtectedRoute exact path="/balance-from-admin" component={BlFromAdmin } />
+        <ProtectedRoute exact path="/down-list/:userid" component={DownlineList } />
 
         <ProtectedRoute exact path="/cashin" component={CashIn} />
         <ProtectedRoute exact path="/cashin-history" component={cashinHistory} />

@@ -10,12 +10,14 @@ import ReactPaginate from "react-paginate";
 import styled from "styled-components";
 import apiConfig from '../apiConfig';
 
-const AgentList = ({ userData }) => {
+const DownlineList = ({ match }) => {
+  const down_userid = match.params.userid;
+
   let history = useHistory();
 
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [status, setstatus] = useState(1);
   const [pageCount, setPageCount] = useState(1);
   const currentPage = useRef(1);
@@ -26,9 +28,9 @@ const AgentList = ({ userData }) => {
 
   const getPaginatedUsers = () => {
     const search = searchQuery ? `&search=${searchQuery}` : "";
-    const status = 1;
+    const stutus = 1;
     fetch(
-      `${apiConfig.baseURL}/api/agent/paginatedMasterAgent?page=${currentPage.current}&limit=${limit}&status=${status}${search}`,
+      `${apiConfig.baseURL}/api/agent/downLineView?page=${currentPage.current}&limit=${limit}&down_userid=${down_userid}${search}`,
       {
         method: "GET",
       }
@@ -48,6 +50,25 @@ const AgentList = ({ userData }) => {
   function handleSearchChange(e) {
     setSearchQuery(e.target.value);
   }
+
+
+  
+  const handleBlockUnblock = async (userId, action) => {
+    const isConfirmed = window.confirm("Are you sure you want to Block / Unbloc the user?");
+    if (!isConfirmed) {
+      return;
+    }
+    
+    try {
+      const response = await axios.put(`${apiConfig.baseURL}/api/agent/${action}/${userId}`);
+      if (response.status === 200) {
+        getPaginatedUsers();
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during blocking/unblocking:', error);
+    }
+  };
 
   const MyPaginate = styled(ReactPaginate).attrs({
     activeClassName: "active",
@@ -102,38 +123,19 @@ const AgentList = ({ userData }) => {
           <div className="col-lg-12">
             <div className="card">
              <div className="pt-100 mt-100 card-header d-flex flex-wrap align-items-center justify-content-between">
-                <h4 className="card-title mb-0">Master Agent List</h4>
-                <div className="d-flex align-items-center">
-                  <input
-                    type="text"
-                    placeholder="Search by Name or ID"
-                    className="form-control me-2"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    style={{ maxWidth: "300px" }}
-                  />
-                  
-                  <Link to="/inactive-master-agent">
-                    <button type="button" className="btn btn-danger">
-                      Inactive 
-                    </button>
-                  </Link>
-                  
-                </div>
+                <h4 className="card-title mb-0">Downline List</h4>
               </div>
-
               <div className="card-body">
                 <div className="table-responsive">
                   <div>
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>Master Agent ID</th>
-                          <th>Upline</th>
+                          <th>Admin ID</th>
                           <th>Name</th>
                           <th>Balance</th>
                           <th>Status</th>
-                          <th>Action</th>
+                      
                         </tr>
                       </thead>
                       <tbody>
@@ -151,36 +153,28 @@ const AgentList = ({ userData }) => {
                               console.error(error);
                             }
                           };
-
                           return (
                             <tr key={id}>
-                              <td>{element.user_id}</td>
-                              <td>{element.refferer}</td>
-                              <td>{element.first_name} ({element.handle}) </td>
+                              <td>
+                                 <Link target="_blank" className={'bg-white'} to={`/down-list/${element.user_id}`}>
+                                    {element.user_id}
+                                  </Link> 
+                               </td>
+                              <td>{element.first_name} ({element.handle})</td>
                               <td>{element.currency}</td>
                               <td>
-                                <button
+                              <div className="d-flex">
+                              <button
                                   className={`btn btn-${element.account_status === '2' ? 'danger' : 'success'} shadow btn-xs sharp`}
+                                  onClick={() => handleBlockUnblock(element._id, element.account_status === '2' ? 'block' : 'block')}
                                 >
-                                  {element.account_status === '2' ? (
-                                    <>
-                                      <i className="fa fa-times"></i> &nbsp;  
-                                    </>
-                                  ) : (
-                                    <>
-                                    <i className="fa  fa-check"></i>  &nbsp; 
-                                    </>
-                                  )}
+                                  {element.account_status === '2' ? <i className="fa fa-times"></i> : <i className="fa fa-check"></i>}
                                 </button>
-                              </td>
+                              
+                                   <Link target="_blank" className="edit-link btn btn-info shadow btn-xs sharp me-1" to={`/down-list/${element.user_id}`}>
+                                    <i className="fa fa-user"> </i>
+                                  </Link> 
 
-                              <td>
-                                <div className="d-flex">
-                                  <Link className="edit-link btn btn-primary shadow btn-xs sharp me-1"
-                                    to={`/edit-master-agent/${element._id}`}
-                                  >
-                                    <i className="fa fa-pencil"> </i>
-                                  </Link>
                                 </div>
                               </td>
                             </tr>
@@ -215,10 +209,9 @@ const AgentList = ({ userData }) => {
           </div>
         </div>
       </div>
-
       <Footer />
     </>
   );
 };
 
-export default AgentList;
+export default DownlineList;

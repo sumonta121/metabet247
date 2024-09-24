@@ -17,21 +17,42 @@ export default class leftSidebar extends Component {
     const userInfo = decodedToken;
     const CheckStatus = userInfo.status;
     const user_role =  userInfo.role_as;
+    const user_id =  userInfo.user_id;
 
     const createAgent = (() => {
       if(user_role === 2){
         return (
-          <Link to="/subreseller-index" className="" ariaExpanded="false">
-            <i class="material-icons">grid_view</i>
-            <span class="nav-text"> Create Super Agent </span>
-          </Link>
+             <>
+              <li>
+                <Link to="/subreseller-index" className="" ariaExpanded="false">
+                  <i class="material-icons">grid_view</i>
+                  <span class="nav-text"> Create Super Agent </span>
+                </Link>
+              </li>
+              <li>
+                  <Link to={`/down-list/${user_id}`} className="" aria-expanded="false">
+                    <i className="material-icons">credit_card</i>
+                    <span className="nav-text"> Downline List</span>
+                  </Link>
+              </li>
+              </>
         );
       } else if(user_role === 2.1) {
         return (
-          <Link to="/affiliate-index" className="" ariaExpanded="false">
-          <i class="material-icons">grid_view</i>
-          <span class="nav-text"> Create Master Agent </span>
-        </Link>         
+          <>
+            <li>
+              <Link to="/affiliate-index" className="" ariaExpanded="false">
+              <i class="material-icons">grid_view</i>
+               <span class="nav-text"> Create Master Agent </span>
+            </Link>  
+          </li>
+          <li>
+            <Link to="`/down-list/${user_id}`" className="" ariaExpanded="false">
+            <i class="material-icons">credit_card</i>
+              <span class="nav-text"> Downline List</span>
+            </Link>
+          </li>
+       </>
         );
       }else if(user_role === 4) {
         return (
@@ -113,7 +134,7 @@ export default class leftSidebar extends Component {
                      <span class="nav-text"> Deposit Received Report</span>
                     </Link>
               </li>
- 
+            
           
 
               {/* <li>

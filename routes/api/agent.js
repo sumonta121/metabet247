@@ -24,7 +24,7 @@ var elasticemail = require('elasticemail');
 const axios = require('axios');
 const crypto = require('crypto');
 const authenticateJWT = require('./authenticateJWT');
-
+const CryptoJS = require('crypto-js');
 //// ================================ From Admin dashboard =========================== //////
 
 // transfer,update Agent , User table
@@ -244,9 +244,54 @@ router.get("/paginatedAgent",  async (req, res) => {
   res.json(results);
 });
 
-
+  
 router.get("/downLineView",  async (req, res) => {
   const { page = 1, limit = 10, search = "", down_userid } = req.query;
+  
+  let allUser = [];
+
+  if (!down_userid || down_userid === 'null') {
+    // Fetch users with role_as 2 if down_userid is null or 'null'
+    allUser = await User.find({ role_as: 2 }).sort({ _id: 1 });
+  } else {
+    // Fetch the user data for down_userid
+    const usercheck = await User.findOne({ user_id: down_userid });
+    
+    if (usercheck) {
+      if (usercheck.role_as === 4) {
+        // If the role is 4, fetch users where agent_id matches
+        allUser = await User.find({ agent_id: down_userid }).sort({ _id: 1 });
+      } else {
+        // Otherwise, fetch users where refferer matches
+        allUser = await User.find({ refferer: down_userid }).sort({ _id: 1 });
+      }
+    } else {
+      console.error("User not found");
+    }
+  }
+  
+
+  const startIndex = (page - 1) * limit;
+  const lastIndex = page * limit;
+
+  const results = {};
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+  if (lastIndex < allUser.length) {
+    results.next = { page: page + 1 };
+  }
+  if (startIndex > 0) {
+    results.prev = { page: page - 1 };
+  }
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
+});
+  
+
+
+router.get("/agentDownLineView",  async (req, res) => {
+  const { page = 1, limit = 50, search = "", down_userid } = req.query;
   
   let allUser = [];
 
