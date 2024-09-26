@@ -10,20 +10,27 @@ import styled from "styled-components";
 import apiConfig from '../apiConfig'; 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
 
 const Daily_deposit = () => {
   const [data, setData] = useState([]);
   const [limit, setLimit] = useState(10);
   const [pageCount, setPageCount] = useState(1);
   const currentPage = useRef(1);
-
+  const [statusFilter, setStatusFilter] = useState("Pending"); 
   // Calendar state
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
     getPaginatedUsers();
-  }, [limit, startDate, endDate]);
+  }, [limit, startDate, endDate, statusFilter]);
+
+  
+
+  
+
+
 
   const handlePageClick = (e) => {
     currentPage.current = e.selected + 1;
@@ -34,26 +41,39 @@ const Daily_deposit = () => {
     currentPage.current = 1;
     getPaginatedUsers();
   };
-
-  const getPaginatedUsers = () => {
+ 
+  const getPaginatedUsers = async () => {
     const formattedStartDate = startDate ? startDate.toISOString() : "";
     const formattedEndDate = endDate ? endDate.toISOString() : "";
-    fetch(
-      `${apiConfig.baseURL}/api/agent/daily_withdraw?page=${currentPage.current}&limit=${limit}&startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
-      {
-        method: "GET",
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
+    const statusQuery = statusFilter === "all" ? "" : `&status=${statusFilter}`;
+    try {
+      const response = await axios.get(
+        `${apiConfig.baseURL}/api/agent/daily_withdraw`, {
+          params: {
+            page: currentPage.current,
+            limit: limit,
+            status: statusFilter === 'all' ? undefined : statusFilter,
+            startDate: formattedStartDate,
+            endDate: formattedEndDate
+          }
+        }
+      );
+  
+      if (response.status === 200) {
+        const data = response.data;
         setPageCount(data.pageCount);
+        
         const sortedData = data.result.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
         setData(sortedData);
-      });
+      }
+    } catch (error) {
+      console.error('Error fetching paginated users:', error);
+      alert('Error fetching paginated users: ' + error.message);
+    }
   };
-
+  
 
       
     const formatDate = (isoDate) => {
@@ -69,7 +89,7 @@ const Daily_deposit = () => {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = String(date.getFullYear()).slice(-2);
 
-        return `${timeString.toLowerCase()} ${day}/${month}/${year}`;
+        return `${timeString.toLowerCase()} ${day}.${month}.${year}`;
     };
 
 
@@ -143,6 +163,27 @@ const Daily_deposit = () => {
                       dateFormat="dd/MM/yyyy"
                   />
                 </div>
+
+
+                <div className="col">
+                    <select value={limit} onChange={(e) => setLimit(e.target.value)}>
+                      <option value="">Sort</option>
+                      <option value="30">30</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                  
+                  <div className="col">
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                      <option value="">Select Sorting</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Reject">Reject</option>
+                    </select>
+                  </div>
+
+
               </div>
               </div>
               <div className="card-body">
@@ -156,9 +197,7 @@ const Daily_deposit = () => {
                           <th className="text-nowrap">Transaction ID</th>
                           <th className="text-nowrap">Date</th>
                           <th className="text-nowrap">Method type</th>
-                       
                           <th className="text-nowrap">Status</th>
-                       
                       </tr>
 
                       </thead>
@@ -188,11 +227,11 @@ const Daily_deposit = () => {
 
                   <MyPaginate
                     breakLabel="..."
-                    nextLabel="next >"
+                    nextLabel=">"
                     onPageChange={handlePageClick}
                     pageRangeDisplayed={5}
                     pageCount={pageCount}
-                    previousLabel="< previous"
+                    previousLabel="<"
                     marginPagesDisplayed={2}
                     containerClassName="pagination justify-content-center"
                     pageClassName="page-item"

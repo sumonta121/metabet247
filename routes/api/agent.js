@@ -2721,7 +2721,7 @@ router.get("/daily_depositt",  async (req, res) => {
 
 router.get("/daily_deposit",  async (req, res) => {
   try {
-    const { page = 1, limit = 30, startDate, endDate } = req.query;
+    const { page = 1, limit = 30, startDate, endDate, status } = req.query;
 
     // Convert page and limit to integers
     const pageNum = parseInt(page, 30);
@@ -2745,7 +2745,7 @@ router.get("/daily_deposit",  async (req, res) => {
     // Query to include date filtering and status = 'paid'
     const filterQuery = {
       ...Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {},
-      status: 'paid'
+      status: status
     };
 
     
@@ -2794,7 +2794,7 @@ router.get("/daily_deposit",  async (req, res) => {
 
 router.get("/daily_withdraw",  async (req, res) => {
   try {
-    const { page = 1, limit = 30, startDate, endDate } = req.query;
+    const { page = 1, limit = 30, startDate, endDate,status } = req.query;
 
     // Convert page and limit to integers
     const pageNum = parseInt(page, 30);
@@ -2818,7 +2818,7 @@ router.get("/daily_withdraw",  async (req, res) => {
     // Query to include date filtering and status = 'paid'
     const filterQuery = {
       ...Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {},
-      status: 'Paid'
+      status: status
     };
 
     
