@@ -11,13 +11,15 @@ import ReactPaginate from "react-paginate";
 import { useRef } from "react";
 import styled from "styled-components";
 import apiConfig from '../apiConfig';
+import axios from 'axios'; 
 
 const List = () => {
 
   const token = localStorage.getItem('jwtToken');
   const decodedToken = token ? jwt_decode(token) : null;
   const user_id = decodedToken ? decodedToken.user_id : null;
-  
+  const [statusFilter, setStatusFilter] = useState("pending"); 
+
   //setting state paginate
   const [data, setData] = useState([]);
   const [limit, setLimit] = useState(10);
@@ -28,110 +30,66 @@ const List = () => {
     currentPage.current = 1;
     // getAllUser();
     getPaginatedUsers();
-  }, []);
-
-  //fetching all table data
-  const getAllUser = () => {
-    fetch(`${apiConfig.baseURL}/api/agent/getdataUser`, {
-      method: "GET",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "userData");
-
-       const sortedData = data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setData(sortedData);
-        // setData(data.data);
-      });
-  };
+  }, [statusFilter,limit]);
 
   const handleApprovePayment = async (depositId, event) => {
+    event.preventDefault(); 
     try {
-      // Make an API call to your server to approve the payment by ID
-      const response = await fetch(`${apiConfig.baseURL}/api/agent/user_transfer_update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, // Add Content-Type header for JSON data
-        body: JSON.stringify({ depositId }), // Send depositId in request body
-      });
-  
-      const responseData = await response.json(); // Parse the JSON response
-  
-      if (response.ok) {
-        // Handle successful approval response (e.g., update UI, show success message)
-        alert(responseData.message);
-      } else {
-        // Handle API call errors (e.g., display error message)
-        console.error('Failed to approve payment:', responseData.message);
-        alert(`Failed to approve payment: ${responseData.message}`);
-      }
+      const response = await axios.post(`${apiConfig.baseURL}/api/agent/user_transfer_update`, { depositId });
+      getPaginatedUsers(); 
+      alert(response.data.message);
     } catch (error) {
-      // Handle potential errors during the API call or processing
       console.error('Error approving payment:', error);
       alert('Error approving payment: ' + error.message);
     }
   };
-    
+  
   const handleRejectPayment = async (depositId, event) => {
+    event.preventDefault(); 
     try {
-      // Make an API call to your server to approve the payment by ID
-      const response = await fetch(`${apiConfig.baseURL}/api/agent/user_transfer_reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, // Add Content-Type header for JSON data
-        body: JSON.stringify({ depositId }), // Send depositId in request body
-      });
-  
-      const responseData = await response.json(); // Parse the JSON response
-  
-      if (response.ok) {
-        // Handle successful approval response (e.g., update UI, show success message)
-        alert(responseData.message);
-      } else {
-        // Handle API call errors (e.g., display error message)
-        console.error('Failed to approve payment:', responseData.message);
-        alert(`Failed to approve payment: ${responseData.message}`);
-      }
+      const response = await axios.post(`${apiConfig.baseURL}/api/agent/user_transfer_reject`, { depositId });
+      getPaginatedUsers(); 
+      alert(response.data.message);
     } catch (error) {
-      // Handle potential errors during the API call or processing
-      console.error('Error approving payment:', error);
-      alert('Error approving payment: ' + error.message);
+      console.error('Error rejecting payment:', error);
+      alert('Error rejecting payment: ' + error.message);
     }
   };
-    
 
-  //pagination
   function handlePageClick(e) {
     console.log(e);
     currentPage.current = e.selected + 1;
     getPaginatedUsers();
   }
+
   function changeLimit() {
     currentPage.current = 1;
     getPaginatedUsers();
   }
 
-  function getPaginatedUsers() {
-    fetch(
-      `${apiConfig.baseURL}/api/agent/pending_balance_request?page=${currentPage.current}&limit=${limit}&user_id=${user_id}`,
-      {
-        method: "GET",
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "userData");
-        setPageCount(data.pageCount);
-
-       const sortedData = data.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setData(sortedData);
-        // setData(data.result);
-
-      });
+  async function getPaginatedUsers() {
+    const statusQuery = statusFilter === "all" ? "" : `&status=${statusFilter}`;
+    try {
+      const response = await axios.get(
+        `${apiConfig.baseURL}/api/agent/pending_balance_request`, {
+          params: {
+            page: currentPage.current,
+            limit: limit,
+            user_id: user_id,
+            status: statusFilter === 'all' ? undefined : statusFilter
+          }
+        }
+      );
+      const sortedData = response.data.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setData(sortedData);
+      setPageCount(response.data.pageCount);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
   }
 
-  // css
   const MyPaginate = styled(ReactPaginate).attrs({
-    // You can redefine classes here, if you want.
-    activeClassName: "active", // default to "selected"
+    activeClassName: "active", 
   })`
     margin-bottom: 2rem;
     display: flex;
@@ -168,25 +126,74 @@ const List = () => {
         background-color: #15073A !important;
     }
   `;
+  
+  const formatTimestamp = (timestamp) => {
+      let date;
+      if (timestamp !== undefined && timestamp !== null) {
+          date = new Date(timestamp);
+      } else {
+          date = new Date(); 
+      }
 
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const formattedTime = date.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit'
+      }).toLowerCase();
+
+      if (date.toDateString() === today.toDateString()) {
+          return formattedTime;
+      } else if (date.toDateString() === yesterday.toDateString()) {
+          return `${formattedTime} Yesterday`;
+      } else {
+          const diffInDays = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+          if (diffInDays === 1) {
+              return `${formattedTime} Yesterday`;
+          } else if (diffInDays <= 7) {
+              return `${formattedTime} ${diffInDays} days ago`;
+          } else {
+              const formattedDate = date.toLocaleDateString('en-US', {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: '2-digit'
+              }).replace(/\//g, '.');
+              return `${formattedTime} ${formattedDate}`;
+          }
+      }
+  };
   return (
     <>
      <div id="main-wrapper">
       <Navbar />
-
       <Chatbox />
-
       <HeaderRight />
-
       <LeftSidebar />
-
       <div class="content-body">
         <div class="container-fluid">
           <div className="col-lg-12">
             <div className="card">
-              <div className="card-header">
-                <h4 className="card-title">User Pending Balance Request</h4>
-
+              <div className="card-header ">
+                <h4 className="card-title">Pending Deposits</h4>
+                <div className="col">
+                    <select value={limit} onChange={(e) => setLimit(e.target.value)}>
+                      <option value="">Sort</option>
+                      <option value="30">30</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                  
+                  <div className="col">
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                      <option value="">Select Sorting</option>
+                      <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
+                      <option value="reject">Reject</option>
+                    </select>
+                  </div>
               </div>
 
               <div className="card-body">
@@ -195,15 +202,13 @@ const List = () => {
                     <table className="table">
                       <thead>
                         <tr>
-                      
+                        <th className="text-nowrap">user ID</th>
                         <th className="text-nowrap">Transaction ID</th>
                         <th className="text-nowrap">Date</th>
                         <th className="text-nowrap">Method type</th>
-                        {/* <th className="text-nowrap">Amount </th> */}
                         <th className="text-nowrap">Amount BDT</th>
                         <th className="text-nowrap">From</th>
                         <th className="text-nowrap">TO</th>
-                        <th className="text-nowrap">user ID</th>
                         <th className="text-nowrap">Status</th>
                         <th className="text-nowrap">Action</th>
                         </tr>
@@ -213,14 +218,14 @@ const List = () => {
                           return (
                             <>
                                 <tr key={index}>
+                                    <td className="text-nowrap">{deposit.user_id}</td> 
                                     <td className="text-nowrap">{deposit.trxid}  </td> 
-                                    <td className="text-nowrap">{deposit.createdAt}</td> 
+                                    <td className="text-nowrap">{ formatTimestamp(deposit.createdAt) }</td> 
                                     <td className="text-nowrap">{deposit.selected_method}</td>
-                                    {/* <td className="text-nowrap">${deposit.send_amount}</td>  */}
                                     <td className="text-nowrap">{deposit.send_amount_in_bdt}</td> 
                                     <td className="text-nowrap">{deposit.sender_number}</td> 
                                     <td className="text-nowrap">{deposit.agent_wallet}</td> 
-                                    <td className="text-nowrap">{deposit.user_id}</td> 
+                                
                                     <td>
                                         {deposit.status === 'paid' ? (
                                           <button className="btn btn-sm btn-success">
@@ -237,25 +242,29 @@ const List = () => {
                                         )}
                                     </td>
                                     <td>
-                                        {deposit.status === 'paid' ? (
-                                          <button></button>
-                                        ) : deposit.status === 'reject' ? (
-                                          <button></button>
-                                        ) : (
-                                        <>  
-                                          <a
-                                            href="#"
-                                            className="btn btn-success shadow btn-xs sharp me-1"
-                                            onClick={() => handleApprovePayment(deposit._id)} 
-                                          ><i className="fa fa-check"></i></a>   
-                                          <a
-                                            href="#"
-                                            className="btn btn-danger shadow btn-xs sharp me-1"
-                                            onClick={() => handleRejectPayment(deposit._id)} 
-                                          ><i className="fa fa-times"></i></a> 
-                                        </>
-                                        )}
-                                    </td>
+                                    {deposit.status === 'paid' ? (
+                                      <button></button>
+                                    ) : deposit.status === 'reject' ? (
+                                      <button></button>
+                                    ) : (
+                                      <>
+                                        <a
+                                          href="#"
+                                          className="btn btn-success shadow btn-xs sharp me-1"
+                                          onClick={(event) => handleApprovePayment(deposit._id, event)} 
+                                        >
+                                          <i className="fa fa-check"></i>
+                                        </a>   
+                                        <a
+                                          href="#"
+                                          className="btn btn-danger shadow btn-xs sharp me-1"
+                                          onClick={(event) => handleRejectPayment(deposit._id, event)} 
+                                        >
+                                          <i className="fa fa-times"></i>
+                                        </a> 
+                                      </>
+                                    )}
+                                  </td>
                                 </tr>
                             </>
                           );
@@ -263,15 +272,13 @@ const List = () => {
                       </tbody>
                     </table>
 
-                    {/*  paginate */}
-
                     <MyPaginate
                       breakLabel="..."
-                      nextLabel="next >"
+                      nextLabel=">"
                       onPageChange={handlePageClick}
                       pageRangeDisplayed={5}
                       pageCount={pageCount}
-                      previousLabel="< previous"
+                      previousLabel="<"
                       renderOnZeroPageCount={null}
                       marginPagesDisplayed={2}
                       containerClassName="pagination justify-content-center"
@@ -284,13 +291,6 @@ const List = () => {
                       activeClassName="active"
                       forcePage={currentPage.current - 1}
                     />
-
-                    {/* Page Sorting  */}
-
-                    {/* <input placeholder="Limit" onChange={(e) => setLimit(e.target.value)}
-                    />
-                    <button onClick={changeLimit}>Set Limit</button> */}
-
                   </div>
                 </div>
               </div>
@@ -298,7 +298,6 @@ const List = () => {
           </div>
         </div>
       </div>
-
       <Footer />
       </div>
     </>

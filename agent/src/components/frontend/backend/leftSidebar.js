@@ -57,14 +57,18 @@ export default class leftSidebar extends Component {
       }else if(user_role === 4) {
         return (
          <>
+           <li>
             <Link to="/pending-balance-request" className="" ariaExpanded="false">
               <i class="material-icons">grid_view</i>
-              <span class="nav-text"> Pending Deposit Request </span>
+              <span class="nav-text">  Deposit Request </span>
             </Link>
+            </li>
+             <li>
             <Link to="/pending-withdraw-request" className="" ariaExpanded="false">
               <i class="material-icons">grid_view</i>
-              <span class="nav-text"> Pending withdraw Request</span>
+              <span class="nav-text"> Withdraw Request</span>
             </Link>       
+              </li>
           </>
         );
       }
@@ -195,9 +199,9 @@ export default class leftSidebar extends Component {
                 </ul>
               </li>   */}
               
-              <li>
+             
                 {createAgent}
-              </li> 
+          
            
               <li>
                 <a

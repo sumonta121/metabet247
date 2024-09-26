@@ -131,7 +131,7 @@ const DownlineList = ({ match }) => {
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>Admin ID</th>
+                          <th>USER ID</th>
                           <th>Name</th>
                           <th>Balance</th>
                           <th>Status</th>
