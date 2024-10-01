@@ -23,6 +23,7 @@ const router = require('express').Router();
 const cors = require("cors");
 require('dotenv').config();
 const withdraw = require("./routes/api/withdraw");
+const exchange = require("./routes/api/exchange/api/v1");
 
 // Define apps
 const path = __dirname + '/frontend/build/'
@@ -59,6 +60,7 @@ app.use("/api/admin", admin);
 app.use("/api/Broadcast", Broadcast);
 app.use("/api/commonData", commonData);
 app.use("/api/withdraw", withdraw);
+app.use("/api/exchange/api/v1", exchange);
  
 
 const port = process.env.PORT || 5000;
