@@ -50,9 +50,8 @@ const client_name = 'skydemo2';
       if (responseData.status === 1 && responseData.data.url) {
         const sessionUrl = responseData.data.url;
 
-           // Get the client IP address
+        // Get the client IP address
         const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        console.log('aaaaaaaaaaaaaaaaaaaa' + clientIp);
         // Respond with session details
         return res.json({
           status: "success",

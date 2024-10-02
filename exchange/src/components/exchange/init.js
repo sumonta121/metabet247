@@ -19,8 +19,9 @@ const Init = () => {
       try {
         const response = await axios.get(`${apiConfig.baseURL}/api/exchange/api/v1/initGame/${usAutoId}`);
       ///  const allDatas = response.json();
+       
         setGameLink(response.data.url);
-        console.log('received data' + response.data);
+        
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
