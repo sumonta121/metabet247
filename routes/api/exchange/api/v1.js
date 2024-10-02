@@ -73,7 +73,7 @@ const client_name = 'skydemo2';
   });
 
 
-  router.get("/getBalance",  async (req, res) => {
+  router.post("/getBalance",  async (req, res) => {
     try {
       const userId = req.body.user_id;
   
@@ -113,7 +113,7 @@ const client_name = 'skydemo2';
 
 
 
-  router.get("/placeBet",  async (req, res) => {
+  router.post("/placeBet",  async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -241,7 +241,7 @@ const client_name = 'skydemo2';
 
 
 
-  router.get("/placeBet",  async (req, res) => {
+  router.post("/placeBet",  async (req, res) => {
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -324,7 +324,7 @@ const client_name = 'skydemo2';
 
   });
 
-  router.get("/rollback",  async (req, res) => {
+  router.post("/rollback",  async (req, res) => {
     return res.json({
       status: true,
       message: "successfully",
