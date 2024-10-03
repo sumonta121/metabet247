@@ -285,7 +285,7 @@ router.post("/register", async (req, res) => {
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
-        { expiresIn: 604800 }, 
+        { expiresIn: 3600 }, 
         (err, token) => {
           if (err) {
             return res.status(500).json({ error: 'Token creation failed.' });
@@ -514,7 +514,7 @@ router.post("/onclickregister", async (req, res) => {
           jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            { expiresIn: 604800 }, 
+            { expiresIn: 3600 }, 
             (err, token) => {
               if (err) {
                 return res.status(500).json({ error: 'Token creation failed.' });
@@ -548,132 +548,6 @@ router.post("/onclickregister", async (req, res) => {
 
 
 
-router.post("/register_back", async(req, res) => {
-  const { errors, isValid } = validateRegisterInput(req.body);
-
-  if (!isValid) {
-    return res.status(400).json(errors);
-  }
-
-  const last_user = await User.findOne({ role_as: 3}).sort({ _id: -1 });
-
-  // Check to make sure nobody has already registered with a duplicate email
-  User.findOne({ email: req.body.email }).then((user) => {
-    if (user) {
-      // Throw a 400 error if the email address already exists
-      console.log('user already exist')
-      return res
-        .status(400)
-        .json({ email: "A user has already registered with this address" });
-    } else {
-      // Otherwise create a new user
-      var date = new Date(Date.now());
-      
-      // var myHeaders = new Headers();
-      // myHeaders.append("apikey", "FvEGYySfvtcXZV3Fs2lqYIiftdlZVOtq");
-
-      // var requestOptions = {
-      //   method: 'GET',
-      //   redirect: 'follow',
-      //   headers: myHeaders
-      // };
-
-      // const userMobile = req.body.email ;
-      // fetch("https://api.apilayer.com/number_verification/validate?number="+userMobile, requestOptions)
-      //   .then(response => response.text())
-      //   .then(result => console.log(result))
-      //   .catch(error => console.log('error', error));
-
-      
-
-
-    let new_user_id; 
-    if (last_user) {
-        const lastId = last_user.user_id;
-        const newStr = lastId.replace(/^./, "");
-
-        const newRandomNumber = () => {
-          const min = 100; // Minimum 3-digit number
-          const max = 999; // Maximum 3-digit number
-          const randomNumber = Math.floor(
-            Math.random() * (max - min + 1) + min
-          );
-          return randomNumber;
-        };
-        const latestId = Number(newStr);
-        const Randomuser_id = Number(newRandomNumber());
-        const IdAdd = latestId + Randomuser_id;
-         new_user_id = "U" + IdAdd;
-                       
-      } else{
-    
-        const newStr = 1;
-        const newRandomNumber = () => {
-          const min = 100; // Minimum 3-digit number
-          const max = 999; // Maximum 3-digit number
-          const randomNumber = Math.floor(
-            Math.random() * (max - min + 1) + min
-          );
-          return randomNumber;
-        };
-  
-        const latestId = Number(newStr);
-        const Randomuser_id = Number(newRandomNumber());
-        const IdAdd = latestId + Randomuser_id;
-         new_user_id = "U" + IdAdd;       
-      }
-
-      const newUser = new User({
-        handle: req.body.handle,
-        email: req.body.email,
-        user_id: new_user_id,
-        password: req.body.password,
-        tpin: req.body.password,
-        role_as: req.body.role_as,
-        mobile: req.body.mobile,
-        currency: 0,       
-      });
-
-      bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(newUser.password, salt, (err, hash) => {
-          if (err) throw err;
-          newUser.password = hash;
-          newUser.tpin = hash;
-          newUser
-            .save()
-            .then((user) => {       
-               
-                    const payload = {
-                      //is this mongo's object id?
-                      id: user.id,
-                      handle: user.handle,
-                      email: user.email,
-                      role_as: user.role_as,
-                      currency: user.currency,
-                    };
-            
-                    jwt.sign(
-                      payload,
-                      process.env.JWT_SECRET,
-                      {
-                        expiresIn: 604800,
-                      }, (err, token) => {                  
-                       return res.json({
-                          sucess: true,
-                          token: "Bearer" + token,
-                        });
-                      }
-                    );             
-               
-              //console.log('user created')
-              //res.json(user)
-            })
-            .catch((err) => console.log(err));
-        });
-      });
-    }
-  });
-});
 
 router.post("/login", (req, res) => {
   const { errors, isValid } = validateLoginInput(req.body);
@@ -725,7 +599,7 @@ User.findOne({ email: email }).then((data)=>
           payload,
           process.env.JWT_SECRET,
           {
-            expiresIn: 300,
+            expiresIn: 3600,
           }, (err, token) => {                  
             res.json({
               sucess: true,
