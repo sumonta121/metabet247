@@ -3,47 +3,34 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - master  # Trigger deployment on pushes to the 'master' branch
+      - master  # Runs this action only when pushing to master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-    - name: Set up SSH
+    - name: Setup SSH agent
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.VPS_DEPLOY_KEY }}
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to VPS
+    - name: Deploy files to VPS
       run: |
-        ssh root@203.161.43.18 << 'EOF'
-          cd /var/www/maxbet/metabet247
+        ssh -o StrictHostKeyChecking=no root@203.161.43.18 "cd /var/www/maxbet/metabet247 && git pull origin master"
+      
+    - name: Install dependencies and build admin
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install && npm run build"
+        
+    - name: Install dependencies and build agent
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/agent && npm install && npm run build"
+        
+    - name: Install dependencies and build exchange
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/exchange && npm install && npm run build"
 
-          # Pull the latest changes
-          git pull origin master
-
-          # Navigate to 'admin' directory, install dependencies and build
-          cd admin
-          npm install
-          npm run build
-          cd ..
-
-          # Navigate to 'agent' directory, install dependencies and build
-          cd agent
-          npm install
-          npm run build
-          cd ..
-
-          # Navigate to 'exchange' directory, install dependencies and build
-          cd exchange
-          npm install
-          npm run build
-          cd ..
-
-          # Optionally, restart any necessary services (e.g., PM2)
-          pm2 restart all
-        EOF
