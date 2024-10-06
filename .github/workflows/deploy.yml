@@ -24,13 +24,13 @@ jobs:
       
     - name: Install dependencies and build admin
       run: |
-        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install && npm run build"
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install --force && npm run build"
         
     - name: Install dependencies and build agent
       run: |
-        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/agent && npm install && npm run build"
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/agent && npm install --force && npm run build"
         
     - name: Install dependencies and build exchange
       run: |
-        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/exchange && npm install && npm run build"
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/exchange && npm install --force && npm run build"
 
