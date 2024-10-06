@@ -1,0 +1,36 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - master  # Runs this action only when pushing to  master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup SSH agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.VPS_DEPLOY_KEY }}
+
+    - name: Deploy files to VPS
+      run: |
+        ssh -o StrictHostKeyChecking=no root@203.161.43.18 "cd /var/www/maxbet/metabet247 && git pull origin master"
+      
+    - name: Install dependencies and build admin
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install --force && npm run build"
+        
+    - name: Install dependencies and build agent
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/agent && npm install --force && npm run build"
+        
+    - name: Install dependencies and build exchange
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/exchange && npm install --force && npm run build"
+

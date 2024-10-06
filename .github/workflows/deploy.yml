@@ -3,7 +3,11 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - master  # Runs this action only when pushing to  master
+      - master
+
+env:
+  VPS_ADDRESS: 203.161.43.18
+  BASE_DIR: /var/www/maxbet/metabet247
 
 jobs:
   deploy:
@@ -20,17 +24,47 @@ jobs:
 
     - name: Deploy files to VPS
       run: |
-        ssh -o StrictHostKeyChecking=no root@203.161.43.18 "cd /var/www/maxbet/metabet247 && git pull origin master"
-      
-    - name: Install dependencies and build admin
-      run: |
-        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install --force && npm run build"
-        
-    - name: Install dependencies and build agent
-      run: |
-        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/agent && npm install --force && npm run build"
-        
-    - name: Install dependencies and build exchange
-      run: |
-        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/exchange && npm install --force && npm run build"
+        ssh -o StrictHostKeyChecking=no root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }} && git pull origin master"
 
+    # Caching node modules for admin
+    - name: Cache node modules (admin)
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-npm-admin-${{ hashFiles('admin/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-admin-
+
+    - name: Install and build admin
+      run: |
+        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/admin && npm install --force && npm run build && if [ $? -eq 0 ]; then rm -rf * && mv build/* . && rm -rf build; else echo 'Build failed, keeping the previous version'; fi"
+
+    # Caching node modules for agent
+    - name: Cache node modules (agent)
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-npm-agent-${{ hashFiles('agent/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-agent-
+
+    - name: Install and build agent
+      run: |
+        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/agent && npm install --force && npm run build && if [ $? -eq 0 ]; then rm -rf * && mv build/* . && rm -rf build; else echo 'Build failed, keeping the previous version'; fi"
+
+    # Caching node modules for exchange
+    - name: Cache node modules (exchange)
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-npm-exchange-${{ hashFiles('exchange/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-exchange-
+
+    - name: Install and build exchange
+      run: |
+        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/exchange && npm install --force && npm run build && if [ $? -eq 0 ]; then rm -rf * && mv build/* . && rm -rf build; else echo 'Build failed, keeping the previous version'; fi"
+
+    - name: Verify Deployment
+      run: |
+        ssh root@${{ env.VPS_ADDRESS }} "curl -f http://localhost:YOUR_PORT || exit 1"
