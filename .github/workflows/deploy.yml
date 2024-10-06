@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - master  # Runs this action only when pushing to master
+      - master  # Runs this action only when pushing to  master
 
 jobs:
   deploy:
