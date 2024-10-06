@@ -37,7 +37,7 @@ jobs:
 
     - name: Install and build admin
       run: |
-        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/admin && npm install --force && npm run build && if [ $? -eq 0 ]; then rm -rf * && mv build/* . && rm -rf build; else echo 'Build failed, keeping the previous version'; fi"
+        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/admin && npm install --force && npm run build"
 
     # Caching node modules for agent
     - name: Cache node modules (agent)
@@ -50,7 +50,7 @@ jobs:
 
     - name: Install and build agent
       run: |
-        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/agent && npm install --force && npm run build && if [ $? -eq 0 ]; then rm -rf * && mv build/* . && rm -rf build; else echo 'Build failed, keeping the previous version'; fi"
+        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/agent && npm install --force && npm run build"
 
     # Caching node modules for exchange
     - name: Cache node modules (exchange)
@@ -63,7 +63,7 @@ jobs:
 
     - name: Install and build exchange
       run: |
-        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/exchange && npm install --force && npm run build && if [ $? -eq 0 ]; then rm -rf * && mv build/* . && rm -rf build; else echo 'Build failed, keeping the previous version'; fi"
+        ssh root@${{ env.VPS_ADDRESS }} "cd ${{ env.BASE_DIR }}/exchange && npm install --force && npm run build"
 
     - name: Verify Deployment
       run: |
