@@ -11,7 +11,7 @@ const client_key = 'e3aa754feff07456ce544c4545521128';
 const client_name = 'skydemo2';
 
 
-// http://203.161.43.18:5000/api/exchange/api/v1/initGame/maxbet
+// http://203.161.43.18:2000/api/exchange/api/v1/initGame/maxbet
 // https://203.161.43.18/api/exchange/api/v1/initGame/maxbet
 // https://xchangemaxxbat.site/api/exchange/api/v1/initGame/maxbet
 // http://xchangemaxxbat.site/api/exchange/api/v1/initGame/maxbet
@@ -25,7 +25,7 @@ const client_name = 'skydemo2';
       const user_details = await User.findOne({user_id: user_id});
 
       if (!user_details) {
-        return res.status(400).json({ message: "User not found" });
+        return res.status(200).json({ message: "User not found" });
       }
     
       // Build request data
@@ -66,7 +66,7 @@ const client_name = 'skydemo2';
           ip: clientIp 
         });
       } else {
-        return res.status(400).json({
+        return res.status(200).json({
           error: "Failed to create session",
           details: responseData.data.message
         });
@@ -74,7 +74,7 @@ const client_name = 'skydemo2';
       
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(200).json({ message: "Internal server error" });
     }
   });
 
@@ -88,7 +88,7 @@ const client_name = 'skydemo2';
       
       // Check if the user exists
       if (!user_details) {
-        return res.status(404).json({ 
+        return res.status(200).json({ 
           status: false,
           message: "User not found",
           errors: "User not found in the database"
@@ -109,7 +109,7 @@ const client_name = 'skydemo2';
   
     } catch (error) {
       // Error handling
-      return res.status(500).json({
+      return res.status(200).json({
         status: false,
         message: "Internal Server Error",
         errors: error.message
@@ -142,7 +142,7 @@ const client_name = 'skydemo2';
 
       // Validate incoming data
       if (!user_id || !sport_name || !sport_id || !amount || !exposure || !match_name || !match_id || !round_name || !round_id || !odds || !selection || !back_lay || !transation_id) {
-        return res.status(400).json({
+        return res.status(200).json({
           status: false,
           message: "Missing required fields",
           errors: "Ensure all required fields are present in the request."
@@ -154,7 +154,7 @@ const client_name = 'skydemo2';
       const numericExposure = parseFloat(exposure);
 
       if (isNaN(numericAmount) || isNaN(numericExposure)) {
-        // return res.status(400).json({
+        // return res.status(200).json({
         //   status: false,
         //   message: "Invalid amount or exposure",
         //   errors: "Amount and exposure should be valid numbers."
@@ -167,7 +167,7 @@ const client_name = 'skydemo2';
       if (!user_details) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(404).json({
+        return res.status(200).json({
           status: false,
           message: "User not found",
           errors: "User does not exist in the database."
@@ -180,7 +180,7 @@ const client_name = 'skydemo2';
       if (userBalance < numericAmount) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(400).json({
+        return res.status(200).json({
           status: false,
           message: "Insufficient balance",
           errors: `User balance (${userBalance}) is less than the required amount (${numericAmount}).`
@@ -236,7 +236,7 @@ const client_name = 'skydemo2';
       // Rollback in case of errors during transaction
       await session.abortTransaction();
       session.endSession();
-      return res.status(500).json({
+      return res.status(200).json({
         status: false,
         message: "Internal Server Error",
         errors: error.message
@@ -245,81 +245,185 @@ const client_name = 'skydemo2';
   });
 
 
-
-
-  router.post("/placeBet",  async (req, res) => {
-
+  router.post("/result", async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    try {
-      const {
-        user_id,
-        sport_name,
-        sport_id,
-        amount,
-        exposure,
-        match_name,
-        match_id,
-        round_name,
-        round_id,
-        result,
-        bets
-      } = req.body;
+      try {
+          const {
+              user_id,
+              sport_name,
+              sport_id,
+              amount,
+              exposure,
+              match_name,
+              match_id,
+              round_name,
+              round_id,
+              result,
+              bets
+          } = req.body;
 
-      // Check if user exists
+          // Check if user exists
+          const user = await User.findOne({ user_id: user_id });
+          if (!user) {
+              await session.abortTransaction();
+              return res.status(200).json({
+                  status: false,
+                  message: "User not found",
+                  errors: "User does not exist in the database."
+              });
+          }
+
+          let totalWinLoss = 0;
+
+          // Process each bet in the result
+          for (let bet of bets) {
+              const { transaction_id, win_loss } = bet; // Corrected spelling
+
+              // Update the Exchange status based on bet result
+              const exchangeUpdate = await Exchange.updateOne(
+                  { transaction_id }, // Corrected spelling
+                  { $set: { status: win_loss > 0 ? 'win' : 'lose', result, win_loss } },
+                  { session }
+              );
+
+              // Check if the transaction exists in Exchange
+              if (exchangeUpdate.matchedCount === 0) {
+                  await session.abortTransaction();
+                  return res.status(200).json({
+                      status: false,
+                      message: "Transaction not found",
+                      errors: `Transaction with ID ${transaction_id} not found in the Exchange.` // Corrected spelling
+                  });
+              }
+
+              // Update user balance
+              totalWinLoss += win_loss;
+          }
+
+          // Adjust user balance after processing bets
+          const newBalance = user.currency + totalWinLoss;
+          await User.updateOne(
+              { user_id: user_id },
+              { $set: { currency: newBalance } },
+              { session }
+          );
+
+          // Commit the transaction
+          await session.commitTransaction();
+
+          // Respond with success
+          return res.json({
+              status: true,
+              message: "Result processed successfully",
+              data: {
+                  balance: newBalance,
+                  user_id
+              },
+              errors: ""
+          });
+
+      } catch (error) {
+          await session.abortTransaction();
+          return res.status(200).json({
+              status: false,
+              message: "Internal Server Error",
+              errors: error.message
+          });
+      } finally {
+          session.endSession();
+      }
+  });
+
+
+
+
+
+
+
+
+  router.post("/rollback", async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
+    try {
+      const { user_id, exposure, round_name, round_id, amount } = req.body;
+  
+      // Validate the incoming request
+      if (!user_id || exposure === undefined || !round_name || !round_id || amount === undefined) {
+        await session.abortTransaction();
+        return res.status(200).json({
+          status: false,
+          message: "Invalid request data",
+          errors: "Required fields: user_id, exposure, round_name, round_id, amount"
+        });
+      }
+  
+      // Check if the user exists
       const user = await User.findOne({ user_id });
       if (!user) {
         await session.abortTransaction();
-        return res.status(404).json({
+        return res.status(200).json({
           status: false,
           message: "User not found",
           errors: "User does not exist in the database."
         });
       }
-
-      let totalWinLoss = 0;
-
-      // Process each bet in the result
-      for (let bet of bets) {
-        const { transation_id, win_loss } = bet;
-
-        // Update the Exchange status based on bet result
-        await Exchange.updateOne(
-          { transation_id },
-          { $set: { status: win_loss > 0 ? 'win' : 'lose', result, win_loss } },
-          { session }
-        );
-
-        // Update user balance
-        totalWinLoss += win_loss;
+  
+      // Find the original transaction for round and user
+      const transaction = await Exchange.findOne({ round_id, user_id });
+      if (!transaction) {
+        await session.abortTransaction();
+        return res.status(200).json({
+          status: false,
+          message: "Transaction not found",
+          errors: `No transaction found for round_id: ${round_id} and user_id: ${user_id}`
+        });
       }
+  
+      let newBalance;
 
-      // Adjust user balance after processing bets
-      const newBalance = user.currency + totalWinLoss;
+      // Determine rollback logic based on original amount
+      if (transaction.win_loss > 0) {
+        // If the original result was a win
+        newBalance = user.currency  + exposure;
+      } else {
+        // If the original result was a loss
+        newBalance = user.currency  - exposure;
+      }
+  
+      // Update the user's balance
       await User.updateOne(
         { user_id },
         { $set: { currency: newBalance } },
         { session }
       );
-
+  
+      // Optionally, mark the transaction as rolled back or add an audit log
+      await Exchange.updateOne(
+        { round_id, user_id },
+        { $set: { status: 'rolled_back' } },
+        { session }
+      );
+  
       // Commit the transaction
       await session.commitTransaction();
-
+  
       // Respond with success
-      return res.json({
+      return res.status(200).json({
         status: true,
-        message: "Result processed successfully",
+        message: "Result Rollback Successfully.",
         data: {
           balance: newBalance,
           user_id
         },
         errors: ""
       });
-
+  
     } catch (error) {
       await session.abortTransaction();
-      return res.status(500).json({
+      return res.status(200).json({
         status: false,
         message: "Internal Server Error",
         errors: error.message
@@ -327,15 +431,8 @@ const client_name = 'skydemo2';
     } finally {
       session.endSession();
     }
-
   });
-
-  router.post("/rollback",  async (req, res) => {
-    return res.json({
-      status: true,
-      message: "successfully",
-    });
-  });
+  
 
 
 module.exports = router; 
