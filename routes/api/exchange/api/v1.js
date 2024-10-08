@@ -421,4 +421,17 @@ const client_name = 'skydemo2';
   });
 
 
+  router.post("/HelloWorld",  async (req, res) => {
+    return res.json({
+      status: true,
+      message: "Testing",
+      data: {
+          balance: 0.00
+      },
+      errors: ""
+  });
+
+  });
+
+
 module.exports = router; 
