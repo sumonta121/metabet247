@@ -21,7 +21,7 @@ jobs:
     - name: Deploy files to VPS
       run: |
         ssh -o StrictHostKeyChecking=no root@203.161.43.18 "cd /var/www/maxbet/metabet247 && git pull origin master"
-      
+    
     - name: Install dependencies and build admin
       run: |
         ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install --force && npm run build"
