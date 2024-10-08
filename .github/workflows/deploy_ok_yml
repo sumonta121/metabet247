@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - master  # Runs this action only when pushing to master
+      - master  # Runs this action only when pushing to  master
 
 jobs:
   deploy:
@@ -21,23 +21,16 @@ jobs:
     - name: Deploy files to VPS
       run: |
         ssh -o StrictHostKeyChecking=no root@203.161.43.18 "cd /var/www/maxbet/metabet247 && git pull origin master"
-
-   # - name: Install dependencies and build admin
-   #   run: |
-    #    ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install --force && npm run build"
-
-   # - name: Install dependencies and build agent
-   #   run: |
-   #     ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/agent && npm install --force && npm run build"
-
+      
+    - name: Install dependencies and build admin
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/admin && npm install --force && npm run build"
+        
+    - name: Install dependencies and build agent
+      run: |
+        ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/agent && npm install --force && npm run build"
+        
     - name: Install dependencies and build exchange
       run: |
         ssh root@203.161.43.18 "cd /var/www/maxbet/metabet247/exchange && npm install --force && npm run build"
 
-    - name: Restart PM2 Application
-      run: |
-        ssh root@203.161.43.18 "pm2 restart metabet247"
-
-    - name: Clear PM2 logs (optional)
-      run: |
-        ssh root@203.161.43.18 "pm2 flush"
