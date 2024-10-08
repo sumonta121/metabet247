@@ -119,7 +119,118 @@ const client_name = 'skydemo2';
 
 
 
-  router.post("/placeBet",  async (req, res) => {
+  router.post("/result", async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
+    try {
+        const {
+            user_id,
+            sport_name,
+            sport_id,
+            amount,
+            exposure,
+            match_name,
+            match_id,
+            round_name,
+            round_id,
+            result,
+            bets
+        } = req.body;
+  
+        // Check if user exists
+        const user = await User.findOne({ user_id: user_id }).session(session);
+        if (!user) {
+            await session.abortTransaction();
+            return res.status(200).json({
+                status: false,
+                message: "User not found",
+                errors: "User does not exist in the database."
+            });
+        }
+  
+        let totalWinLoss = 0;
+  
+        // Process each bet in the result
+        for (let bet of bets) {
+            const { transation_id, win_loss } = bet;
+  
+            // Update the Exchange status based on bet result
+            await Exchange.updateOne(
+                { transation_id },
+                { $set: { status: win_loss > 0 ? 'win' : 'lose', result, win_loss } },
+                { session }
+            );
+         
+            // Accumulate total win/loss
+            totalWinLoss += win_loss;
+        }
+  
+        // Step 4: Create a new exchange result record
+        const exchangeResult = new ExchangeResult({
+            user_id,
+            sport_name,
+            sport_id,
+            amount,
+            exposure,
+            match_name,
+            match_id,
+            round_name,
+            round_id,
+            result,
+            bets,
+            status: 'result' 
+        });
+  
+        await exchangeResult.save({ session });
+  
+        // Calculate the new balance (win/loss adjustment)
+        let newBalance = user.currency + totalWinLoss;
+  
+        // Apply exposure only if the user lost (no further adjustment if won)
+        if (totalWinLoss <= 0) {
+            // The user lost, so we keep exposure as is (it's already deducted during bet placement)
+            newBalance = newBalance; // No change here
+        } else {
+            // The user won, release exposure (add it back to balance)
+            newBalance += exposure; // Add the exposure back to the balance
+        }
+  
+        // Update the user's balance with the final value
+        await User.updateOne(
+            { user_id: user_id },
+            { $set: { currency: newBalance } },
+            { session }
+        );
+  
+        // Commit the transaction
+        await session.commitTransaction();
+  
+        // Respond with success
+        return res.json({
+            status: true,
+            message: "Result processed successfully",
+            data: {
+                balance: newBalance,
+                user_id
+            },
+            errors: ""
+        });
+  
+    } catch (error) {
+        await session.abortTransaction();
+        return res.status(200).json({
+            status: false,
+            message: "Internal Server Error",
+            errors: error.message
+        });
+    } finally {
+        session.endSession();
+    }
+  });
+  
+
+  router.post("/placeBet", async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -128,7 +239,6 @@ const client_name = 'skydemo2';
         sport_name,
         sport_id,
         amount,
-        exposure,
         match_name,
         match_id,
         round_name,
@@ -139,11 +249,10 @@ const client_name = 'skydemo2';
         back_lay,
         transation_id
       } = req.body;
-
-
+  
       // Step 1: Check if the user exists
       const user_details = await User.findOne({ user_id: user_id }).session(session);
-      
+  
       if (!user_details) {
         await session.abortTransaction();
         session.endSession();
@@ -153,29 +262,39 @@ const client_name = 'skydemo2';
           errors: "User does not exist in the database."
         });
       }
-
-      // Step 2: Check if the user has enough balance
+  
+      // Step 2: Calculate exposure based on the bet type (back or lay)
+      let exposure;
+      if (back_lay === "lay") {
+        // Lay bet: exposure = size * (odds - 1)
+        exposure = size * (odds - 1);
+      } else {
+        // Back bet: exposure is just the bet amount
+        exposure = size;
+      }
+  
+      // Step 3: Check if the user has enough balance
       const userBalance = user_details.currency;
-
+  
       if (userBalance < exposure) {
         await session.abortTransaction();
         session.endSession();
         return res.status(200).json({
           status: false,
           message: "Insufficient balance",
-          errors: `User balance (${userBalance}) is less than the required amount (${exposure}).`
+          errors: `User balance (${userBalance}) is less than the required exposure amount (${exposure}).`
         });
       }
-
-      // Step 3: Deduct the bet amount from the user's balance
+  
+      // Step 4: Deduct the exposure from the user's balance
       const newBalance = userBalance - exposure;
-
+  
       await User.updateOne(
         { user_id },
         { $set: { currency: newBalance } }
       ).session(session);
-
-      // Step 4: Create a new exchange record
+  
+      // Step 5: Create a new exchange record
       const exchange = new Exchange({
         user_id,
         sport_name,
@@ -193,14 +312,14 @@ const client_name = 'skydemo2';
         transation_id,
         status: 'pending' // Initial bet status is pending
       });
-
+  
       await exchange.save({ session });
-
-      // Step 5: Commit the transaction
+  
+      // Step 6: Commit the transaction
       await session.commitTransaction();
       session.endSession();
-
-      // Step 6: Send a success response
+  
+      // Step 7: Send a success response
       return res.json({
         status: true,
         message: "Bet placed successfully",
@@ -211,7 +330,7 @@ const client_name = 'skydemo2';
         },
         errors: ""
       });
-
+  
     } catch (error) {
       // Rollback in case of errors during transaction
       await session.abortTransaction();
@@ -223,129 +342,17 @@ const client_name = 'skydemo2';
       });
     }
   });
-
-
-  router.post("/result", async (req, res) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-        const {
-            user_id,
-            sport_name,
-            sport_id,
-            amount,
-            exposure,
-            match_name,
-            match_id,
-            round_name,
-            round_id,
-            result,
-            bets
-        } = req.body;
-
-        // Check if user exists
-        const user = await User.findOne({ user_id: user_id });
-        if (!user) {
-            await session.abortTransaction();
-            return res.status(200).json({
-                status: false,
-                message: "User not found",
-                errors: "User does not exist in the database."
-            });
-        }
-
-        let totalWinLoss = 0;
-
-        // Process each bet in the result
-        for (let bet of bets) {
-            const { transation_id, win_loss } = bet;  // Kept transation_id as is
-
-            // Update the Exchange status based on bet result
-            const exchangeUpdate = await Exchange.updateOne(
-                { transation_id }, // Kept transation_id as is
-                { $set: { status: win_loss > 0 ? 'win' : 'lose', result, win_loss } },
-                { session }
-            );
-     
-            // Accumulate total win/loss
-            totalWinLoss += win_loss;
-        }
-
-        // Step 4: Create a new exchange result record
-        const exchangeResult = new ExchangeResult({
-            user_id,
-            sport_name,
-            sport_id,
-            amount,
-            exposure,
-            match_name,
-            match_id,
-            round_name,
-            round_id,
-            result,
-            bets,
-            status: 'result' 
-        });
-
-        await exchangeResult.save({ session });
-
-        // Calculate the new balance (win/loss adjustment)
-        let newBalance = user.currency + totalWinLoss;
-
-        // Apply exposure adjustment to the new balance
-        if (exposure < 0) {
-            newBalance += Math.abs(exposure); // Add if exposure is negative
-        } else {
-            newBalance -= exposure; // Subtract if exposure is positive
-        }
-
-        // Update the user's balance with the final value
-        await User.updateOne(
-            { user_id: user_id },
-            { $set: { currency: newBalance } },
-            { session }
-        );
-
-        // Commit the transaction
-        await session.commitTransaction();
-
-        // Respond with success
-        return res.json({
-            status: true,
-            message: "Result processed successfully",
-            data: {
-                balance: newBalance,  // Use the updated balance directly
-                user_id
-            },
-            errors: ""
-        });
-
-    } catch (error) {
-        await session.abortTransaction();
-        return res.status(200).json({
-            status: false,
-            message: "Internal Server Error",
-            errors: error.message
-        });
-    } finally {
-        session.endSession();
-    }
-});
-
-
-
-
+  
 
   router.post("/rollback", async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
-
+  
     try {
         const { user_id, exposure, round_name, round_id, amount } = req.body;
-
+  
         // Step 1: Find the user by user_id
-        const user = await User.findOne({ user_id: user_id });
+        const user = await User.findOne({ user_id: user_id }).session(session);
         if (!user) {
             await session.abortTransaction();
             return res.status(200).json({
@@ -354,49 +361,42 @@ const client_name = 'skydemo2';
                 errors: "User does not exist in the database."
             });
         }
-
-        // Step 2: Reverse the exposure and amount modification
-        // Since exposure is negative in the request, we reverse the logic done previously in the result process
-        let reversedExposureBalance;
-        if (exposure < 0) {
-            reversedExposureBalance = user.currency - Math.abs(exposure); // Subtract if the exposure was previously added
-        } else {
-            reversedExposureBalance = user.currency + exposure; // Add if the exposure was previously subtracted
-        }
-
+  
+        // Step 2: Reverse the exposure
+        // Since exposure was previously deducted during bet placement, we always add it back in rollback
+        const restoredBalance = user.currency + exposure;  // Add back the exposure
+  
         // Step 3: Reverse the amount change
-        const finalBalance = reversedExposureBalance - amount; // Reverse the amount by subtracting it
-
+        const finalBalance = restoredBalance + amount;  // Add back the bet amount
+  
         // Step 4: Update the user balance back to its previous state
         await User.updateOne(
             { user_id: user_id },
             { $set: { currency: finalBalance } },
             { session }
         );
-
+  
         // Step 5: Update the transaction with rollback status
         await Exchange.updateOne(
             { user_id: user_id, round_id: round_id }, // Find the relevant transaction
             { $set: { status: 'rollback' } }, // Set status to 'rollback'
             { session }
         );
-
-
-           // Step 6: Insert a rollback record into the RollbackRecords collection
-        const rollbackRecord = new Exchange({
+  
+        // Step 6: Insert a rollback record into the RollbackRecords collection
+        const rollbackRecord = new RollbackRecord({
             user_id,
             exposure,
             amount,
             round_name,
             round_id
         });
-
+  
         await rollbackRecord.save({ session });
-
-
+  
         // Step 7: Commit the transaction
         await session.commitTransaction();
-
+  
         // Respond with success
         return res.json({
             status: true,
@@ -407,7 +407,7 @@ const client_name = 'skydemo2';
             },
             errors: ""
         });
-
+  
     } catch (error) {
         await session.abortTransaction();
         return res.status(200).json({
@@ -419,6 +419,6 @@ const client_name = 'skydemo2';
         session.endSession();
     }
   });
-
+  
 
 module.exports = router; 
