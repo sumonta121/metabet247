@@ -11,7 +11,7 @@ const client_key = 'e3aa754feff07456ce544c4545521128';
 const client_name = 'skydemo2';
 
 
-// http://203.161.43.18:2000/api/exchange/api/v1/initGame/maxbet
+// http://203.161.43.18:5000/api/exchange/api/v1/initGame/maxbet
 // https://203.161.43.18/api/exchange/api/v1/initGame/maxbet
 // https://xchangemaxxbat.site/api/exchange/api/v1/initGame/maxbet
 // http://xchangemaxxbat.site/api/exchange/api/v1/initGame/maxbet
@@ -168,7 +168,7 @@ const client_name = 'skydemo2';
       }
 
       // Step 3: Deduct the bet amount from the user's balance
-      const newBalance = userBalance - exposure;
+      const newBalance = userBalance + exposure;
 
       await User.updateOne(
         { user_id },

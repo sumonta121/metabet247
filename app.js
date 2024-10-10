@@ -22,6 +22,7 @@ const lockBets = require('./util/lockBets');
 const router = require('express').Router();
 const cors = require("cors");
 require('dotenv').config();
+//require('dotenv').config({ path: '/var/www/maxbet/metabet247/.env' });
 const withdraw = require("./routes/api/withdraw");
 const exchange = require("./routes/api/exchange/api/v1");
 

@@ -11,36 +11,36 @@ const AgentBLTR = require("../../models/AgentBLTR");
 const Deposit = require("../../models/Deposit");
 const Withdraw = require("../../models/Withdraw");
 
-
 router.get("/adminData", async (req, res) => {
   try {
-   const now = new Date();
-    
-   const startOfDayBDT = new Date(new Date().setHours(0, 0, 0, 0)); 
-   const endOfDayBDT = new Date(new Date().setHours(23, 59, 59, 999)); 
+    const now = new Date();
+    const startOfDayBDT = new Date(new Date().setHours(0, 0, 0, 0)); 
+    const endOfDayBDT = new Date(new Date().setHours(23, 59, 59, 999)); 
 
-   // 2. Daily sales (only those within the current BDT day)
-   const [dailySales] = await AgentBLTR.aggregate([
-     {
-       $match: {
-         createdAt: {
-           $gte: startOfDayBDT,  
-           $lt: endOfDayBDT      
-         }
-       }
-     },
-     {
-       $group: {
-         _id: null,
-         totalAmount: { $sum: "$amount" }
-       }
-     }
-   ]);
+    // 1. Daily sales (only those within the current BDT day)
+    const [dailySales] = await AgentBLTR.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startOfDayBDT,  
+            $lt: endOfDayBDT      
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" }
+        }
+      }
+    ]);
 
+    // 2. Transfered balance
     const [transferedBalance] = await AgentBLTR.aggregate([
       { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
     ]);
 
+    // 3. Total admin balance
     const [totalAdminBalance] = await User.aggregate([
       { $match: { role_as: 2 } },
       {
@@ -52,6 +52,7 @@ router.get("/adminData", async (req, res) => {
       }
     ]);
 
+    // 4. Total super balance
     const [totalSuperBalance] = await User.aggregate([
       { $match: { role_as: 2.1 } },
       {
@@ -63,6 +64,7 @@ router.get("/adminData", async (req, res) => {
       }
     ]);
 
+    // 5. Total user balance
     const [totalUserBalance] = await User.aggregate([
       { $match: { role_as: 3 } },
       {
@@ -74,6 +76,7 @@ router.get("/adminData", async (req, res) => {
       }
     ]);
 
+    // 6. Total master balance
     const [totalMasterBalance] = await User.aggregate([
       { $match: { role_as: 4 } },
       {
@@ -84,34 +87,48 @@ router.get("/adminData", async (req, res) => {
         }
       }
     ]);
-  
-      const [totalDeposits] = await Deposit.aggregate([
-        {
-          $match: { 
-            status: 'paid'
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalAmount: { $sum: { $toDouble: "$send_amount" } }  
+
+    // 7. Total deposits (with trim and conversion fix)
+    const [totalDeposits] = await Deposit.aggregate([
+      {
+        $match: { 
+          status: 'paid'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: {
+            $sum: {
+              $toDouble: {
+                $trim: { input: "$send_amount" } // Trim leading/trailing spaces
+              }
+            }
           }
         }
-      ]);
-     
-      const [totalWithdrawals] = await Withdraw.aggregate([
-        {
-          $match: { 
-            status: 'Paid'
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalAmount: { $sum: { $toDouble: "$withdraw_amount" } } 
+      }
+    ]);
+
+    // 8. Total withdrawals (with trim and conversion fix)
+    const [totalWithdrawals] = await Withdraw.aggregate([
+      {
+        $match: { 
+          status: 'Paid'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: {
+            $sum: {
+              $toDouble: {
+                $trim: { input: "$withdraw_amount" } // Trim leading/trailing spaces
+              }
+            }
           }
         }
-      ]);
+      }
+    ]);
 
     const alldata = {
       transfered_balance: transferedBalance?.totalAmount || 0,
@@ -128,7 +145,7 @@ router.get("/adminData", async (req, res) => {
       total_deposits: totalDeposits?.totalAmount || 0,
     };
 
-    return  res.json(alldata);
+    return res.json(alldata);
 
   } catch (error) {
     console.error("Error fetching admin data:", error);
